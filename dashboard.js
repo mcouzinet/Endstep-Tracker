@@ -236,7 +236,8 @@ async function initCoach() {
 const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
 const BLUNDER = -0.30;
 
-// The board a decision leads to: the next decision's board in the same game, else the game's final state.
+// The board a decision leads to is the next decision's board in the same game. The last decision of a game has
+// no "after": the outcome would score 0/100 % and flag whatever came last, which is not a judgement of that play.
 function coachRows(m, g) {
   const ds = (decisions[m.id] || {})[g.n] || [];
   if (!ds.length || m.mySeat === null) return [];
@@ -245,8 +246,7 @@ function coachRows(m, g) {
   return ds.map((d, i) => {
     const before = p(d.board);
     const next = ds[i + 1];
-    let after = next ? p(next.board) : null;
-    if (!next && g.winnerSeat !== undefined) after = g.winnerSeat === null ? 0.5 : g.winnerSeat === m.mySeat ? 1 : 0;
+    const after = next ? p(next.board) : null;
     return { d, before, after, delta: before !== null && after !== null ? after - before : null };
   });
 }
