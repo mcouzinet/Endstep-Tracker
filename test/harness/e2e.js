@@ -100,6 +100,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     }))));
     console.log('manifest:', JSON.stringify(await dash.evaluate(() => ({ desc: chrome.runtime.getManifest().description, title: chrome.i18n.getMessage('action_title'), ui: chrome.i18n.getUILanguage() }))));
     await dash.click('.match-row');
+    await sleep(600);
+    console.log('coach block:', JSON.stringify(await dash.evaluate(() => { const c = document.querySelector('.coach'); return c && { summary: c.querySelector('summary').textContent.trim(), rows: c.querySelectorAll('tbody tr').length, note: c.querySelector('.coach-note').textContent.slice(0, 60) }; })));
     await sleep(500);
     await dash.screenshot({ path: OUT + '/e2e-dashboard-detail.png', fullPage: true });
   } finally {
