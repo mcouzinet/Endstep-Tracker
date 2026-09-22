@@ -526,5 +526,38 @@
   },
   "act_cancel": {
     "message": "annule"
+  },
+  "coach_title": {
+    "message": "Coach ({n} décisions)"
+  },
+  "coach_flagged_one": {
+    "message": "{n} erreur probable"
+  },
+  "coach_flagged_other": {
+    "message": "{n} erreurs probables"
+  },
+  "coach_decision": {
+    "message": "Décision"
+  },
+  "coach_before": {
+    "message": "P(victoire) avant"
+  },
+  "coach_after": {
+    "message": "après"
+  },
+  "coach_mistake": {
+    "message": "erreur probable"
+  },
+  "coach_blunder": {
+    "message": "grosse erreur"
+  },
+  "coach_model_note": {
+    "message": "Modèle entraîné sur {n} parties Forge AI (bêta)"
+  },
+  "coach_heuristic_note": {
+    "message": "Heuristique à la main (pas de modèle entraîné)"
+  },
+  "coach_after_note": {
+    "message": "« après » = le plateau à ta décision suivante, réponse adverse comprise"
   }
 }

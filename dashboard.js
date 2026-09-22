@@ -1,6 +1,7 @@
 // Dashboard: match history, stats, annotations and exports.
 const T = self.EndstepTracker;
 const Meta = self.EndstepMeta;
+const Coach = self.EndstepCoach;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s === undefined || s === null ? '' : s)
   .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -222,6 +223,50 @@ function refresh() {
   $('#archetypes').innerHTML = [...names].sort((a, b) => a.localeCompare(b, locale)).map((a) => `<option value="${esc(a)}">`).join('');
   render();
   ensureMeta();
+}
+
+// --- coach: win probability before/after each recorded decision (see coach.js) ---
+let coachModel = null; // coach-model.json when present and valid, else the heuristic
+async function initCoach() {
+  try {
+    const m = await (await fetch('coach-model.json')).json();
+    if (m && Array.isArray(m.features) && m.features.length === Coach.FEATURES.length && m.features.every((f, i) => f === Coach.FEATURES[i])) coachModel = m;
+  } catch { /* no model shipped: heuristic */ }
+}
+const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
+const BLUNDER = -0.30;
+
+// The board a decision leads to: the next decision's board in the same game, else the game's final state.
+function coachRows(m, g) {
+  const ds = (decisions[m.id] || {})[g.n] || [];
+  if (!ds.length || m.mySeat === null) return [];
+  const firstSeat = g.firstSeat;
+  const p = (board) => (board && board.players ? Coach.predict(Coach.features(board, m.mySeat, firstSeat), coachModel) : null);
+  return ds.map((d, i) => {
+    const before = p(d.board);
+    const next = ds[i + 1];
+    let after = next ? p(next.board) : null;
+    if (!next && g.winnerSeat !== undefined) after = g.winnerSeat === null ? 0.5 : g.winnerSeat === m.mySeat ? 1 : 0;
+    return { d, before, after, delta: before !== null && after !== null ? after - before : null };
+  });
+}
+
+function coachBlock(m, g) {
+  const rows = coachRows(m, g);
+  if (!rows.length) return '';
+  const pct = (v) => (v === null ? '—' : `${Math.round(v * 100)} %`);
+  const body = rows.map(({ d, before, after, delta }) => {
+    const cls = delta !== null && delta <= BLUNDER ? 'blunder bad' : delta !== null && delta <= BAD ? 'bad' : '';
+    const flag = delta !== null && delta <= BLUNDER ? `<span class="flag bad">${esc(t('coach_blunder'))}</span>` : delta !== null && delta <= BAD ? `<span class="flag bad">${esc(t('coach_mistake'))}</span>` : '';
+    const sign = delta === null ? '' : delta > 0 ? '+' : '';
+    return `<tr class="${cls}"><td class="turn">T${esc(d.turn)} ${esc(d.phase || '')}</td><td>${esc(describeAction(d.answer || {}))}${flag}</td>`
+      + `<td class="num">${pct(before)}</td><td class="num">${pct(after)}</td><td class="num delta ${delta > 0.05 ? 'good' : ''}">${delta === null ? '—' : `${sign}${Math.round(delta * 100)}`}</td></tr>`;
+  }).join('');
+  const flagged = rows.filter((r) => r.delta !== null && r.delta <= BAD).length;
+  const source = coachModel ? t('coach_model_note', { n: coachModel.games || '?' }) : t('coach_heuristic_note');
+  return `<details class="coach" data-key="coach:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('coach_title', { n: rows.length }))}${flagged ? ` · <b>${esc(tn('coach_flagged', flagged))}</b>` : ''}</summary>
+    <p class="coach-note">${esc(source)} · ${esc(t('coach_after_note'))}</p>
+    <table><thead><tr><th></th><th>${esc(t('coach_decision'))}</th><th>${esc(t('coach_before'))}</th><th>${esc(t('coach_after'))}</th><th>Δ</th></tr></thead><tbody>${body}</tbody></table></details>`;
 }
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
@@ -532,7 +577,7 @@ function gameBlock(m, g) {
   const log = `<details class="log" data-key="log:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('full_log', { n: g.log.length }))}</summary><ol>${g.log
     .map(([tn_, , type, c, msg]) => `<li><span>T${esc(tn_)}</span>${esc(msg || type + (c ? ` ${c}` : ''))}</li>`).join('')}</ol></details>`;
   const res = r ? `<span class="result ${r}"><i></i>${esc(resultLabel(r))}</span>` : `<span class="result ongoing"><i></i>${esc(t('ongoing'))}</span>`;
-  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${decisionsBlock(m, g)}${log}</article>`;
+  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${coachBlock(m, g)}${decisionsBlock(m, g)}${log}</article>`;
 }
 
 const ACTION_KEY = { PLAY_CARD: 'act_play', PASS_PRIORITY: 'act_pass', KEEP_HAND: 'act_keep', MULLIGAN: 'act_mulligan', DECLARE_ATTACKERS: 'act_attack',
@@ -809,5 +854,6 @@ setInterval(renderHeader, 60e3); // keep "il y a…" and the live pill fresh
   await initI18n();
   loadPrefs();
   await initMeta();
+  await initCoach();
   await load();
 })();

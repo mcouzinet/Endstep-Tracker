@@ -254,6 +254,21 @@
     .timeline .who { color: var(--ink-2); }
     .timeline .land { color: var(--ink-3); }
     .log { margin-top: 4px; }
+    /* coach: one row per decision, win probability before → after */
+    .coach { margin: 10px 0 6px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+    .coach summary { padding: 8px 10px; }
+    .coach-note { padding: 0 10px 8px; color: var(--ink-3); font-size: 12px; }
+    .coach table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .coach th { font-weight: 500; color: var(--ink-3); font-size: 12px; padding: 4px 10px; text-align: left; border-top: 1px solid var(--line); }
+    .coach td { padding: 5px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+    .coach td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .coach .delta { font-weight: 600; }
+    .coach tr.bad td { background: rgb(229 102 75 / .08); }
+    .coach tr.bad .delta, .coach .flag.bad { color: var(--loss); }
+    .coach tr.blunder td { background: rgb(229 102 75 / .16); }
+    .coach .flag { display: inline-block; padding: 0 6px; border-radius: 4px; border: 1px solid var(--loss); font-size: 11px; margin-left: 6px; white-space: nowrap; }
+    .coach .good { color: var(--win); }
+    .coach .turn { color: var(--ink-3); white-space: nowrap; }
     .log ol { list-style: none; margin: 8px 0 0; padding: 0; max-height: 300px; overflow: auto; font-size: 12.5px; color: var(--ink-2); }
     .log li { padding: 2px 0; }
     .log li span { color: var(--ink-3); font-variant-numeric: tabular-nums; margin-right: 8px; }
@@ -391,6 +406,7 @@
 
   <script src="tracker.js"></script>
   <script src="meta.js"></script>
+  <script src="coach.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

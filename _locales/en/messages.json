@@ -526,5 +526,38 @@
   },
   "act_cancel": {
     "message": "cancels"
+  },
+  "coach_title": {
+    "message": "Coach ({n} decisions)"
+  },
+  "coach_flagged_one": {
+    "message": "{n} probable mistake"
+  },
+  "coach_flagged_other": {
+    "message": "{n} probable mistakes"
+  },
+  "coach_decision": {
+    "message": "Decision"
+  },
+  "coach_before": {
+    "message": "P(win) before"
+  },
+  "coach_after": {
+    "message": "after"
+  },
+  "coach_mistake": {
+    "message": "probable mistake"
+  },
+  "coach_blunder": {
+    "message": "big mistake"
+  },
+  "coach_model_note": {
+    "message": "Model trained on {n} Forge AI games (beta)"
+  },
+  "coach_heuristic_note": {
+    "message": "Hand-made heuristic (no trained model)"
+  },
+  "coach_after_note": {
+    "message": "“after” is the board at your next decision, so it includes the opponent’s reply"
   }
 }
