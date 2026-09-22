@@ -1,0 +1,31 @@
+// Recognition in the harness: tags on rows, suggestion + "use" in the detail, breakdown merge, CSV column.
+const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
+const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+(async () => {
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] });
+  const p = await b.newPage();
+  const errors = [];
+  p.on('pageerror', (e) => errors.push(e.message));
+  p.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  await p.setViewport({ width: 1280, height: 900 });
+  await p.goto(`file://${__dirname}/harness-demo.html`);
+  await p.evaluate(() => { localStorage.clear(); localStorage.setItem('endstep-tracker.lang', 'fr'); });
+  await p.reload();
+  await sleep(800);
+  const out = {};
+  out.tags = await p.evaluate(() => [...document.querySelectorAll('.match')].map((li) => [li.dataset.id, (li.querySelector('.tag') || {}).textContent || '', (li.querySelector('.tag.guess') || {}).title || '']));
+  out.oppBreakdown = await p.evaluate(() => [...document.querySelectorAll('#by-opp .rec-label')].map((e) => e.textContent.trim()));
+  await p.click('.match[data-id="m2"] .match-row');
+  await sleep(300);
+  out.guessLine = await p.evaluate(() => (document.querySelector('.match[data-id="m2"] .guess-line') || {}).textContent || '');
+  await p.screenshot({ path: `${__dirname}/qa-guess.png`, clip: { x: 0, y: 380, width: 1280, height: 520 } });
+  await p.click('.match[data-id="m2"] [data-use-guess]');
+  await sleep(300);
+  out.afterUse = await p.evaluate(() => ({ note: window.__DATA['note:m2'], tag: document.querySelector('.match[data-id="m2"] .tag').className, line: !!document.querySelector('.match[data-id="m2"] .guess-line') }));
+  out.datalistHasSiteNames = await p.evaluate(() => [...document.querySelectorAll('#archetypes option')].some((o) => o.value === 'Izzet Prowess'));
+  out.searchByGuess = await p.evaluate(() => { document.getElementById('q').value = 'dimir control'; document.getElementById('q').dispatchEvent(new Event('input')); return document.querySelectorAll('.match').length; });
+  out.errors = errors;
+  console.log(JSON.stringify(out, null, 1));
+  await b.close();
+})();

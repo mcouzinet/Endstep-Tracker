@@ -1,0 +1,482 @@
+{
+  "ext_description": {
+    "message": "Records your endstep.cc matches: opponent cards, play/draw, mulligans, results and cards played."
+  },
+  "action_title": {
+    "message": "Endstep Tracker — open the dashboard"
+  },
+  "tagline": {
+    "message": "Your endstep.cc matches, recorded automatically"
+  },
+  "summary_one": {
+    "message": "{n} match recorded · last {ago}"
+  },
+  "summary_other": {
+    "message": "{n} matches recorded · last {ago}"
+  },
+  "live_pill": {
+    "message": "Match in progress · vs {opp}"
+  },
+  "language": {
+    "message": "Language"
+  },
+  "data_menu": {
+    "message": "Data"
+  },
+  "export_json": {
+    "message": "Export a backup (JSON)"
+  },
+  "export_csv": {
+    "message": "Export games (CSV)"
+  },
+  "import_backup": {
+    "message": "Import a backup…"
+  },
+  "clear_all": {
+    "message": "Delete everything…"
+  },
+  "search_placeholder": {
+    "message": "Opponent, archetype, card seen, note…"
+  },
+  "search": {
+    "message": "Search"
+  },
+  "all_formats": {
+    "message": "All formats"
+  },
+  "all_decks": {
+    "message": "All my decks"
+  },
+  "format": {
+    "message": "Format"
+  },
+  "my_deck": {
+    "message": "My deck"
+  },
+  "period": {
+    "message": "Period"
+  },
+  "period_all": {
+    "message": "All time"
+  },
+  "period_30": {
+    "message": "30 days"
+  },
+  "period_7": {
+    "message": "7 days"
+  },
+  "result": {
+    "message": "Result"
+  },
+  "result_all": {
+    "message": "All"
+  },
+  "result_wins": {
+    "message": "Wins"
+  },
+  "result_losses": {
+    "message": "Losses"
+  },
+  "remove_filter": {
+    "message": "Remove this filter"
+  },
+  "reset": {
+    "message": "Reset"
+  },
+  "reset_filters": {
+    "message": "Reset filters"
+  },
+  "n_matches_one": {
+    "message": "{n} match"
+  },
+  "n_matches_other": {
+    "message": "{n} matches"
+  },
+  "of_total": {
+    "message": " of {total}"
+  },
+  "opponent_facet": {
+    "message": "Opponent: {label}"
+  },
+  "overview": {
+    "message": "Overview"
+  },
+  "matches": {
+    "message": "Matches"
+  },
+  "games": {
+    "message": "Games"
+  },
+  "by_context": {
+    "message": "By context (games)"
+  },
+  "on_play": {
+    "message": "On the play"
+  },
+  "on_draw": {
+    "message": "On the draw"
+  },
+  "kept_seven": {
+    "message": "Kept 7"
+  },
+  "after_mulligan": {
+    "message": "After a mulligan"
+  },
+  "per_game_mulligans": {
+    "message": "mulligans per game"
+  },
+  "avg_turns": {
+    "message": "turns on average"
+  },
+  "min": {
+    "message": "min"
+  },
+  "per_game": {
+    "message": "per game"
+  },
+  "my_decks": {
+    "message": "My decks"
+  },
+  "opp_decks": {
+    "message": "Opponents' decks"
+  },
+  "no_finished_all": {
+    "message": "No finished match yet."
+  },
+  "no_finished_selection": {
+    "message": "No finished match in this selection."
+  },
+  "remove_this_filter": {
+    "message": "Remove the filter"
+  },
+  "only_show": {
+    "message": "Show only: {label}"
+  },
+  "games_record": {
+    "message": "games {w}–{l}"
+  },
+  "untagged": {
+    "message": "untagged"
+  },
+  "unknown": {
+    "message": "Unknown"
+  },
+  "colors_label": {
+    "message": "colors {c}"
+  },
+  "unknown_deck": {
+    "message": "unknown deck"
+  },
+  "wins_one": {
+    "message": "{n} win"
+  },
+  "wins_other": {
+    "message": "{n} wins"
+  },
+  "losses_one": {
+    "message": "{n} loss"
+  },
+  "losses_other": {
+    "message": "{n} losses"
+  },
+  "draws_one": {
+    "message": "{n} draw"
+  },
+  "draws_other": {
+    "message": "{n} draws"
+  },
+  "no_data": {
+    "message": "no data"
+  },
+  "col_result": {
+    "message": "Result"
+  },
+  "col_opponent": {
+    "message": "Opponent"
+  },
+  "col_score": {
+    "message": "Score"
+  },
+  "col_games": {
+    "message": "Games"
+  },
+  "col_my_deck": {
+    "message": "My deck"
+  },
+  "col_format": {
+    "message": "Format"
+  },
+  "col_date": {
+    "message": "Date"
+  },
+  "legend_aria": {
+    "message": "Games legend"
+  },
+  "win": {
+    "message": "Win"
+  },
+  "loss": {
+    "message": "Loss"
+  },
+  "draw": {
+    "message": "Draw"
+  },
+  "colon": {
+    "message": ": "
+  },
+  "legend_play": {
+    "message": "you start"
+  },
+  "legend_draw": {
+    "message": "the opponent starts"
+  },
+  "legend_mull": {
+    "message": "1 mulligan"
+  },
+  "hint_hover": {
+    "message": "Hover a card to see it"
+  },
+  "hint_search": {
+    "message": "to search"
+  },
+  "ongoing": {
+    "message": "In progress"
+  },
+  "unfinished": {
+    "message": "Unfinished"
+  },
+  "game_n": {
+    "message": "Game {n}"
+  },
+  "on_play_l": {
+    "message": "on the play"
+  },
+  "on_draw_l": {
+    "message": "on the draw"
+  },
+  "pos_unknown": {
+    "message": "play/draw unknown"
+  },
+  "mulligans_one": {
+    "message": "{n} mulligan"
+  },
+  "mulligans_other": {
+    "message": "{n} mulligans"
+  },
+  "seen_at": {
+    "message": "Seen from {name}"
+  },
+  "opp_archetype": {
+    "message": "Opponent's archetype"
+  },
+  "archetype_placeholder": {
+    "message": "e.g. Mono-Red Burn"
+  },
+  "notes": {
+    "message": "Notes"
+  },
+  "notes_placeholder": {
+    "message": "What worked, what you would change…"
+  },
+  "my_list": {
+    "message": "My list: {deck}"
+  },
+  "my_limited_deck": {
+    "message": "My limited deck"
+  },
+  "delete_match": {
+    "message": "Delete this match"
+  },
+  "no_games": {
+    "message": "No game captured for this match."
+  },
+  "no_cards_seen": {
+    "message": "No card seen yet."
+  },
+  "basic_lands": {
+    "message": "Basic lands"
+  },
+  "me": {
+    "message": "Me"
+  },
+  "opp_short": {
+    "message": "Opp."
+  },
+  "turns_one": {
+    "message": "{n} turn"
+  },
+  "turns_other": {
+    "message": "{n} turns"
+  },
+  "mulligans_label": {
+    "message": "Mulligans"
+  },
+  "final_life": {
+    "message": "Final life"
+  },
+  "play_draw_choice": {
+    "message": "Play/draw choice"
+  },
+  "opening_hand": {
+    "message": "Opening hand"
+  },
+  "full_log": {
+    "message": "Full log ({n})"
+  },
+  "minutes": {
+    "message": "{n} min"
+  },
+  "end_concede": {
+    "message": "concession"
+  },
+  "end_life": {
+    "message": "life at 0"
+  },
+  "end_decked": {
+    "message": "empty library"
+  },
+  "end_poison": {
+    "message": "poison"
+  },
+  "end_timeout": {
+    "message": "time ran out"
+  },
+  "end_draw": {
+    "message": "draw"
+  },
+  "color_W": {
+    "message": "white"
+  },
+  "color_U": {
+    "message": "blue"
+  },
+  "color_B": {
+    "message": "black"
+  },
+  "color_R": {
+    "message": "red"
+  },
+  "color_G": {
+    "message": "green"
+  },
+  "limited_deck": {
+    "message": "Limited deck"
+  },
+  "casual": {
+    "message": "Casual"
+  },
+  "ranked_suffix": {
+    "message": " (ranked)"
+  },
+  "just_now": {
+    "message": "just now"
+  },
+  "onboard_title": {
+    "message": "Your first match awaits"
+  },
+  "onboard_intro": {
+    "message": "Play on endstep.cc as usual: every match is recorded automatically."
+  },
+  "step1_b": {
+    "message": "Open endstep.cc."
+  },
+  "step1": {
+    "message": "If the tab was already open before installing, reload it."
+  },
+  "step2_b": {
+    "message": "Start a game."
+  },
+  "step2": {
+    "message": "During the match, the extension icon shows"
+  },
+  "step3_b": {
+    "message": "Come back here."
+  },
+  "step3": {
+    "message": "The match appears with play/draw, mulligans, the result and the opponent's cards seen."
+  },
+  "open_endstep": {
+    "message": "Open endstep.cc"
+  },
+  "import_backup_btn": {
+    "message": "Import a backup"
+  },
+  "no_match_filters": {
+    "message": "No match found"
+  },
+  "no_match_filters_hint": {
+    "message": "Widen the period or remove a filter to find your matches."
+  },
+  "exported_one": {
+    "message": "Backup exported ({n} match)"
+  },
+  "exported_other": {
+    "message": "Backup exported ({n} matches)"
+  },
+  "csv_exported_one": {
+    "message": "CSV exported ({n} game)"
+  },
+  "csv_exported_other": {
+    "message": "CSV exported ({n} games)"
+  },
+  "confirm_clear": {
+    "message": "Permanently delete all recorded matches? Export a backup first."
+  },
+  "all_deleted": {
+    "message": "All matches have been deleted"
+  },
+  "imported_one": {
+    "message": "{n} match imported"
+  },
+  "imported_other": {
+    "message": "{n} matches imported"
+  },
+  "skipped_one": {
+    "message": " ({n} unreadable skipped)"
+  },
+  "skipped_other": {
+    "message": " ({n} unreadable skipped)"
+  },
+  "import_empty": {
+    "message": "No readable match in this file"
+  },
+  "import_failed": {
+    "message": "Import failed: this file is not an Endstep Tracker backup (JSON)."
+  },
+  "confirm_delete_match": {
+    "message": "Remove this match from the history?"
+  },
+  "match_deleted": {
+    "message": "Match deleted"
+  },
+  "archetype_saved": {
+    "message": "Archetype saved"
+  },
+  "notes_saved": {
+    "message": "Notes saved"
+  },
+  "guess_tag_title": {
+    "message": "Deck recognized from the cards seen ({p} %): {cards}"
+  },
+  "guess_suggestion": {
+    "message": "Recognized deck"
+  },
+  "guess_confidence": {
+    "message": "{p} % sure"
+  },
+  "guess_from": {
+    "message": "from {cards}"
+  },
+  "use_guess": {
+    "message": "Use"
+  },
+  "guess_loading": {
+    "message": "Loading the {format} metagame from endstep.cc…"
+  },
+  "guess_unavailable": {
+    "message": "Deck recognition unavailable (endstep.cc metagame not reachable)."
+  },
+  "guessed_marker": {
+    "message": "recognized"
+  }
+}

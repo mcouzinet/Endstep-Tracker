@@ -1,0 +1,7 @@
+test/harness/*.png
+test/harness/harness-*.html
+test/harness/*-data.js
+test/harness/e2e-profile/
+test/harness/meta-stub.js
+test/harness/legend*.png
+.DS_Store

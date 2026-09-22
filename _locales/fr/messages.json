@@ -1,0 +1,482 @@
+{
+  "ext_description": {
+    "message": "Enregistre tes matchs endstep.cc : cartes adverses, play/draw, mulligans, résultats et cartes jouées."
+  },
+  "action_title": {
+    "message": "Endstep Tracker — ouvrir le tableau de bord"
+  },
+  "tagline": {
+    "message": "Tes matchs endstep.cc, enregistrés automatiquement"
+  },
+  "summary_one": {
+    "message": "{n} match enregistré · dernier {ago}"
+  },
+  "summary_other": {
+    "message": "{n} matchs enregistrés · dernier {ago}"
+  },
+  "live_pill": {
+    "message": "Match en cours · contre {opp}"
+  },
+  "language": {
+    "message": "Langue"
+  },
+  "data_menu": {
+    "message": "Données"
+  },
+  "export_json": {
+    "message": "Exporter une sauvegarde (JSON)"
+  },
+  "export_csv": {
+    "message": "Exporter les games (CSV)"
+  },
+  "import_backup": {
+    "message": "Importer une sauvegarde…"
+  },
+  "clear_all": {
+    "message": "Tout effacer…"
+  },
+  "search_placeholder": {
+    "message": "Adversaire, archétype, carte vue, note…"
+  },
+  "search": {
+    "message": "Rechercher"
+  },
+  "all_formats": {
+    "message": "Tous les formats"
+  },
+  "all_decks": {
+    "message": "Tous mes decks"
+  },
+  "format": {
+    "message": "Format"
+  },
+  "my_deck": {
+    "message": "Mon deck"
+  },
+  "period": {
+    "message": "Période"
+  },
+  "period_all": {
+    "message": "Tout"
+  },
+  "period_30": {
+    "message": "30 jours"
+  },
+  "period_7": {
+    "message": "7 jours"
+  },
+  "result": {
+    "message": "Résultat"
+  },
+  "result_all": {
+    "message": "Tous"
+  },
+  "result_wins": {
+    "message": "Victoires"
+  },
+  "result_losses": {
+    "message": "Défaites"
+  },
+  "remove_filter": {
+    "message": "Retirer ce filtre"
+  },
+  "reset": {
+    "message": "Réinitialiser"
+  },
+  "reset_filters": {
+    "message": "Réinitialiser les filtres"
+  },
+  "n_matches_one": {
+    "message": "{n} match"
+  },
+  "n_matches_other": {
+    "message": "{n} matchs"
+  },
+  "of_total": {
+    "message": " sur {total}"
+  },
+  "opponent_facet": {
+    "message": "Adversaire : {label}"
+  },
+  "overview": {
+    "message": "Bilan"
+  },
+  "matches": {
+    "message": "Matchs"
+  },
+  "games": {
+    "message": "Games"
+  },
+  "by_context": {
+    "message": "Selon le contexte (games)"
+  },
+  "on_play": {
+    "message": "Au play"
+  },
+  "on_draw": {
+    "message": "À la draw"
+  },
+  "kept_seven": {
+    "message": "Main de 7 gardée"
+  },
+  "after_mulligan": {
+    "message": "Après mulligan"
+  },
+  "per_game_mulligans": {
+    "message": "mulligan par game"
+  },
+  "avg_turns": {
+    "message": "tours en moyenne"
+  },
+  "min": {
+    "message": "min"
+  },
+  "per_game": {
+    "message": "par game"
+  },
+  "my_decks": {
+    "message": "Mes decks"
+  },
+  "opp_decks": {
+    "message": "Decks adverses"
+  },
+  "no_finished_all": {
+    "message": "Aucun match terminé pour l’instant."
+  },
+  "no_finished_selection": {
+    "message": "Aucun match terminé dans cette sélection."
+  },
+  "remove_this_filter": {
+    "message": "Retirer le filtre"
+  },
+  "only_show": {
+    "message": "Voir uniquement : {label}"
+  },
+  "games_record": {
+    "message": "games {w}–{l}"
+  },
+  "untagged": {
+    "message": "non tagué"
+  },
+  "unknown": {
+    "message": "Inconnu"
+  },
+  "colors_label": {
+    "message": "couleurs {c}"
+  },
+  "unknown_deck": {
+    "message": "deck inconnu"
+  },
+  "wins_one": {
+    "message": "{n} victoire"
+  },
+  "wins_other": {
+    "message": "{n} victoires"
+  },
+  "losses_one": {
+    "message": "{n} défaite"
+  },
+  "losses_other": {
+    "message": "{n} défaites"
+  },
+  "draws_one": {
+    "message": "{n} nul"
+  },
+  "draws_other": {
+    "message": "{n} nuls"
+  },
+  "no_data": {
+    "message": "aucune donnée"
+  },
+  "col_result": {
+    "message": "Résultat"
+  },
+  "col_opponent": {
+    "message": "Adversaire"
+  },
+  "col_score": {
+    "message": "Score"
+  },
+  "col_games": {
+    "message": "Games"
+  },
+  "col_my_deck": {
+    "message": "Mon deck"
+  },
+  "col_format": {
+    "message": "Format"
+  },
+  "col_date": {
+    "message": "Date"
+  },
+  "legend_aria": {
+    "message": "Légende des games"
+  },
+  "win": {
+    "message": "Victoire"
+  },
+  "loss": {
+    "message": "Défaite"
+  },
+  "draw": {
+    "message": "Nul"
+  },
+  "colon": {
+    "message": " : "
+  },
+  "legend_play": {
+    "message": "tu commences"
+  },
+  "legend_draw": {
+    "message": "l’adversaire commence"
+  },
+  "legend_mull": {
+    "message": "1 mulligan"
+  },
+  "hint_hover": {
+    "message": "Survole une carte pour la voir"
+  },
+  "hint_search": {
+    "message": "pour chercher"
+  },
+  "ongoing": {
+    "message": "En cours"
+  },
+  "unfinished": {
+    "message": "Inachevé"
+  },
+  "game_n": {
+    "message": "Game {n}"
+  },
+  "on_play_l": {
+    "message": "au play"
+  },
+  "on_draw_l": {
+    "message": "à la draw"
+  },
+  "pos_unknown": {
+    "message": "play/draw inconnu"
+  },
+  "mulligans_one": {
+    "message": "{n} mulligan"
+  },
+  "mulligans_other": {
+    "message": "{n} mulligans"
+  },
+  "seen_at": {
+    "message": "Vu chez {name}"
+  },
+  "opp_archetype": {
+    "message": "Archétype adverse"
+  },
+  "archetype_placeholder": {
+    "message": "ex. Mono-Red Burn"
+  },
+  "notes": {
+    "message": "Notes"
+  },
+  "notes_placeholder": {
+    "message": "Ce qui a marché, ce que tu changerais…"
+  },
+  "my_list": {
+    "message": "Ma liste : {deck}"
+  },
+  "my_limited_deck": {
+    "message": "Mon deck limité"
+  },
+  "delete_match": {
+    "message": "Supprimer ce match"
+  },
+  "no_games": {
+    "message": "Aucune game capturée pour ce match."
+  },
+  "no_cards_seen": {
+    "message": "Aucune carte vue pour l’instant."
+  },
+  "basic_lands": {
+    "message": "Terrains de base"
+  },
+  "me": {
+    "message": "Moi"
+  },
+  "opp_short": {
+    "message": "Adv."
+  },
+  "turns_one": {
+    "message": "{n} tour"
+  },
+  "turns_other": {
+    "message": "{n} tours"
+  },
+  "mulligans_label": {
+    "message": "Mulligans"
+  },
+  "final_life": {
+    "message": "PV finaux"
+  },
+  "play_draw_choice": {
+    "message": "Choix play/draw"
+  },
+  "opening_hand": {
+    "message": "Main de départ"
+  },
+  "full_log": {
+    "message": "Journal complet ({n})"
+  },
+  "minutes": {
+    "message": "{n} min"
+  },
+  "end_concede": {
+    "message": "concession"
+  },
+  "end_life": {
+    "message": "PV à 0"
+  },
+  "end_decked": {
+    "message": "bibliothèque vide"
+  },
+  "end_poison": {
+    "message": "poison"
+  },
+  "end_timeout": {
+    "message": "temps écoulé"
+  },
+  "end_draw": {
+    "message": "égalité"
+  },
+  "color_W": {
+    "message": "blanc"
+  },
+  "color_U": {
+    "message": "bleu"
+  },
+  "color_B": {
+    "message": "noir"
+  },
+  "color_R": {
+    "message": "rouge"
+  },
+  "color_G": {
+    "message": "vert"
+  },
+  "limited_deck": {
+    "message": "Deck limité"
+  },
+  "casual": {
+    "message": "Casual"
+  },
+  "ranked_suffix": {
+    "message": " (classé)"
+  },
+  "just_now": {
+    "message": "à l’instant"
+  },
+  "onboard_title": {
+    "message": "Ton premier match t’attend"
+  },
+  "onboard_intro": {
+    "message": "Joue sur endstep.cc comme d’habitude : chaque match est enregistré automatiquement."
+  },
+  "step1_b": {
+    "message": "Ouvre endstep.cc."
+  },
+  "step1": {
+    "message": "Si l’onglet était ouvert avant l’installation, recharge-le."
+  },
+  "step2_b": {
+    "message": "Lance une partie."
+  },
+  "step2": {
+    "message": "Pendant le match, l’icône de l’extension affiche"
+  },
+  "step3_b": {
+    "message": "Reviens ici."
+  },
+  "step3": {
+    "message": "Le match apparaît avec le play/draw, les mulligans, le résultat et les cartes adverses vues."
+  },
+  "open_endstep": {
+    "message": "Ouvrir endstep.cc"
+  },
+  "import_backup_btn": {
+    "message": "Importer une sauvegarde"
+  },
+  "no_match_filters": {
+    "message": "Aucun match ne correspond"
+  },
+  "no_match_filters_hint": {
+    "message": "Élargis la période ou retire un filtre pour retrouver tes matchs."
+  },
+  "exported_one": {
+    "message": "Sauvegarde exportée ({n} match)"
+  },
+  "exported_other": {
+    "message": "Sauvegarde exportée ({n} matchs)"
+  },
+  "csv_exported_one": {
+    "message": "CSV exporté ({n} game)"
+  },
+  "csv_exported_other": {
+    "message": "CSV exporté ({n} games)"
+  },
+  "confirm_clear": {
+    "message": "Supprimer définitivement tous les matchs enregistrés ? Pense à exporter une sauvegarde avant."
+  },
+  "all_deleted": {
+    "message": "Tous les matchs ont été supprimés"
+  },
+  "imported_one": {
+    "message": "{n} match importé"
+  },
+  "imported_other": {
+    "message": "{n} matchs importés"
+  },
+  "skipped_one": {
+    "message": " ({n} illisible ignoré)"
+  },
+  "skipped_other": {
+    "message": " ({n} illisibles ignorés)"
+  },
+  "import_empty": {
+    "message": "Aucun match lisible dans ce fichier"
+  },
+  "import_failed": {
+    "message": "Import impossible : ce fichier n’est pas une sauvegarde Endstep Tracker (JSON)."
+  },
+  "confirm_delete_match": {
+    "message": "Supprimer ce match de l’historique ?"
+  },
+  "match_deleted": {
+    "message": "Match supprimé"
+  },
+  "archetype_saved": {
+    "message": "Archétype enregistré"
+  },
+  "notes_saved": {
+    "message": "Notes enregistrées"
+  },
+  "guess_tag_title": {
+    "message": "Deck reconnu d’après les cartes vues ({p} %) : {cards}"
+  },
+  "guess_suggestion": {
+    "message": "Deck reconnu"
+  },
+  "guess_confidence": {
+    "message": "sûr à {p} %"
+  },
+  "guess_from": {
+    "message": "d’après {cards}"
+  },
+  "use_guess": {
+    "message": "Utiliser"
+  },
+  "guess_loading": {
+    "message": "Chargement du métagame {format} depuis endstep.cc…"
+  },
+  "guess_unavailable": {
+    "message": "Reconnaissance des decks indisponible (métagame endstep.cc injoignable)."
+  },
+  "guessed_marker": {
+    "message": "reconnu"
+  }
+}
