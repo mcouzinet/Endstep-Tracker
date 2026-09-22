@@ -54,6 +54,7 @@ const state = { q: '', format: '', deck: '', period: 'all', result: 'all', opp: 
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes } (kept apart so the live tracker never overwrites them)
 let openId = null;
+let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
 let pending = null; // storage changes held back while the user is editing or selecting inside a match
 let toastTimer;
 
@@ -198,9 +199,18 @@ function applyChanges(changes) {
       const id = k.slice(5);
       if (c.newValue === undefined) delete notes[id];
       else notes[id] = obj(c.newValue);
+    } else if (k.startsWith('dec:')) {
+      const id = k.slice(4);
+      if (c.newValue === undefined) delete decisions[id];
+      else if (id === openId) decisions[id] = obj(c.newValue);
     }
   }
   refresh();
+}
+
+async function loadDecisions(id) {
+  const key = 'dec:' + id;
+  decisions[id] = obj((await chrome.storage.local.get(key))[key]);
 }
 
 function refresh() {
@@ -522,7 +532,30 @@ function gameBlock(m, g) {
   const log = `<details class="log" data-key="log:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('full_log', { n: g.log.length }))}</summary><ol>${g.log
     .map(([tn_, , type, c, msg]) => `<li><span>T${esc(tn_)}</span>${esc(msg || type + (c ? ` ${c}` : ''))}</li>`).join('')}</ol></details>`;
   const res = r ? `<span class="result ${r}"><i></i>${esc(resultLabel(r))}</span>` : `<span class="result ongoing"><i></i>${esc(t('ongoing'))}</span>`;
-  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${log}</article>`;
+  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${decisionsBlock(m, g)}${log}</article>`;
+}
+
+const ACTION_KEY = { PLAY_CARD: 'act_play', PASS_PRIORITY: 'act_pass', KEEP_HAND: 'act_keep', MULLIGAN: 'act_mulligan', DECLARE_ATTACKERS: 'act_attack',
+  DECLARE_BLOCKERS: 'act_block', CHOOSE_TARGETS: 'act_target', CHOOSE_CARDS: 'act_choose', CHOOSE_MODE: 'act_mode', CHOOSE_ABILITY: 'act_ability',
+  CHOOSE_NUMBER: 'act_number', YES: 'act_yes', NO: 'act_no', DECLINE: 'act_decline', CANCEL: 'act_cancel' };
+const fmtVal = (v) => (Array.isArray(v) ? v.map(fmtVal).join(', ')
+  : v && typeof v === 'object' ? Object.entries(v).map(([k, x]) => `${k} ← ${fmtVal(x)}`).join(', ') : String(v));
+// "plays Lightning Bolt", "blocks Goblin Guide ← Mountain": the action verb plus its card arguments.
+function describeAction(a) {
+  const args = Object.entries(a).filter(([k, v]) => k !== 'type' && typeof v !== 'boolean' && v !== undefined && v !== null && k !== 'abilityIndex').map(([, v]) => fmtVal(v));
+  return [ACTION_KEY[a.type] ? t(ACTION_KEY[a.type]) : a.type, ...args].join(' ');
+}
+
+function decisionsBlock(m, g) {
+  const ds = (decisions[m.id] || {})[g.n] || [];
+  if (!ds.length) return '';
+  const rows = ds.map((d) => {
+    const board = d.board && d.board.players ? d.board.players.map((pl, s) => `${s === m.mySeat ? t('me') : t('opp_short')} ${pl.life}`).join(' · ') : '';
+    const prompt = d.prompt ? (d.prompt.message || d.prompt.type) : '';
+    const options = d.prompt && d.prompt.options && d.prompt.options.length ? ` <span class="muted">[${esc(d.prompt.options.join(', '))}]</span>` : '';
+    return `<li title="${esc(board)}"><span>T${esc(d.turn)} ${esc(d.phase || '')}</span>${esc(prompt)}${options} → <b>${esc(describeAction(d.answer || {}))}</b></li>`;
+  }).join('');
+  return `<details class="log" data-key="dec:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('decisions_title', { n: ds.length }))}</summary><ol>${rows}</ol></details>`;
 }
 
 function onboarding() {
@@ -597,8 +630,10 @@ const stamp = () => new Date().toISOString().slice(0, 10);
 const csvCell = (v) => { const s = String(v === undefined || v === null ? '' : v); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 
 const ACTIONS = {
-  'export-json': () => {
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes }), 'application/json');
+  'export-json': async () => {
+    const all = await chrome.storage.local.get(null);
+    const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -621,7 +656,7 @@ const ACTIONS = {
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => k.startsWith('match:') || k.startsWith('note:')));
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec):/.test(k)));
     openId = null;
     toast(t('all_deleted'));
   },
@@ -647,6 +682,7 @@ $('#import').addEventListener('change', async (e) => {
     const items = {};
     for (const m of list) items['match:' + m.id] = m;
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
+    for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
@@ -667,16 +703,16 @@ $('#matches').addEventListener('click', (e) => {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
-    chrome.storage.local.remove(['match:' + id, 'note:' + id]).then(() => toast(t('match_deleted')));
+    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id]).then(() => toast(t('match_deleted')));
     return;
   }
   const btn = e.target.closest('.match-row');
   if (!btn) return;
   const id = btn.closest('.match').dataset.id;
   openId = openId === id ? null : id;
-  render();
-  const again = document.querySelector(`.match[data-id="${CSS.escape(id)}"] .match-row`);
-  if (again) again.focus({ preventScroll: true });
+  const focusRow = () => { const again = document.querySelector(`.match[data-id="${CSS.escape(id)}"] .match-row`); if (again) again.focus({ preventScroll: true }); };
+  if (openId) loadDecisions(id).then(() => { render(); focusRow(); });
+  else { render(); focusRow(); }
 });
 
 $('#matches').addEventListener('change', (e) => {
@@ -714,7 +750,7 @@ $('#live').addEventListener('click', () => {
   if (!m) return;
   if (!filtered().includes(m)) resetFilters();
   openId = m.id;
-  render();
+  loadDecisions(m.id).then(render);
   const el = document.querySelector(`.match[data-id="${CSS.escape(m.id)}"]`);
   if (el) el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
@@ -762,7 +798,7 @@ document.addEventListener('selectionchange', () => { if (pending) flushPending()
 addEventListener('scroll', hidePreview, { passive: true });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => k.startsWith('match:') || k.startsWith('note:')));
+  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec):/.test(k)));
   if (!Object.keys(mine).length) return;
   if (busy() || pending) { pending = Object.assign(pending || {}, mine); flushPending(); return; }
   applyChanges(mine);

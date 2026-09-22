@@ -12,6 +12,12 @@
       ws.addEventListener('message', (e) => {
         if (typeof e.data === 'string' && WANTED.test(e.data.slice(0, 64))) post('ws', e.data);
       });
+      // My own game actions (keep, cast, attack, targets…): what the coach reviews.
+      const send = ws.send;
+      ws.send = function (data) {
+        if (typeof data === 'string' && data.startsWith('{"type":"GAME_ACTION"')) post('out', data);
+        return send.apply(this, arguments);
+      };
       return ws;
     },
   });

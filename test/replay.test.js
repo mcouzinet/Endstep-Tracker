@@ -150,6 +150,35 @@ late.meta[M].lobbyId = 'lobby';
 T.applyMeta(lateRec, late.meta[M], late);
 assert.equal(lateRec.myDeck.id, 'deck-burn', 'the lobby seat deck replaces the guess once the lobby id is known');
 
+// My decisions: outgoing GAME_ACTION frames recorded with the prompt they answered and the board.
+{
+  const entry = store.get(M);
+  entry.rt.state = { ...entry.rt.state, turnNumber: '3', phase: 'MAIN1', activePlayerId: '0', priorityPlayerId: '0',
+    players: entry.rt.state.players.map((p, i) => (i === 0 ? { ...p, hand: [mine(29, 'Lightning Bolt'), mine(11, 'Mountain')], battlefield: [mine(13, 'Mountain')] }
+      : { ...p, hand: hidden(5), handSize: 5, battlefield: [OPP_MOUNTAIN, OPP_GUIDE] })),
+    pendingAction: { type: 'PRIORITY', message: 'Choose a spell or ability to play, or pass priority', cardOptions: [{ id: 29, name: 'Lightning Bolt', zone: 'Hand' }, { id: 11, name: 'Mountain', zone: 'Hand' }], min: 0, max: 0 } };
+  const act = (payload) => T.onAction(store, { matchId: M, actionId: 'a', promptVersion: 9, ...payload }, clock);
+  assert.equal(act({ type: 'SET_PHASE_STOPS', phaseStopsMyTurn: [] }), null, 'settings are not decisions');
+  assert.ok(act({ type: 'PLAY_CARD', cardId: 29, abilityIndex: undefined, autoPassAfter: true }), 'a cast is recorded');
+  assert.ok(act({ type: 'PASS_PRIORITY' }), 'passing with a playable option is a decision');
+  entry.rt.state.pendingAction = { type: 'PRIORITY', message: 'x', cardOptions: [] };
+  assert.equal(act({ type: 'PASS_PRIORITY' }), null, 'passing with nothing to do is not');
+  entry.rt.state.pendingAction = { type: 'DECLARE_BLOCKERS', message: 'Declare blockers', cardOptions: [{ id: 65, name: 'Goblin Guide', zone: 'Battlefield' }] };
+  act({ type: 'DECLARE_BLOCKERS', blockers: { 65: [13] } });
+  entry.rt.state.pendingAction = { type: 'CHOOSE_TARGETS', message: 'Select any target', cardOptions: [{ id: -1, name: ME, zone: 'Player' }, { id: -2, name: AI, zone: 'Player' }, { id: 65, name: 'Goblin Guide', zone: 'Battlefield' }] };
+  act({ type: 'CHOOSE_TARGETS', targets: [-2] });
+  const ds = entry.dec[2];
+  assert.equal(ds.length, 4);
+  assert.deepEqual(ds[0].answer, { type: 'PLAY_CARD', cardId: 'Lightning Bolt', abilityIndex: undefined }, 'card ids become names, transport fields are dropped');
+  assert.deepEqual(ds[0].prompt.options, ['Lightning Bolt', 'Mountain']);
+  assert.deepEqual([ds[0].turn, ds[0].phase, ds[0].active], [3, 'MAIN1', 0]);
+  assert.ok(ds[0].board.players[0].hand.includes('Lightning Bolt') && ds[0].board.players[1].hand === undefined, 'my hand is kept, the opponent\'s is a count');
+  assert.equal(ds[0].board.players[1].handSize, 5);
+  assert.deepEqual(ds[0].board.players[1].battlefield.map((c) => c.name), ['Mountain', 'Goblin Guide']);
+  assert.deepEqual(ds[2].answer, { type: 'DECLARE_BLOCKERS', blockers: { 'Goblin Guide': ['Mountain'] } }, 'id-keyed maps are resolved too');
+  assert.deepEqual(ds[3].answer, { type: 'CHOOSE_TARGETS', targets: [AI] }, 'player targets come from the prompt options');
+}
+
 // Persisted records must survive JSON (chrome.storage) and a page reload mid-match.
 const reloaded = new Map([[M, { rec: JSON.parse(JSON.stringify(rec)), rt: {} }]]);
 T.handle(reloaded, attach(state(48, { n: 2, turn: 3, wins: [0, 2], status: 'COMPLETE', winnerId: '1', matchOver: true })).payload.frames[0], ctx, clock);

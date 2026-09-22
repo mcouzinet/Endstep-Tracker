@@ -80,6 +80,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     let guess = null;
     for (let i = 0; i < 90 && !guess; i++) { await sleep(1000); guess = await dash.evaluate(() => { const t = document.querySelector('.match[data-id="qa-modern"] .tag.guess'); return t && { name: t.textContent, title: t.title }; }); }
     console.log('recognized:', JSON.stringify(guess));
+    console.log('decisions recorded:', JSON.stringify(await dash.evaluate(async () => { const d = (await chrome.storage.local.get('dec:' + location.hash.slice(1))); const all = await chrome.storage.local.get(null); const k = Object.keys(all).find((x) => x.startsWith('dec:') && !x.includes('qa-modern')); const v = k && all[k]; return k && { key: k, games: Object.keys(v), n: Object.values(v).reduce((s, a) => s + a.length, 0), sample: Object.values(v)[0] && Object.values(v)[0].slice(0, 3).map((x) => `T${x.turn} ${x.phase} ${x.prompt && x.prompt.type} -> ${x.answer.type} ${x.answer.cardId || x.answer.keepHand || ''}`) }; })));
     console.log('meta cache:', JSON.stringify(await dash.evaluate(async () => { const m = (await chrome.storage.local.get('meta')).meta; return m && { formats: m.formats, loaded: Object.fromEntries(Object.entries(m.byFormat).map(([k, v]) => [k, v.decks.length])) }; })));
     const data = await dash.evaluate(() => chrome.storage.local.get(null));
     const rec = data['match:' + matchId];

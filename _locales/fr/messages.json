@@ -478,5 +478,53 @@
   },
   "guessed_marker": {
     "message": "reconnu"
+  },
+  "decisions_title": {
+    "message": "Mes décisions ({n})"
+  },
+  "act_play": {
+    "message": "joue"
+  },
+  "act_pass": {
+    "message": "passe"
+  },
+  "act_keep": {
+    "message": "garde la main"
+  },
+  "act_mulligan": {
+    "message": "mulligan"
+  },
+  "act_attack": {
+    "message": "attaque avec"
+  },
+  "act_block": {
+    "message": "bloque"
+  },
+  "act_target": {
+    "message": "cible"
+  },
+  "act_choose": {
+    "message": "choisit"
+  },
+  "act_mode": {
+    "message": "mode"
+  },
+  "act_ability": {
+    "message": "capacité"
+  },
+  "act_number": {
+    "message": "nombre"
+  },
+  "act_yes": {
+    "message": "oui"
+  },
+  "act_no": {
+    "message": "non"
+  },
+  "act_decline": {
+    "message": "refuse"
+  },
+  "act_cancel": {
+    "message": "annule"
   }
 }

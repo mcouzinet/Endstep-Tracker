@@ -46,8 +46,25 @@ const matches = [
 ];
 // m1 and m2 are left untagged so the metagame recognition has something to show.
 const notes = { 'm1': { notes: 'Garder Skullcrack pour le G3.' }, 'm5': { archetype: 'Mono-Green Stompy' }, 'm6': { archetype: 'Temur Nadu' } };
+// Recorded decisions for m1 game 1 (shape produced by tracker.onAction).
+const board = (myLife, oppLife, myHand, myBf, oppBf, turn, phase, active) => ({ turnNumber: turn, phase, activePlayerId: active, priorityPlayerId: 0,
+  players: [{ life: myLife, hand: myHand, handSize: myHand.length, librarySize: 50, battlefield: myBf, graveyard: [], exile: [] },
+    { life: oppLife, handSize: 5, librarySize: 49, battlefield: oppBf, graveyard: ['Thoughtseize'], exile: [] }], stack: [] });
+const land = (name, tapped = false) => ({ name, power: 0, toughness: 0, tapped, types: ['Land'], hasSummoningSickness: false });
+const creature = (name, p, t, sick = false) => ({ name, power: p, toughness: t, tapped: false, types: ['Creature'], hasSummoningSickness: sick });
+const decisions = { m1: { 1: [
+  { at: now - 70 * 60e3 + 30e3, turn: 1, phase: 'MAIN1', active: 0, prompt: { type: 'PRIORITY', message: 'Choose a spell or ability to play, or pass priority', options: ['Mountain', 'Goblin Guide', 'Lightning Bolt'] },
+    answer: { type: 'PLAY_CARD', cardId: 'Mountain' }, board: board(20, 20, ['Mountain', 'Goblin Guide', 'Lightning Bolt', 'Lava Spike', 'Mountain', 'Skullcrack', 'Rift Bolt'], [], [], 1, 'MAIN1', 0) },
+  { at: now - 70 * 60e3 + 45e3, turn: 1, phase: 'MAIN1', active: 0, prompt: { type: 'PRIORITY', message: 'Choose a spell or ability to play, or pass priority', options: ['Goblin Guide', 'Lightning Bolt'] },
+    answer: { type: 'PLAY_CARD', cardId: 'Goblin Guide' }, board: board(20, 20, ['Goblin Guide', 'Lightning Bolt', 'Lava Spike', 'Mountain', 'Skullcrack', 'Rift Bolt'], [land('Mountain')], [], 1, 'MAIN1', 0) },
+  { at: now - 70 * 60e3 + 120e3, turn: 3, phase: 'DECLARE_ATTACKERS', active: 0, prompt: { type: 'DECLARE_ATTACKERS', message: 'Declare attackers', options: ['Goblin Guide'] },
+    answer: { type: 'DECLARE_ATTACKERS', attackers: ['Goblin Guide'] }, board: board(17, 18, ['Lightning Bolt', 'Skullcrack', 'Rift Bolt'], [land('Mountain', true), land('Mountain'), creature('Goblin Guide', 2, 2)], [land('Island'), land('Swamp'), creature('Snapcaster Mage', 2, 1)], 3, 'DECLARE_ATTACKERS', 0) },
+  { at: now - 70 * 60e3 + 140e3, turn: 3, phase: 'MAIN2', active: 0, prompt: { type: 'PRIORITY', message: 'Choose a spell or ability to play, or pass priority', options: ['Lightning Bolt', 'Rift Bolt'] },
+    answer: { type: 'PASS_PRIORITY' }, board: board(17, 18, ['Lightning Bolt', 'Skullcrack', 'Rift Bolt'], [land('Mountain', true), land('Mountain')], [land('Island'), land('Swamp'), creature('Snapcaster Mage', 2, 1)], 3, 'MAIN2', 0) },
+] } };
 const data = {};
 for (const m of matches) data['match:' + m.id] = m;
+for (const [id, d] of Object.entries(decisions)) data['dec:' + id] = d;
 for (const [id, n] of Object.entries(notes)) data['note:' + id] = n;
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');

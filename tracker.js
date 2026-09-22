@@ -11,6 +11,10 @@
   const UNSEQUENCED = 1e12; // CARD_REVEALED carries hash-like sequence numbers
   const NO_DECK = /draft|sealed|momir|fish/i; // formats where no saved deck of mine is played
   const RECENT_DECK_MS = 6 * 3600e3; // a deck picked longer ago than this is not assumed to be this match's
+  // Outgoing actions that are settings or mana bookkeeping, not decisions worth reviewing.
+  const NOT_DECISIONS = new Set(['SET_PHASE_STOPS', 'SET_AUTO_YIELDS', 'TAP_MANA', 'AUTO_PAY', 'USE_FLOATING_MANA', 'UNDO', 'CHEAT', 'CONCEDE_MATCH']);
+  const ID_FIELDS = new Set(['cardId', 'targets', 'orderedCards', 'attackers', 'blockers']);
+  const ACTION_META = new Set(['type', 'matchId', 'actionId', 'promptVersion', 'autoPassAfter']);
 
   const seatOf = (v) => (v === undefined || v === null || v === '' ? null : Number(v));
   const current = (rec) => rec.games[rec.games.length - 1];
@@ -39,7 +43,7 @@
     if (!entry) {
       const isState = f.type === 'GAME_STATE' || f.type === 'GAME_OVER';
       if (!isState || typeof f.viewerSeat !== 'number' || f.viewerSeat < 0) return null; // spectating / not ours
-      entry = { rec: createMatch(id, now), rt: {} };
+      entry = { rec: createMatch(id, now), rt: {}, dec: {} };
       store.set(id, entry);
     }
     const { rec, rt } = entry;
@@ -286,6 +290,83 @@
     if (g && !g.endedAt) g.endedAt = now;
   }
 
+  // One of my actions (hook.js mirrors outgoing GAME_ACTION frames), recorded with the prompt it answered
+  // and the board at that moment: the raw material for the coach. Stored per game in entry.dec[gameNumber].
+  function onAction(store, a, now) {
+    const entry = a && store.get(a.matchId);
+    if (!entry || NOT_DECISIONS.has(a.type)) return null;
+    const { rec, rt } = entry;
+    const st = rt.state;
+    if (!st || rec.mySeat === null) return null;
+    const pa = st.pendingAction || null;
+    const options = (pa && pa.cardOptions) || [];
+    if (a.type === 'PASS_PRIORITY' && !options.length) return null; // nothing else was possible
+    const names = cardNames(st, options);
+    const answer = { type: a.type };
+    for (const [k, v] of Object.entries(a)) {
+      if (!ACTION_META.has(k)) answer[k] = ID_FIELDS.has(k) ? resolve(v, names) : v;
+    }
+    const n = rt.gameNumber || 1;
+    entry.dec = entry.dec || {};
+    (entry.dec[n] = entry.dec[n] || []).push({
+      at: now,
+      turn: Number(st.turnNumber) || 0,
+      phase: st.phase,
+      active: seatOf(st.activePlayerId),
+      prompt: pa && { type: pa.type, message: pa.message, options: options.map((o) => o.name).concat(pa.stringOptions || []), min: pa.min, max: pa.max },
+      answer,
+      board: snapshot(st, rec.mySeat),
+    });
+    return entry;
+  }
+
+  function cardNames(st, options) {
+    const m = new Map();
+    for (const p of st.players) for (const z of ZONES) for (const c of p[z] || []) if (c && c.name) m.set(c.id, c.name);
+    for (const s of st.stack || []) if (s && s.sourceCard) m.set(s.sourceCard.id, s.sourceCard.name);
+    for (const o of options) m.set(o.id, o.name); // prompt options win (targets include players, with negative ids)
+    return m;
+  }
+
+  // Card ids -> names in any action shape: a single id, id arrays, or id-keyed maps (blockers).
+  function resolve(v, names) {
+    const name = (x) => (names.has(Number(x)) ? names.get(Number(x)) : x);
+    if (Array.isArray(v)) return v.map((x) => resolve(x, names));
+    if (v && typeof v === 'object') {
+      const out = {};
+      for (const [k, x] of Object.entries(v)) out[name(k)] = resolve(x, names);
+      return out;
+    }
+    return typeof v === 'number' || typeof v === 'string' ? name(v) : v;
+  }
+
+  // Public board plus my hand, in the shape coach.js reads (same field names as GAME_STATE where it matters).
+  function snapshot(st, mySeat) {
+    const card = (c) => {
+      const o = { name: c.name, power: c.power, toughness: c.toughness, tapped: !!c.tapped, types: c.types || [], hasSummoningSickness: !!c.hasSummoningSickness };
+      if (c.isToken) o.isToken = true;
+      if (c.counters && Object.keys(c.counters).length) o.counters = c.counters;
+      return o;
+    };
+    return {
+      turnNumber: Number(st.turnNumber) || 0,
+      phase: st.phase,
+      activePlayerId: seatOf(st.activePlayerId),
+      priorityPlayerId: seatOf(st.priorityPlayerId),
+      players: st.players.map((p, i) => ({
+        life: p.life,
+        hand: i === mySeat ? (p.hand || []).map((c) => c.name) : undefined,
+        handSize: p.handSize !== undefined ? p.handSize : (p.hand || []).length,
+        librarySize: p.librarySize,
+        battlefield: (p.battlefield || []).map(card),
+        graveyard: (p.graveyard || []).map((c) => c.name),
+        exile: (p.exile || []).map((c) => c.name),
+        manaPool: p.manaPool && Object.keys(p.manaPool).length ? p.manaPool : undefined,
+      })),
+      stack: (st.stack || []).map((s) => (s && s.sourceCard && s.sourceCard.name) || null),
+    };
+  }
+
   // name -> most copies seen in a single game (a lower bound of the real decklist).
   function seenCards(rec, seat) {
     const out = {};
@@ -295,7 +376,7 @@
     return out;
   }
 
-  const Tracker = { frames, matchIdOf, handle, applyMeta, applyDelta, seenCards };
+  const Tracker = { frames, matchIdOf, handle, onAction, applyMeta, applyDelta, seenCards };
   if (typeof module === 'object' && module.exports) module.exports = Tracker;
   else root.EndstepTracker = Tracker;
 })(typeof self !== 'undefined' ? self : this);
