@@ -93,14 +93,14 @@ permet.
 
 ## Livrables et critères de fin
 
-- [ ] Phase 1 : `bot/CoachEvaluator.java` reproduit `coach.js` (37 features + MLP) sur un `Game` Forge, parité
+- [x] Phase 1 : `bot/CoachEvaluator.java` reproduit `coach.js` (37 features + MLP) sur un `Game` Forge, parité
       vérifiée à 1e-6 sur des états dumpés, test « pas de triche » vert.
-- [ ] Phase 2 : `bot/CoachController.java` + `bot/BotMatch.java` : parties bot contre Forge, dump au même format que
+- [x] Phase 2 : `bot/CoachController.java` + `bot/BotMatch.java` : parties bot contre Forge, dump au même format que
       SimDump (+ `casts`, + par décision : options évaluées et scores), ≥ 20 parties sans exception.
-- [ ] Phase 3 : évaluation ≥ 300 parties dans le miroir + 3 archétypes, sièges alternés ; taux de victoire, cartes
+- [x] Phase 3 : évaluation ≥ 300 parties dans le miroir + 3 archétypes, sièges alternés ; taux de victoire, cartes
       lancées, débit, dans PROGRESS-BOT.md. Critère : ≥ 60 % dans le miroir.
-- [ ] Phase 4 (bonus) : combat évalué par simulation et/ou une itération d'auto-jeu → nouveau modèle → re-mesure.
-- [ ] Phase 5 : rapport, limites, prochaines étapes, `STATUT FINAL`.
+- [x] Phase 4 (bonus) : combat évalué par simulation et/ou une itération d'auto-jeu → nouveau modèle → re-mesure.
+- [x] Phase 5 : rapport, limites, prochaines étapes, `STATUT FINAL`.
 
 ## Phase 0 — Préparation (15 min)
 
