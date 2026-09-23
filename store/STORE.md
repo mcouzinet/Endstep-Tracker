@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboard. Build the zip with `./release.sh` (bump `version` in `manifest.json` first: the store refuses a version it already has).
+Everything to paste into the developer dashboard. The store build has no Coach: `release.sh` leaves out `coach.js` and `coach-model.json`. Build the zip with `./release.sh` (bump `version` in `manifest.json` first: the store refuses a version it already has).
 
 ## Listing
 
@@ -23,7 +23,6 @@ While you play, the extension icon shows a REC badge. Click it to open the dashb
 • Stats: win rates on the play and on the draw, with and without mulligan, by your deck and by opponent archetype. Click a row to filter.
 • Filters and search: opponent, archetype, card seen, note, format, deck, period, result.
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
-• Coach (beta): reviews your in-game decisions and flags the ones that cost the most win probability.
 
 Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no server, account, analytics or ads. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
 
@@ -41,7 +40,6 @@ Pendant une partie, l'icône affiche un badge REC. Un clic ouvre le tableau de b
 • Statistiques : au play et à la draw, avec ou sans mulligan, par deck joué et par archétype adverse. Un clic sur une ligne filtre la liste.
 • Filtres et recherche : adversaire, archétype, carte vue, note, format, deck, période, résultat.
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
-• Coach (bêta) : relit tes décisions en jeu et signale celles qui ont le plus coûté en probabilité de victoire.
 
 Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni serveur, ni compte, ni analytique, ni publicité. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
 
@@ -58,9 +56,9 @@ Non affilié à endstep.cc ni à Wizards of the Coast.
 - Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record. Nothing is sent.
 - Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only.
 
-**Remote code**: No. All code is in the package; `coach-model.json` is data (model weights), not code.
+**Remote code**: No. All code is in the package.
 
-**Data usage** (check): *Website content* (game state shown by endstep.cc), *User activity* (the user's in-game choices, for the Coach feature). Nothing else. All of it stays on the device.
+**Data usage** (check): *Website content* (game state shown by endstep.cc), *User activity* (the user's in-game choices, listed under "My decisions" in a game's detail). Nothing else. All of it stays on the device.
 
 **Certifications** (all true): not sold to third parties; not used for purposes unrelated to the single purpose; not used to determine creditworthiness or for lending.
 
@@ -71,7 +69,7 @@ Non affilié à endstep.cc ni à Wizards of the Coast.
 Screenshots in this folder, 1280×800 PNG without alpha, made from the demo data of `test/harness/shots.js` (no real player):
 
 1. `1-dashboard-en.png` — dashboard overview, English
-2. `2-match-detail.png` — expanded match: opponent cards seen, recognized archetype, notes, per-game detail and Coach line
+2. `2-match-detail.png` — expanded match: opponent cards seen, recognized archetype, notes, per-game detail
 3. `3-dashboard-fr.png` — dashboard overview, French
 
 Regenerate after a UI change: `node test/harness/gen-demo.js && node store/shots.js`.

@@ -63,4 +63,4 @@ Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et
 
 ## Publication (Chrome Web Store)
 
-`./release.sh` construit `dist/endstep-tracker-<version>.zip` avec les seuls fichiers d'exécution (ni tests, ni `decks/`). Les textes de la fiche, les justifications de permissions et les captures à téléverser sont dans `store/` ; la politique de confidentialité à déclarer est [`PRIVACY.md`](PRIVACY.md). Le store refuse un zip dont la version existe déjà : incrémenter `version` dans `manifest.json` avant chaque envoi.
+`./release.sh` construit `dist/endstep-tracker-<version>.zip` avec les seuls fichiers d'exécution (ni tests, ni `decks/`). Les textes de la fiche, les justifications de permissions et les captures à téléverser sont dans `store/` ; la politique de confidentialité à déclarer est [`PRIVACY.md`](PRIVACY.md). La version store ne contient pas le Coach : `release.sh` écarte `coach.js` et `coach-model.json` et retire leur balise du dashboard, qui masque alors le bloc Coach. Le store refuse un zip dont la version existe déjà : incrémenter `version` dans `manifest.json` avant chaque envoi.

@@ -7,6 +7,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] });
   const open = async (lang) => {
     const p = await b.newPage();
+    // Same as the store build: no coach.js, no model (release.sh leaves them out); page errors would mean the dashboard needs them.
+    await p.setRequestInterception(true);
+    p.on('request', (r) => (/coach(-model\.json|\.js)$/.test(r.url()) ? r.abort() : r.continue()));
+    p.on('pageerror', (e) => { console.error('page error:', e.message); process.exitCode = 1; });
     await p.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
     await p.goto(`file://${H}/harness-demo.html`);
     await p.evaluate(() => localStorage.clear());

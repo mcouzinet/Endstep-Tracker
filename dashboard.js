@@ -237,6 +237,7 @@ function refresh() {
 // --- coach: win probability before/after each recorded decision (see coach.js) ---
 let coachModel = null; // coach-model.json when present and valid, else the heuristic
 async function initCoach() {
+  if (!Coach) return; // the store build ships without coach.js (see release.sh)
   try {
     const m = await (await fetch('coach-model.json')).json();
     if (m && Array.isArray(m.features) && m.features.length === Coach.FEATURES.length && m.features.every((f, i) => f === Coach.FEATURES[i])) coachModel = m;
@@ -261,6 +262,7 @@ function coachRows(m, g) {
 }
 
 function coachBlock(m, g) {
+  if (!Coach) return '';
   const rows = coachRows(m, g);
   if (!rows.length) return '';
   const pct = (v) => (v === null ? '—' : `${Math.round(v * 100)} %`);
