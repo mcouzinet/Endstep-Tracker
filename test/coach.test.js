@@ -38,6 +38,23 @@ assert.ok(Coach.heuristic(x) > 0.6 && Coach.heuristic(y) < 0.4);
 assert.ok(Math.abs(Coach.heuristic(x) + Coach.heuristic(y) - 1) < 1e-9, 'symmetric');
 assert.equal(Coach.predict(x, null), Coach.heuristic(x), 'no model -> heuristic');
 
+// Extended features: zone sums of card vectors; the opponent's hand is never encoded.
+{
+  const cards = { dim: 2, cards: { 'Lightning Bolt': [1, 0], 'Goblin Guide': [0, 1], 'Snapcaster Mage': [0.5, 0.5], 'Lava Spike': [1, 1] } };
+  const x2 = Coach.features2(board, 0, 0, cards);
+  assert.equal(x2.length, Coach.FEATURES.length + 6 * 2);
+  assert.equal(Coach.FEATURES2.length, Coach.FEATURES.length + 6 * 32);
+  const z = Object.fromEntries(['my_hand', 'my_battlefield', 'opp_battlefield', 'my_graveyard', 'opp_graveyard', 'stack'].map((k, i) => [k, x2.slice(Coach.FEATURES.length + 2 * i, Coach.FEATURES.length + 2 * i + 2)]));
+  assert.deepEqual(z.my_hand, [1, 0], 'Bolt in hand, Skullcrack unknown');
+  assert.deepEqual(z.my_battlefield, [0, 1], 'Goblin Guide; lands and Eidolon unknown');
+  assert.deepEqual(z.opp_battlefield, [0.5, 0.5]);
+  assert.deepEqual(z.my_graveyard, [1, 1]);
+  assert.deepEqual(z.opp_graveyard, [0, 0]);
+  assert.deepEqual(z.stack, [0, 0]);
+  assert.deepEqual(Coach.featuresFor({ features: Coach.FEATURES }, board, 0, 0, cards), x, 'a 37-feature model gets the counts');
+  assert.equal(Coach.featuresFor({ features: Coach.FEATURES2 }, board, 0, 0, cards).length, Coach.FEATURES.length + 6 * cards.dim, 'the table sets the dimension');
+}
+
 // Ranked-option labels from the lab become readable words.
 assert.equal(Coach.describeOption('Lightning Bolt (151) -> <$> deals 3 damage to any target. -> Opponent'), 'Lightning Bolt → Opponent');
 assert.equal(Coach.describeOption('Goblin Guide (15) -> <$> - Creature 2 / 2'), 'Goblin Guide');
@@ -51,11 +68,13 @@ const modelPath = path.join(__dirname, '..', 'coach-model.json');
 const parityPath = path.join(process.env.HOME, 'Developer', 'Endstep-coach', 'model', 'js-parity.json');
 if (fs.existsSync(modelPath) && fs.existsSync(parityPath)) {
   const model = JSON.parse(fs.readFileSync(modelPath, 'utf8'));
-  assert.deepEqual(model.features, Coach.FEATURES, 'model trained on the current feature list');
+  assert.ok([Coach.FEATURES, Coach.FEATURES2].some((f) => JSON.stringify(f) === JSON.stringify(model.features)), 'model trained on a current feature list');
   for (const { x: vec, p } of JSON.parse(fs.readFileSync(parityPath, 'utf8'))) {
     assert.ok(Math.abs(Coach.predict(vec, model) - p) < 1e-6, `parity: js ${Coach.predict(vec, model)} vs py ${p}`);
   }
-  const px = Coach.predict(x, model);
+  const cardsPath = path.join(__dirname, '..', 'coach-cards.json');
+  const cards = fs.existsSync(cardsPath) ? JSON.parse(fs.readFileSync(cardsPath, 'utf8')) : null;
+  const px = Coach.predict(Coach.featuresFor(model, board, 0, 0, cards), model);
   assert.ok(px > 0 && px < 1);
   console.log(`coach test: ok (model ${model.type}, ${model.games} games, parity checked)`);
 } else {

@@ -242,11 +242,18 @@ function refresh() {
 
 // --- coach: win probability before/after each recorded decision (see coach.js) ---
 let coachModel = null; // coach-model.json when present and valid, else the heuristic
+let coachCards = null; // coach-cards.json (card vectors) when the model uses the extended features
 async function initCoach() {
   if (!Coach) return; // the store build ships without coach.js (see release.sh)
   try {
     const m = await (await fetch('coach-model.json')).json();
-    if (m && Array.isArray(m.features) && m.features.length === Coach.FEATURES.length && m.features.every((f, i) => f === Coach.FEATURES[i])) coachModel = m;
+    const same = (list) => m && Array.isArray(m.features) && m.features.length === list.length && m.features.every((f, i) => f === list[i]);
+    if (same(Coach.FEATURES)) coachModel = m;
+    else if (same(Coach.FEATURES2)) {
+      coachCards = await (await fetch('coach-cards.json')).json();
+      if (coachCards && coachCards.cards && Coach.FEATURES.length + 6 * coachCards.dim === m.features.length) coachModel = m;
+      else coachCards = null;
+    }
   } catch { /* no model shipped: heuristic */ }
 }
 const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
@@ -258,7 +265,7 @@ function coachRows(m, g) {
   const ds = (decisions[m.id] || {})[g.n] || [];
   if (!ds.length || m.mySeat === null) return [];
   const firstSeat = g.firstSeat;
-  const p = (board) => (board && board.players ? Coach.predict(Coach.features(board, m.mySeat, firstSeat), coachModel) : null);
+  const p = (board) => (board && board.players ? Coach.predict(Coach.featuresFor(coachModel, board, m.mySeat, firstSeat, coachCards), coachModel) : null);
   return ds.map((d, i) => {
     const before = p(d.board);
     const next = ds[i + 1];

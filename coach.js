@@ -73,6 +73,32 @@
     return FEATURES.map((k) => f[k]);
   }
 
+  // Extended features: the 37 counts above plus, for each visible zone, the sum of the card vectors of its cards
+  // (coach-cards.json: { dim, cards: { name: [floats] } }, built offline from the cards' Oracle text). The opponent's
+  // hand is never encoded. An unknown card (token, missing) is a zero vector.
+  const ZONES2 = ['my_hand', 'my_battlefield', 'opp_battlefield', 'my_graveyard', 'opp_graveyard', 'stack'];
+  const DIM = 32;
+  const FEATURES2 = FEATURES.concat(ZONES2.flatMap((z) => Array.from({ length: DIM }, (_, i) => `${z}_e${i}`)));
+  const cardNames = (list) => (list || []).map((c) => (c && typeof c === 'object' ? c.name : c)).filter(Boolean);
+  function zoneVector(names, table, dim) {
+    const v = new Array(dim).fill(0);
+    for (const n of names) { const e = table && table[n]; if (e) for (let i = 0; i < dim; i++) v[i] += e[i] || 0; }
+    return v;
+  }
+  function features2(state, mySeat, firstSeat, cards) {
+    const base = features(state, mySeat, firstSeat);
+    const players = (state && state.players) || [];
+    const me = players[mySeat] || {};
+    const opp = players.find((p, i) => i !== mySeat && p) || {};
+    const dim = (cards && cards.dim) || DIM;
+    const table = cards && cards.cards ? cards.cards : cards;
+    const zones = [cardNames(me.hand), cardNames(me.battlefield), cardNames(opp.battlefield), cardNames(me.graveyard), cardNames(opp.graveyard), cardNames(state && state.stack)];
+    return base.concat(...zones.map((z) => zoneVector(z, table, dim)));
+  }
+  // The feature list a model wants: the 37 counts, or the extended set.
+  const featuresFor = (model, state, mySeat, firstSeat, cards) => (model && Array.isArray(model.features) && model.features.length > FEATURES.length
+    ? features2(state, mySeat, firstSeat, cards) : features(state, mySeat, firstSeat));
+
   const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 
   // A hand-made evaluation, used until a trained model exists (or when its file is missing/invalid).
@@ -127,7 +153,7 @@
     return name;
   }
 
-  const Coach = { FEATURES, features, heuristic, predict, describeOption };
+  const Coach = { FEATURES, FEATURES2, features, features2, featuresFor, heuristic, predict, describeOption };
   if (typeof module === 'object' && module.exports) module.exports = Coach;
   else root.EndstepCoach = Coach;
 })(typeof self !== 'undefined' ? self : this);
