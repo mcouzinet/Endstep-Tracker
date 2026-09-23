@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Endstep Tracker",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "__MSG_ext_description__",
   "default_locale": "en",
   "permissions": [
