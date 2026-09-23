@@ -104,6 +104,22 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(600);
     console.log('coach block:', JSON.stringify(await dash.evaluate(() => { const c = document.querySelector('.coach'); return c && { summary: c.querySelector('summary').textContent.trim(), rows: c.querySelectorAll('tbody tr').length, note: c.querySelector('.coach-note').textContent.slice(0, 60) }; })));
     await sleep(500);
+    // Local coach server (Endstep-coach/bot/coach-server.sh start): analyse the match in place when it answers.
+    const served = await dash.evaluate(() => !!coachServer);
+    if (served) {
+      await dash.evaluate(() => { const b = document.querySelector('.match.open [data-analyse], .match [data-analyse]'); if (b) b.click(); });
+      for (let i = 0; i < 120 && !(await dash.evaluate((id) => !!window.__ana_done || false, matchId)); i++) {
+        await sleep(500);
+        const has = await dash.evaluate(async (id) => !!(await chrome.storage.local.get('ana:' + id))['ana:' + id], matchId);
+        if (has) break;
+      }
+      for (let i = 0; i < 20 && (await dash.evaluate(() => document.querySelectorAll('.coach thead th').length)) < 7; i++) await sleep(500); // storage change -> re-render
+      console.log('server analysis:', JSON.stringify(await dash.evaluate(async (id) => {
+        const a = (await chrome.storage.local.get('ana:' + id))['ana:' + id];
+        const ths = [...document.querySelectorAll('.coach thead th')].map((th) => th.textContent.trim());
+        return a && { model: a.model, rows: Object.values(a.games).reduce((n, g) => n + g.length, 0), skipped: Object.values(a.games).flat().filter((r) => r.skipped).length, columns: ths };
+      }, matchId)));
+    } else console.log('server analysis: no local coach server');
     await dash.screenshot({ path: OUT + '/e2e-dashboard-detail.png', fullPage: true });
     // The Data menu's JSON export, as a file: input for Endstep-coach/bot/coach-replay.js (best play per decision).
     const exp = await dash.evaluate(async () => {

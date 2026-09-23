@@ -604,5 +604,20 @@
   },
   "coach_analysis_note": {
     "message": "analyse du {date}, modèle entraîné sur {model} parties, rejouée dans Forge avec des mains adverses tirées au sort"
+  },
+  "coach_analyse": {
+    "message": "Analyser avec le coach local"
+  },
+  "coach_analysing": {
+    "message": "Analyse en cours…"
+  },
+  "coach_analysed_one": {
+    "message": "Analyse reçue : {n} décision"
+  },
+  "coach_analysed_other": {
+    "message": "Analyse reçue : {n} décisions"
+  },
+  "coach_analyse_failed": {
+    "message": "Analyse impossible : {error}"
   }
 }

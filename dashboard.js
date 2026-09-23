@@ -256,6 +256,49 @@ async function initCoach() {
     }
   } catch { /* no model shipped: heuristic */ }
 }
+// Local coach server (Endstep-coach/bot/coach-server.sh): when it answers, a match's decisions can be analysed in place.
+const COACH_SERVER = 'http://127.0.0.1:8765';
+let coachServer = null; // /health answer when the server is up
+async function initCoachServer() {
+  if (!Coach) return;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 1500);
+  try {
+    const r = await fetch(`${COACH_SERVER}/health`, { signal: ctl.signal });
+    const h = r.ok ? await r.json() : null;
+    if (h && h.ok) coachServer = h;
+  } catch { /* no server: nothing changes */ } finally { clearTimeout(timer); }
+}
+const analysing = new Set(); // match ids being analysed
+async function analyseMatch(m) {
+  const decs = decisions[m.id];
+  if (!decs || analysing.has(m.id)) return;
+  analysing.add(m.id);
+  render();
+  try {
+    const oppSeen = {};
+    for (const p of opps(m)) for (const [c, n] of Object.entries(T.seenCards(m, p.seat))) oppSeen[c] = Math.max(oppSeen[c] || 0, n);
+    const md = myDeck(m);
+    const body = {
+      matchId: m.id, format: String(m.formatId || m.format || '').toLowerCase(), mySeat: m.mySeat,
+      myDeck: md && md.cards ? md.cards.map((c) => ({ name: c.name, quantity: c.quantity || 1 })) : null,
+      oppArchetype: archetype(m) || (guessFor(m) || {}).name || null, oppColours: colorsOf(m).split(''), oppSeen, games: decs,
+      k: coachServer && coachServer.depth ? 3 : 1, depth: coachServer && coachServer.depth ? 1 : 0,
+    };
+    const r = await fetch(`${COACH_SERVER}/analyse`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const a = await r.json().catch(() => null);
+    if (!r.ok || !a || a.error) throw new Error((a && a.error) || `HTTP ${r.status}`);
+    await chrome.storage.local.set({ ['ana:' + m.id]: { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: obj(a.games) } });
+    const n = a.summary ? a.summary.replayed : 0;
+    toast(tn('coach_analysed', n));
+  } catch (e) {
+    toast(t('coach_analyse_failed', { error: e.message || String(e) }), true);
+  } finally {
+    analysing.delete(m.id);
+    render();
+  }
+}
+
 const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
 const BLUNDER = -0.30;
 
@@ -570,6 +613,7 @@ function detail(m) {
         ${guessLine(m)}
         <label class="field">${esc(t('notes'))}<textarea data-note="notes" placeholder="${esc(t('notes_placeholder'))}">${esc(n.notes || '')}</textarea></label>
         ${deckPicker}
+        ${coachServer && decisions[m.id] && Object.values(decisions[m.id]).some((l) => Array.isArray(l) && l.length) ? `<button class="btn-text" data-analyse${analysing.has(m.id) ? ' disabled' : ''}><svg class="i"><use href="#i-spark"/></svg>${esc(analysing.has(m.id) ? t('coach_analysing') : t('coach_analyse'))}</button>` : ''}
         ${mine}
         <button class="btn-text" data-delete><svg class="i"><use href="#i-trash"/></svg>${esc(t('delete_match'))}</button>
       </div>
@@ -819,6 +863,12 @@ $('#matches').addEventListener('click', (e) => {
     chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
     return;
   }
+  if (e.target.closest('[data-analyse]')) {
+    const id = e.target.closest('.match').dataset.id;
+    const m = matches.find((x) => x.id === id);
+    if (m) analyseMatch(m);
+    return;
+  }
   if (e.target.closest('[data-delete]')) {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
@@ -933,5 +983,6 @@ setInterval(renderHeader, 60e3); // keep "il y a…" and the live pill fresh
   loadPrefs();
   await initMeta();
   await initCoach();
+  initCoachServer().then(() => { if (coachServer) render(); }); // not awaited: a missing server must not delay the dashboard
   await load();
 })();

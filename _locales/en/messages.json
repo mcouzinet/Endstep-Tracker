@@ -604,5 +604,20 @@
   },
   "coach_analysis_note": {
     "message": "analysis of {date}, model trained on {model} games, replayed in Forge with random opponent hands"
+  },
+  "coach_analyse": {
+    "message": "Analyse with the local coach"
+  },
+  "coach_analysing": {
+    "message": "Analysing…"
+  },
+  "coach_analysed_one": {
+    "message": "Analysis received: {n} decision"
+  },
+  "coach_analysed_other": {
+    "message": "Analysis received: {n} decisions"
+  },
+  "coach_analyse_failed": {
+    "message": "Analysis failed: {error}"
   }
 }
