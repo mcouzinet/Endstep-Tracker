@@ -32,7 +32,7 @@ Seules les informations publiques (visibles en jeu) sont enregistrées. Tout res
 
 ## Reconnaissance du deck adverse
 
-Le tableau de bord reconnaît le deck adverse à partir des cartes vues, grâce au métagame public d'endstep.cc (`/api/metagame/v1`) : pour chaque archétype, le site publie la liste des cartes et leur taux de présence. Le score est un classement bayésien naïf (part de métagame × taux de présence de chaque carte vue) ; en dessous de 60 % de certitude, ou avec moins de 2 cartes non-terrain, rien n'est proposé. Le nom reconnu s'affiche en pointillés dans la liste (le survol donne la certitude et les cartes décisives) et dans le détail, avec un bouton « Utiliser » pour le confirmer ; un archétype saisi à la main a toujours priorité. Les matchs d'un format suivi par le site (Modern, Pauper, Legacy, Premodern, Vintage…) sont comparés aux archétypes de ce format, les autres (casual, freeplay) à tous. Les données sont chargées au besoin (environ une requête par archétype), mises en cache 7 jours dans `chrome.storage.local` (clé `meta`) ; les archétypes trop rares, dont le site ne publie pas la liste, ne peuvent pas être reconnus.
+Le tableau de bord reconnaît le deck adverse à partir des cartes vues, grâce au métagame public d'endstep.cc (`/api/metagame/v1`) : pour chaque archétype, le site publie la liste des cartes et leur taux de présence. Le score est un classement bayésien naïf (part de métagame × taux de présence de chaque carte vue) ; en dessous de 60 % de certitude, ou avec moins de 2 cartes non-terrain, rien n'est proposé. Le nom reconnu s'affiche en pointillés dans la liste (le survol donne la certitude et les cartes décisives) et dans le détail, avec un bouton « Utiliser » pour le confirmer ; un archétype saisi à la main a toujours priorité. Les matchs d'un format suivi par le site (Modern, Pauper, Legacy, Premodern, Vintage, Duel Commander…) sont comparés aux archétypes de ce format, les autres (casual, freeplay) à tous. Les données sont chargées au besoin (environ une requête par archétype), mises en cache 7 jours dans `chrome.storage.local` (clé `meta`) ; les archétypes trop rares, dont le site ne publie pas la liste, ne peuvent pas être reconnus.
 
 ## Coach (bêta)
 
@@ -60,3 +60,7 @@ node test/replay.test.js && node test/meta.test.js && node test/coach.test.js &&
 ```
 
 Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS. Le harnais Puppeteer est dans `test/harness/`.
+
+## Publication (Chrome Web Store)
+
+`./release.sh` construit `dist/endstep-tracker-<version>.zip` avec les seuls fichiers d'exécution (ni tests, ni `decks/`). Les textes de la fiche, les justifications de permissions et les captures à téléverser sont dans `store/` ; la politique de confidentialité à déclarer est [`PRIVACY.md`](PRIVACY.md). Le store refuse un zip dont la version existe déjà : incrémenter `version` dans `manifest.json` avant chaque envoi.

@@ -5,3 +5,4 @@ test/harness/e2e-profile/
 test/harness/meta-stub.js
 test/harness/legend*.png
 .DS_Store
+dist/

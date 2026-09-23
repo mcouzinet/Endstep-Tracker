@@ -280,7 +280,7 @@ function coachBlock(m, g) {
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
 const META_TTL = 7 * 864e5;
-const NO_RECOGNITION = /draft|sealed|momir|fish|commander|brawl|oathbreaker/i;
+const NO_RECOGNITION = /draft|sealed|momir|fish|(?<!-)commander|brawl|oathbreaker/i; // "duel-commander" is tracked by the site
 const metaData = {}; // formatId -> { at, decks }
 let metaFormats = null; // formats that have metagame data
 let metaFormatsAt = 0;
