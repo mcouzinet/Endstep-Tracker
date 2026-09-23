@@ -44,8 +44,14 @@ const matches = [
   match('m6', { at: now - 15 * D, result: 'W', opp: 'Nadu_enjoyer', colors: 'UG', deck: 'Burn', ranked: true, formatId: 'Modern', score: [2, 1],
     games: [{ first: 0, win: 0, seen: { 'Nadu, Winged Wisdom': 1 } }, { first: 1, win: 1 }, { first: 0, win: 0, mull: [0, 1] }] }),
 ];
-// m1 and m2 are left untagged so the metagame recognition has something to show.
-const notes = { 'm1': { notes: 'Garder Skullcrack pour le G3.' }, 'm5': { archetype: 'Mono-Green Stompy' }, 'm6': { archetype: 'Temur Nadu' } };
+// m1 and m2 are left untagged so the metagame recognition has something to show. m3's deck is overridden by hand.
+const notes = { 'm1': { notes: 'Garder Skullcrack pour le G3.' }, 'm3': { deckId: 'deck-Esper Affinity' }, 'm5': { archetype: 'Mono-Green Stompy' }, 'm6': { archetype: 'Temur Nadu' } };
+// My decks as content.js stores them (key "decks"): what the "My deck" picker offers.
+const myDecks = {
+  'deck-Burn': { id: 'deck-Burn', name: 'Burn', format: 'Modern', formatId: 'Modern', cards: [{ name: 'Lightning Bolt', quantity: 4 }, { name: 'Goblin Guide', quantity: 4 }, { name: 'Mountain', quantity: 20 }] },
+  'deck-Mono-U Tempo': { id: 'deck-Mono-U Tempo', name: 'Mono-U Tempo', format: 'Pauper', formatId: 'Pauper' },
+  'deck-Esper Affinity': { id: 'deck-Esper Affinity', name: 'Esper Affinity', format: 'Pauper', formatId: 'Pauper', cards: [{ name: 'Thoughtcast', quantity: 4 }, { name: 'Myr Enforcer', quantity: 3 }, { name: 'Seat of the Synod', quantity: 4 }] },
+};
 // Recorded decisions for m1 game 1 (shape produced by tracker.onAction).
 const board = (myLife, oppLife, myHand, myBf, oppBf, turn, phase, active) => ({ turnNumber: turn, phase, activePlayerId: active, priorityPlayerId: 0,
   players: [{ life: myLife, hand: myHand, handSize: myHand.length, librarySize: 50, battlefield: myBf, graveyard: [], exile: [] },
@@ -66,6 +72,7 @@ const data = {};
 for (const m of matches) data['match:' + m.id] = m;
 for (const [id, d] of Object.entries(decisions)) data['dec:' + id] = d;
 for (const [id, n] of Object.entries(notes)) data['note:' + id] = n;
+data.decks = myDecks;
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');
 

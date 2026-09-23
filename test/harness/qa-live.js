@@ -42,6 +42,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await sleep(150);
   out.appliedAfterDeselect = await p.evaluate(() => document.querySelector('.match[data-id="m-live"] .game:nth-child(2) .facts-inline').textContent);
   await snap('before delete');
+  // 3b. "My deck" picker: the note override shows in the row; clearing it falls back to the tracker's deck; picking another applies
+  const deckCell = () => p.evaluate(() => document.querySelector('.match[data-id="m3"] .cell.deck').textContent);
+  out.deckOverride = await deckCell();
+  await p.evaluate(() => document.querySelector('.match[data-id="m3"] .match-row').click());
+  await sleep(300);
+  out.deckPickerValue = await p.evaluate(() => document.querySelector('.match[data-id="m3"] select[data-note="deckId"]').value);
+  await p.select('.match[data-id="m3"] select[data-note="deckId"]', '');
+  await sleep(150);
+  out.deckAfterClear = [await deckCell(), await p.evaluate(() => JSON.stringify(window.__DATA['note:m3']))];
+  await p.select('.match[data-id="m3"] select[data-note="deckId"]', 'deck-Burn');
+  await sleep(150);
+  out.deckAfterPick = [await deckCell(), await p.evaluate(() => !!document.querySelector('.match[data-id="m3"] details[data-key="deck:m3"]'))];
+  await p.evaluate(() => document.querySelector('.match[data-id="m-live"] .match-row').click()); // back to the live match for step 4
+  await sleep(300);
   // 4. deleting a match removes its row
   await p.evaluate(() => { window.confirm = () => true; document.querySelector('.match[data-id="m-live"] [data-delete]').click(); });
   await sleep(150);

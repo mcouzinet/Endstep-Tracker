@@ -177,6 +177,11 @@ assert.equal(lateRec.myDeck.id, 'deck-burn', 'the lobby seat deck replaces the g
   assert.deepEqual(ds[0].board.players[1].battlefield.map((c) => c.name), ['Mountain', 'Goblin Guide']);
   assert.deepEqual(ds[2].answer, { type: 'DECLARE_BLOCKERS', blockers: { 'Goblin Guide': ['Mountain'] } }, 'id-keyed maps are resolved too');
   assert.deepEqual(ds[3].answer, { type: 'CHOOSE_TARGETS', targets: [AI] }, 'player targets come from the prompt options');
+  // hook.js replays the same action (same timestamp) to a re-injected content.js after an extension reload.
+  assert.equal(act({ type: 'CHOOSE_TARGETS', targets: [-2] }), null, 'a replayed action is not recorded twice');
+  assert.equal(ds.length, 4);
+  assert.ok(T.onAction(store, { matchId: M, actionId: 'b', type: 'CHOOSE_TARGETS', targets: [-2] }, clock + 1), 'a later identical action is');
+  assert.equal(ds.length, 5);
 }
 
 // Persisted records must survive JSON (chrome.storage) and a page reload mid-match.

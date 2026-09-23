@@ -308,7 +308,9 @@
     }
     const n = rt.gameNumber || 1;
     entry.dec = entry.dec || {};
-    (entry.dec[n] = entry.dec[n] || []).push({
+    const list = (entry.dec[n] = entry.dec[n] || []);
+    if (list.some((d) => d.at === now && d.answer && d.answer.type === a.type)) return null; // replayed after an extension reload
+    list.push({
       at: now,
       turn: Number(st.turnNumber) || 0,
       phase: st.phase,

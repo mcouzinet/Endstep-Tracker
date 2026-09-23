@@ -18,10 +18,11 @@
     if (e.source !== window || !e.data || typeof e.data !== 'object' || !e.data[TAG]) return;
     const { data } = e.data;
     const kind = e.data[TAG];
-    chain = chain.then(() => onMessage(kind, data)).catch((err) => console.warn('[endstep-tracker]', err));
+    const at = typeof e.data.at === 'number' ? e.data.at : Date.now(); // hook.js time: the same for a frame and its replay
+    chain = chain.then(() => onMessage(kind, data, at)).catch((err) => console.warn('[endstep-tracker]', err));
   });
 
-  async function onMessage(kind, data) {
+  async function onMessage(kind, data, at) {
     if (kind === 'ws') {
       let msg;
       try { msg = JSON.parse(data); } catch { return; }
@@ -29,10 +30,10 @@
     } else if (kind === 'out') {
       let msg;
       try { msg = JSON.parse(data); } catch { return; }
-      const entry = msg.payload && !ignored.has(msg.payload.matchId) && T.onAction(store, msg.payload, Date.now());
+      const entry = msg.payload && !ignored.has(msg.payload.matchId) && T.onAction(store, msg.payload, at);
       if (entry) save(entry);
     } else if (kind === 'deck') {
-      ctx.lastDeck = { id: data, at: Date.now() };
+      ctx.lastDeck = { id: data, at };
       chrome.storage.local.set({ lastDeck: ctx.lastDeck });
     } else if (kind === 'decks') {
       for (const d of data) ctx.decks[d.id] = Object.assign(ctx.decks[d.id] || {}, d);
@@ -98,6 +99,9 @@
   window.addEventListener('pagehide', () => {
     for (const id of [...timers.keys()]) { clearTimeout(timers.get(id)); write(store.get(id)); }
   });
+
+  // Fresh page: nothing to get back. Re-injected after an extension reload: hook.js replays what this tab missed.
+  window.postMessage({ [TAG]: 'hello' }, location.origin);
 
   function setLive(on) {
     if (on === live) return;

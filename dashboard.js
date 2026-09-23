@@ -53,7 +53,8 @@ const PREFS = 'endstep-tracker.filters';
 
 const state = { q: '', format: '', deck: '', period: 'all', result: 'all', opp: null };
 let matches = [];
-let notes = {}; // matchId -> { archetype, notes } (kept apart so the live tracker never overwrites them)
+let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
+let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
 let pending = null; // storage changes held back while the user is editing or selecting inside a match
@@ -66,7 +67,14 @@ const archetype = (m) => (notes[m.id] && notes[m.id].archetype) || '';
 const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
 const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
 const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
-const deckName = (m) => (m.myDeck ? m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown'));
+// A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
+function myDeck(m) {
+  const id = notes[m.id] && notes[m.id].deckId;
+  if (!id) return m.myDeck;
+  const d = decks[id] || {};
+  return { id, name: d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
+}
+const deckName = (m) => { const d = myDeck(m); return d ? d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown'); };
 const tally = () => ({ W: 0, L: 0, D: 0 });
 const pct = (t) => (t.W + t.L ? `${Math.round((100 * t.W) / (t.W + t.L))} %` : '—');
 const minutes = (from, to) => (from && to ? t('minutes', { n: Math.max(1, Math.round((to - from) / 60000)) }) : '');
@@ -182,6 +190,7 @@ async function load() {
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
+    else if (k === 'decks') decks = obj(v);
   }
   refresh();
 }
@@ -204,7 +213,7 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
-    }
+    } else if (k === 'decks') decks = obj(c.newValue);
   }
   refresh();
 }
@@ -509,9 +518,18 @@ function detail(m) {
     `${esc(t('my_deck'))}${esc(t('colon'))}<b>${esc(deckName(m))}</b>`,
   ].filter(Boolean).join(' · ');
   const seen = opps(m).map((p) => `<section><h3>${esc(t('seen_at', { name: p.name }))} ${pips(m.colors[p.seat] || '')}</h3>${cardList(T.seenCards(m, p.seat))}</section>`).join('');
-  const mine = m.myDeck && m.myDeck.cards
-    ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_list', { deck: deckName(m) }))}</summary>${deckList(m.myDeck.cards)}</details>`
+  const md = myDeck(m);
+  const mine = md && md.cards
+    ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_list', { deck: deckName(m) }))}</summary>${deckList(md.cards)}</details>`
     : m.limitedDeck ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_limited_deck'))}</summary>${deckList(m.limitedDeck.deck)}</details>` : '';
+  // "My deck" picker: the tracker's own attribution stays the default; any deck seen on the site can replace it.
+  const auto = m.myDeck ? m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown');
+  const deckOptions = Object.entries(decks)
+    .map(([id, d]) => ({ id, label: (d.name || id) + (d.format || d.formatId ? ` · ${d.format || d.formatId}` : '') }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale))
+    .map((o) => `<option value="${esc(o.id)}"${o.id === n.deckId ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
+  const deckPicker = m.limitedDeck ? '' : `<label class="field">${esc(t('my_deck'))}<select data-note="deckId">
+        <option value="">${esc(t('deck_auto', { deck: auto }))}</option>${deckOptions}</select></label>`;
   return `<div class="detail" id="d-${esc(m.id)}">
     <p class="detail-meta">${meta}</p>
     <div class="detail-grid">
@@ -520,6 +538,7 @@ function detail(m) {
         <label class="field">${esc(t('opp_archetype'))}<input data-note="archetype" list="archetypes" value="${esc(n.archetype || '')}" placeholder="${esc(t('archetype_placeholder'))}"></label>
         ${guessLine(m)}
         <label class="field">${esc(t('notes'))}<textarea data-note="notes" placeholder="${esc(t('notes_placeholder'))}">${esc(n.notes || '')}</textarea></label>
+        ${deckPicker}
         ${mine}
         <button class="btn-text" data-delete><svg class="i"><use href="#i-trash"/></svg>${esc(t('delete_match'))}</button>
       </div>
@@ -764,8 +783,11 @@ $('#matches').addEventListener('change', (e) => {
   const field = e.target.dataset.note;
   if (!field) return;
   const id = e.target.closest('.match').dataset.id;
-  notes[id] = Object.assign({}, notes[id], { [field]: e.target.value.trim() });
-  chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t(field === 'archetype' ? 'archetype_saved' : 'notes_saved')));
+  const value = e.target.value.trim();
+  notes[id] = Object.assign({}, notes[id], { [field]: value });
+  if (!value) delete notes[id][field];
+  const saved = { archetype: 'archetype_saved', notes: 'notes_saved', deckId: 'deck_saved' }[field] || 'notes_saved';
+  chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t(saved)));
 });
 
 $('#split').addEventListener('click', (e) => {

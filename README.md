@@ -9,7 +9,7 @@ Extension Chrome (Manifest V3, sans dépendance) qui enregistre automatiquement 
 3. Recharger les onglets endstep.cc déjà ouverts. Pendant un match, l'icône affiche un badge **REC**.
 4. Clic sur l'icône → dashboard (historique, stats, exports).
 
-Après une modification du code : bouton ↻ de l'extension dans `chrome://extensions`, puis recharger endstep.cc.
+Après une modification du code : bouton ↻ de l'extension dans `chrome://extensions`. Les onglets endstep.cc ouverts sont rattachés automatiquement (`background.js` réinjecte le traqueur et `hook.js`, qui survit dans la page, lui rejoue ce qu'il a manqué depuis le dernier état complet de la partie).
 
 ## Ce qui est enregistré
 
@@ -51,12 +51,12 @@ L'interface existe en français et en anglais : elle suit la langue de Chrome, e
 - `content.js` persiste les fiches (et mes décisions sous `dec:<matchId>`) ; `dashboard.html` les affiche ; `meta.js` reconnaît le deck adverse ; `coach.js` évalue les décisions.
 - `icons/` : sources SVG des icônes (`icon.svg` pour 48/128 px, `icon-32.svg`, `icon-16.svg`) et leurs PNG.
 
-Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rechargement en plein match) ne sont pas rattrapés ; la liste adverse est un minimum (uniquement ce qui a été vu) ; un match supprimé du tableau de bord pendant qu'il se joue n'est plus suivi ; le deck attribué à un match est celui du siège de sa table, sinon le dernier deck choisi dans les 6 heures.
+Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rechargement de la page en plein match) ne sont pas rattrapés ; la liste adverse est un minimum (uniquement ce qui a été vu) ; un match supprimé du tableau de bord pendant qu'il se joue n'est plus suivi ; le deck attribué à un match est celui du siège de sa table, sinon le dernier deck choisi dans les 6 heures. Un match enregistré sans deck (ou avec le mauvais) se corrige dans son détail avec le sélecteur « Mon deck », qui propose tous les decks vus sur le site ; ce choix est gardé à part (`note:<matchId>`) et prime sur l'attribution automatique.
 
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/coach.test.js
+node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js
 ```
 
 Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS. Le harnais Puppeteer est dans `test/harness/`.

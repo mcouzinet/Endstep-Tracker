@@ -455,6 +455,12 @@
   "notes_saved": {
     "message": "Notes enregistrées"
   },
+  "deck_saved": {
+    "message": "Deck enregistré"
+  },
+  "deck_auto": {
+    "message": "Automatique : {deck}"
+  },
   "guess_tag_title": {
     "message": "Deck reconnu d’après les cartes vues ({p} %) : {cards}"
   },
