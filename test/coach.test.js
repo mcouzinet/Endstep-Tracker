@@ -64,16 +64,21 @@ assert.equal(Coach.describeOption('pass', { pass: 'passer' }), 'passer');
 assert.equal(Coach.describeOption('no attack', { noAttack: "pas d'attaque" }), "pas d'attaque");
 
 // Trained model, when present: the JS forward pass must reproduce Python's probabilities.
-const modelPath = path.join(__dirname, '..', 'coach-model.json');
-const parityPath = path.join(process.env.HOME, 'Developer', 'Endstep-coach', 'model', 'js-parity.json');
-if (fs.existsSync(modelPath) && fs.existsSync(parityPath)) {
-  const model = JSON.parse(fs.readFileSync(modelPath, 'utf8'));
+// COACH_MODEL=<path> checks another exported model (e.g. a card-set model before it ships); its parity file is
+// js-parity-sets.json for a card-set model, js-parity.json otherwise (model/parity-export.py writes them).
+const modelPath = process.env.COACH_MODEL || path.join(__dirname, '..', 'coach-model.json');
+const cardsPath = path.join(__dirname, '..', 'coach-cards.json');
+const cards = fs.existsSync(cardsPath) ? JSON.parse(fs.readFileSync(cardsPath, 'utf8')) : null;
+const model0 = fs.existsSync(modelPath) ? JSON.parse(fs.readFileSync(modelPath, 'utf8')) : null;
+const parityPath = path.join(process.env.HOME, 'Developer', 'Endstep-coach', 'model', model0 && model0.type === 'sets' ? 'js-parity-sets.json' : 'js-parity.json');
+if (model0 && fs.existsSync(parityPath)) {
+  const model = model0;
   assert.ok([Coach.FEATURES, Coach.FEATURES2].some((f) => JSON.stringify(f) === JSON.stringify(model.features)), 'model trained on a current feature list');
-  for (const { x: vec, p } of JSON.parse(fs.readFileSync(parityPath, 'utf8'))) {
-    assert.ok(Math.abs(Coach.predict(vec, model) - p) < 1e-6, `parity: js ${Coach.predict(vec, model)} vs py ${p}`);
+  for (const row of JSON.parse(fs.readFileSync(parityPath, 'utf8'))) {
+    const vec = row.x.slice();
+    if (model.type === 'sets') vec.zones = Coach.zoneInput(model, row.zones, cards);
+    assert.ok(Math.abs(Coach.predict(vec, model) - row.p) < 1e-6, `parity: js ${Coach.predict(vec, model)} vs py ${row.p}`);
   }
-  const cardsPath = path.join(__dirname, '..', 'coach-cards.json');
-  const cards = fs.existsSync(cardsPath) ? JSON.parse(fs.readFileSync(cardsPath, 'utf8')) : null;
   const px = Coach.predict(Coach.featuresFor(model, board, 0, 0, cards), model);
   assert.ok(px > 0 && px < 1);
   console.log(`coach test: ok (model ${model.type}, ${model.games} games, parity checked)`);

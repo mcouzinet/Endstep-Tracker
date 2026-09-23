@@ -85,19 +85,45 @@
     for (const n of names) { const e = table && table[n]; if (e) for (let i = 0; i < dim; i++) v[i] += e[i] || 0; }
     return v;
   }
-  function features2(state, mySeat, firstSeat, cards) {
-    const base = features(state, mySeat, firstSeat);
+  // The six zones a model may read, as card names: my hand, my battlefield, the opponent's battlefield, my graveyard,
+  // the opponent's graveyard, the stack. The opponent's hand is never encoded.
+  function zoneNames(state, mySeat) {
     const players = (state && state.players) || [];
     const me = players[mySeat] || {};
     const opp = players.find((p, i) => i !== mySeat && p) || {};
+    return [cardNames(me.hand), cardNames(me.battlefield), cardNames(opp.battlefield), cardNames(me.graveyard), cardNames(opp.graveyard), cardNames(state && state.stack)];
+  }
+  function features2(state, mySeat, firstSeat, cards) {
+    const base = features(state, mySeat, firstSeat);
     const dim = (cards && cards.dim) || DIM;
     const table = cards && cards.cards ? cards.cards : cards;
-    const zones = [cardNames(me.hand), cardNames(me.battlefield), cardNames(opp.battlefield), cardNames(me.graveyard), cardNames(opp.graveyard), cardNames(state && state.stack)];
-    return base.concat(...zones.map((z) => zoneVector(z, table, dim)));
+    return base.concat(...zoneNames(state, mySeat).map((z) => zoneVector(z, table, dim)));
   }
-  // The feature list a model wants: the 37 counts, or the extended set.
-  const featuresFor = (model, state, mySeat, firstSeat, cards) => (model && Array.isArray(model.features) && model.features.length > FEATURES.length
-    ? features2(state, mySeat, firstSeat, cards) : features(state, mySeat, firstSeat));
+  // Card-set model: per card f(v) = W2·relu(W1·v + b1) + b2 (at most per_zone cards, unknown names skipped), summed per
+  // zone, plus the zone bias; the flat 6 × dim block the head reads after the standardized counts.
+  function zoneInput(model, zones, cards) {
+    const table = cards && cards.cards ? cards.cards : cards;
+    const dim = model.dim || DIM;
+    const [W1, W2] = model.card_coef;
+    const [b1, b2] = model.card_intercept;
+    const out = [];
+    zones.forEach((names, zi) => {
+      const acc = model.zone_bias[zi].slice();
+      for (const n of names.slice(0, model.per_zone || 24)) {
+        const v = table && table[n];
+        if (!v) continue;
+        const h = b1.map((b, j) => { let t = b; for (let i = 0; i < dim; i++) t += v[i] * W1[i][j]; return Math.max(0, t); });
+        for (let k = 0; k < dim; k++) { let t = b2[k]; for (let j = 0; j < h.length; j++) t += h[j] * W2[j][k]; acc[k] += t; }
+      }
+      out.push(...acc);
+    });
+    return out;
+  }
+  // The feature list a model wants: the 37 counts, the extended set, or the counts carrying the card-set zone block.
+  const featuresFor = (model, state, mySeat, firstSeat, cards) => {
+    if (model && model.type === 'sets') { const x = features(state, mySeat, firstSeat); x.zones = zoneInput(model, zoneNames(state, mySeat), cards); return x; }
+    return model && Array.isArray(model.features) && model.features.length > FEATURES.length ? features2(state, mySeat, firstSeat, cards) : features(state, mySeat, firstSeat);
+  };
 
   const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 
@@ -118,8 +144,8 @@
       for (let i = 0; i < z.length; i++) s += model.coef[0][i] * z[i];
       return sigmoid(s);
     }
-    if (model.type === 'mlp') {
-      let h = z;
+    if (model.type === 'mlp' || model.type === 'sets') {
+      let h = model.type === 'sets' ? z.concat(x.zones || new Array((model.zones || 6) * (model.dim || DIM)).fill(0)) : z;
       for (let l = 0; l < model.coef.length; l++) {
         const W = model.coef[l]; // [in][out]
         const b = model.intercept[l];
@@ -153,7 +179,7 @@
     return name;
   }
 
-  const Coach = { FEATURES, FEATURES2, features, features2, featuresFor, heuristic, predict, describeOption };
+  const Coach = { FEATURES, FEATURES2, features, features2, featuresFor, zoneNames, zoneInput, heuristic, predict, describeOption };
   if (typeof module === 'object' && module.exports) module.exports = Coach;
   else root.EndstepCoach = Coach;
 })(typeof self !== 'undefined' ? self : this);
