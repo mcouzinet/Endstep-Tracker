@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboard. The store build has no Coach: `release.sh` leaves out `coach.js` and `coach-model.json`. Build the zip with `./release.sh` (bump `version` in `manifest.json` first: the store refuses a version it already has).
+Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons) or `./release.sh firefox` (AMO); bump `version` in `manifest.json` first, the stores refuse a version they already have.
 
 ## Listing
 
@@ -86,10 +86,20 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 > No account needed. 1) Open https://endstep.cc, choose "Continue as Guest". 2) Click "vs Bot" > Pick deck > Build a new deck > Edit as text, paste the list from https://github.com/mcouzinet/Endstep-Tracker/blob/main/store/reviewer-deck.txt, Save, pick it for you and the AI, start. 3) The icon shows a REC badge; play a few turns or concede. 4) Click the icon: the dashboard lists the match (result, play/draw, opponent cards, log). Data stays in chrome.storage.local; nothing is sent to endstep.cc.
 
+## Firefox (addons.mozilla.org)
+
+`./release.sh firefox` builds `dist/endstep-tracker-<version>-firefox.zip`: same files, manifest rewritten for Firefox (`background.scripts` instead of the service worker, a `browser_specific_settings.gecko` block with the add-on id `endstep-tracker@mcouzinet.github.io`, `strict_min_version` 140 and the mandatory `data_collection_permissions: none`). No code differs: Firefox's `chrome.*` returns promises, and `runtime.getContexts` and `scripting.executeScript` in the MAIN world are available (checked on Firefox 134).
+
+- Upload: https://addons.mozilla.org/developers/ → Submit a New Add-on → "On this site". Listing texts, screenshots and privacy policy: same as above. AMO also asks for a summary (≤ 250 chars, the manifest one fits) and a category (Games & Entertainment or Other).
+- Before uploading: `npx web-ext lint --source-dir <unzipped build>` must show 0 errors (it shows `innerHTML` warnings on dashboard.js, which AMO accepts; the content is escaped with `esc()`).
+- Reviewer notes: the same 500-character text as the Chrome test instructions.
+- Firefox 127+ grants `host_permissions` at install time, so the tracker runs on endstep.cc right after installing; on older Firefox the user would have to allow the site by hand, hence the minimum version.
+- The Chrome zip also serves Edge Add-ons unchanged.
+
 ## Submission checklist
 
 1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js`
 2. Bump `version` in `manifest.json`, commit, tag `v<version>`.
-3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip`.
+3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.
