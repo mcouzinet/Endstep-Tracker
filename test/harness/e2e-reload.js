@@ -48,8 +48,27 @@ const frame = (matchId, seq) => ({
     const all = await dash.evaluate(() => chrome.storage.local.get(null));
     out.storedAfterInstall = !!all['match:e2e-reload-1'];
     out.recordedPlayers = all['match:e2e-reload-1'] && all['match:e2e-reload-1'].players.map((p) => p.name);
-    out.logs = logs;
     await dash.evaluate(() => chrome.storage.local.remove(['match:e2e-reload-1', 'dec:e2e-reload-1']));
+    await dash.close();
+
+    // Uninstall + reinstall = what ↻ does to the tab: the first content.js is orphaned (chrome.* throws) and must go
+    // quiet, the injected one takes over; the page-world hook stays the first copy.
+    await browser.uninstallExtension(extId);
+    await sleep(1500);
+    await post('e2e-reload-orphan', 1); // only the orphan sees this one: it must not log an error
+    await sleep(1500);
+    const extId2 = await browser.installExtension(EXT);
+    await sleep(3000);
+    await post('e2e-reload-2', 1);
+    await sleep(1500);
+    const dash2 = await browser.newPage();
+    await dash2.goto(`chrome-extension://${extId2}/dashboard.html`);
+    await sleep(300);
+    out.storedAfterReinstall = !!(await dash2.evaluate((k) => chrome.storage.local.get(k), 'match:e2e-reload-2'))['match:e2e-reload-2'];
+    out.orphanQuiet = !logs.some((l) => /invalidated/i.test(l));
+    out.hookStillSingle = await page.evaluate(() => window.__endstepTrackerHook === true);
+    out.logs = logs;
+    await dash2.evaluate(() => chrome.storage.local.remove(['match:e2e-reload-2', 'dec:e2e-reload-2']));
   } catch (e) {
     out.error = String(e);
   }

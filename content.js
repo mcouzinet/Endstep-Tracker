@@ -14,13 +14,18 @@
     ctx.decks = s.decks || {};
   });
 
-  window.addEventListener('message', (e) => {
+  // After an extension reload this copy is orphaned: every chrome.* call throws "Extension context invalidated"
+  // and background.js has injected a fresh copy that took over. Go quiet instead of erroring on every frame.
+  const orphaned = () => !(chrome.runtime && chrome.runtime.id);
+  const onWindowMessage = (e) => {
+    if (orphaned()) { window.removeEventListener('message', onWindowMessage); return; }
     if (e.source !== window || !e.data || typeof e.data !== 'object' || !e.data[TAG]) return;
     const { data } = e.data;
     const kind = e.data[TAG];
     const at = typeof e.data.at === 'number' ? e.data.at : Date.now(); // hook.js time: the same for a frame and its replay
-    chain = chain.then(() => onMessage(kind, data, at)).catch((err) => console.warn('[endstep-tracker]', err));
-  });
+    chain = chain.then(() => onMessage(kind, data, at)).catch((err) => { if (!orphaned()) console.warn('[endstep-tracker]', err); });
+  };
+  window.addEventListener('message', onWindowMessage);
 
   async function onMessage(kind, data, at) {
     if (kind === 'ws') {
@@ -72,7 +77,10 @@
   }
 
   // Decisions live under their own key so the dashboard list never has to load them.
-  const write = (entry) => chrome.storage.local.set({ ['match:' + entry.rec.id]: entry.rec, ['dec:' + entry.rec.id]: entry.dec || {} });
+  const write = (entry) => {
+    if (orphaned() || !entry) return; // a pending debounced write after a reload: the new copy owns the record now
+    chrome.storage.local.set({ ['match:' + entry.rec.id]: entry.rec, ['dec:' + entry.rec.id]: entry.dec || {} });
+  };
 
   function save(entry, immediately) {
     const id = entry.rec.id;
@@ -106,6 +114,7 @@
   function setLive(on) {
     if (on === live) return;
     live = on;
+    if (orphaned()) return;
     try { chrome.runtime.sendMessage({ live: on }).catch(() => {}); } catch { /* extension reloaded */ }
   }
 })();
