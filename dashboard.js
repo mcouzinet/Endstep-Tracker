@@ -288,7 +288,8 @@ async function analyseMatch(m) {
     const r = await fetch(`${COACH_SERVER}/analyse`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const a = await r.json().catch(() => null);
     if (!r.ok || !a || a.error) throw new Error((a && a.error) || `HTTP ${r.status}`);
-    await chrome.storage.local.set({ ['ana:' + m.id]: { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: obj(a.games) } });
+    analyses[m.id] = { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: obj(a.games) };
+    await chrome.storage.local.set({ ['ana:' + m.id]: analyses[m.id] });
     const n = a.summary ? a.summary.replayed : 0;
     toast(tn('coach_analysed', n));
   } catch (e) {
@@ -333,7 +334,8 @@ function coachBlock(m, g) {
     const cls = gap !== null && gap <= BLUNDER ? 'bad' : gap !== null && gap <= BAD ? 'bad' : '';
     const same = a.played !== null && a.played === a.best;
     const label = Coach.describeOption(a.best, { pass: t('coach_pass'), noAttack: t('coach_no_attack'), attack: t('coach_attack_prefix') });
-    return `<td class="${same ? 'muted' : ''}" title="${esc(t('coach_best_title', { p: Math.round((a.bestScore || 0) * 100) }))}">${same ? esc(t('coach_same')) : esc(label)}</td>`
+    const sd = typeof a.sd === 'number' && a.sd > 0 ? ` ${t('coach_sd_title', { sd: Math.round(a.sd * 100) })}` : '';
+    return `<td class="${same ? 'muted' : ''}" title="${esc(t('coach_best_title', { p: Math.round((a.bestScore || 0) * 100) }) + sd)}">${same ? esc(t('coach_same')) : esc(label)}</td>`
       + `<td class="num delta ${cls}">${gap === null ? '—' : gap === 0 ? '0' : `${gap > 0 ? '+' : ''}${Math.round(gap * 100)}`}</td>`;
   };
   const body = rows.map(({ d, before, after, delta }, i) => {
@@ -346,7 +348,7 @@ function coachBlock(m, g) {
   }).join('');
   const flagged = rows.filter((r) => r.delta !== null && r.delta <= BAD).length;
   const source = coachModel ? t('coach_model_note', { n: coachModel.games || '?' }) : t('coach_heuristic_note');
-  const anaNote = arows ? ` · ${esc(t('coach_analysis_note', { date: ana.at ? new Date(ana.at).toLocaleDateString(locale) : '?', model: ana.model || '?' }))}` : '';
+  const anaNote = arows ? ` · ${esc(t(ana.depth >= 1 ? 'coach_analysis_note_depth' : 'coach_analysis_note', { date: ana.at ? new Date(ana.at).toLocaleDateString(locale) : '?', model: ana.model || '?', k: ana.determinizations || 1 }))}` : '';
   return `<details class="coach" data-key="coach:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('coach_title', { n: rows.length }))}${flagged ? ` · <b>${esc(tn('coach_flagged', flagged))}</b>` : ''}</summary>
     <p class="coach-note">${esc(source)} · ${esc(t('coach_after_note'))}${anaNote}</p>
     <table><thead><tr><th></th><th>${esc(t('coach_decision'))}</th><th>${esc(t('coach_before'))}</th><th>${esc(t('coach_after'))}</th><th>Δ</th>${arows ? `<th>${esc(t('coach_best'))}</th><th title="${esc(t('coach_gap_title'))}">${esc(t('coach_gap'))}</th>` : ''}</tr></thead><tbody>${body}</tbody></table></details>`;
@@ -971,7 +973,7 @@ document.addEventListener('selectionchange', () => { if (pending) flushPending()
 addEventListener('scroll', hidePreview, { passive: true });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec):/.test(k)));
+  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|ana):/.test(k)));
   if (!Object.keys(mine).length) return;
   if (busy() || pending) { pending = Object.assign(pending || {}, mine); flushPending(); return; }
   applyChanges(mine);

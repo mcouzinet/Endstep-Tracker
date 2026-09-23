@@ -619,5 +619,11 @@
   },
   "coach_analyse_failed": {
     "message": "Analysis failed: {error}"
+  },
+  "coach_sd_title": {
+    "message": "(± {sd} pts depending on the opponent's hand)"
+  },
+  "coach_analysis_note_depth": {
+    "message": "analysis of {date}, model trained on {model} games, {k} random opponent hands, opponent's reply and next turn played out by Forge"
   }
 }

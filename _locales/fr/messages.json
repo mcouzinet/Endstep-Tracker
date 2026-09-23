@@ -619,5 +619,11 @@
   },
   "coach_analyse_failed": {
     "message": "Analyse impossible : {error}"
+  },
+  "coach_sd_title": {
+    "message": "(± {sd} pts selon la main adverse)"
+  },
+  "coach_analysis_note_depth": {
+    "message": "analyse du {date}, modèle entraîné sur {model} parties, {k} mains adverses tirées au sort, réponse adverse et tour suivant joués par Forge"
   }
 }
