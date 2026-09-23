@@ -20,7 +20,7 @@ if [ "$target" = firefox ]; then
     const fs = require("fs"), p = process.argv[1], m = JSON.parse(fs.readFileSync(p, "utf8"));
     delete m.minimum_chrome_version;
     m.background = { scripts: ["background.js"] };
-    m.browser_specific_settings = { gecko: { id: "endstep-tracker@mcouzinet.github.io", strict_min_version: "140.0", data_collection_permissions: { required: ["none"] } } };
+    m.browser_specific_settings = { gecko: { id: "endstep-tracker@mcouzinet.github.io", strict_min_version: "140.0", data_collection_permissions: { required: ["none"] } }, gecko_android: { strict_min_version: "142.0" } }; // Android learnt data_collection_permissions in 142
     fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
   ' "$stage/manifest.json"
 fi
