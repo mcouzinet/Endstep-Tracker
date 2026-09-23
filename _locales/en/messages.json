@@ -625,5 +625,17 @@
   },
   "coach_analysis_note_depth": {
     "message": "analysis of {date}, model trained on {model} games, {k} random opponent hands, opponent's reply and next turn played out by Forge"
+  },
+  "coach_explain": {
+    "message": "Explain"
+  },
+  "coach_explain_wait": {
+    "message": "Explaining…"
+  },
+  "coach_explain_failed": {
+    "message": "Explanation failed: {error}"
+  },
+  "coach_explain_by": {
+    "message": "explained by {model} from the board and the scores"
   }
 }

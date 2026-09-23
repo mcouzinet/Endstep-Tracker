@@ -625,5 +625,17 @@
   },
   "coach_analysis_note_depth": {
     "message": "analyse du {date}, modèle entraîné sur {model} parties, {k} mains adverses tirées au sort, réponse adverse et tour suivant joués par Forge"
+  },
+  "coach_explain": {
+    "message": "Expliquer"
+  },
+  "coach_explain_wait": {
+    "message": "Explication en cours…"
+  },
+  "coach_explain_failed": {
+    "message": "Explication impossible : {error}"
+  },
+  "coach_explain_by": {
+    "message": "explication par {model}, à partir du plateau et des scores"
   }
 }

@@ -76,7 +76,12 @@ data.decks = myDecks;
 // Best plays for m1's decisions, as bot/coach-replay.js (Endstep-coach) produced them from this demo's export.
 try {
   const a = JSON.parse(fs.readFileSync(__dirname + '/analysis-demo.json', 'utf8'));
-  if (a.matches && a.matches.m1) data['ana:m1'] = { model: a.model, at: a.at, determinizations: a.determinizations, games: a.matches.m1 };
+  if (a.matches && a.matches.m1) {
+    data['ana:m1'] = { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: JSON.parse(JSON.stringify(a.matches.m1)) };
+    // One explanation already received (what /explain returns), on the "pass with Bolt in hand" decision.
+    const row = data['ana:m1'].games['1'] && data['ana:m1'].games['1'][3];
+    if (row && row.best) row.explanation = { text: "L'adversaire est à 3 points de vie et tu as Lightning Bolt en main avec une Mountain dégagée : le Bolt en face gagne la partie sur-le-champ. Passer laisse un tour entier à l'adversaire pour trouver une réponse ou gagner la course ; l'écart de 8 points mesure ce risque.", model: 'demo', at: a.at };
+  }
 } catch { /* no analysis fixture */ }
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');

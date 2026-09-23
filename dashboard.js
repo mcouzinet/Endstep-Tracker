@@ -300,6 +300,30 @@ async function analyseMatch(m) {
   }
 }
 
+const explaining = new Set(); // "matchId|game|index" being explained
+async function explainDecision(m, gn, i) {
+  const key = `${m.id}|${gn}|${i}`;
+  const d = ((decisions[m.id] || {})[gn] || [])[i];
+  const ana = analyses[m.id];
+  const a = ana && ana.games && Array.isArray(ana.games[gn]) ? ana.games[gn][i] : null;
+  if (!d || !a || explaining.has(key)) return;
+  explaining.add(key);
+  render();
+  try {
+    const body = { decision: d, analysis: a, mySeat: m.mySeat, myDeck: myDeck(m) ? deckName(m) : null, oppArchetype: archetype(m) || (guessFor(m) || {}).name || null, lang: locale.startsWith('fr') ? 'fr' : 'en', key };
+    const r = await fetch(`${COACH_SERVER}/explain`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const res = await r.json().catch(() => null);
+    if (!r.ok || !res || res.error || !res.text) throw new Error((res && res.error) || `HTTP ${r.status}`);
+    a.explanation = { text: res.text, model: res.model || null, at: new Date().toISOString() };
+    await chrome.storage.local.set({ ['ana:' + m.id]: ana });
+  } catch (e) {
+    toast(t('coach_explain_failed', { error: e.message || String(e) }), true);
+  } finally {
+    explaining.delete(key);
+    render();
+  }
+}
+
 const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
 const BLUNDER = -0.30;
 
@@ -338,13 +362,25 @@ function coachBlock(m, g) {
     return `<td class="${same ? 'muted' : ''}" title="${esc(t('coach_best_title', { p: Math.round((a.bestScore || 0) * 100) }) + sd)}">${same ? esc(t('coach_same')) : esc(label)}</td>`
       + `<td class="num delta ${cls}">${gap === null ? '—' : gap === 0 ? '0' : `${gap > 0 ? '+' : ''}${Math.round(gap * 100)}`}</td>`;
   };
+  // Explanation by the local coach server (Claude behind it): a flagged decision with an analysis gets a button, the
+  // text received stays in the analysis row (`explanation`) and is shown under the decision.
+  const cols = arows ? 7 : 5;
+  const explainRow = (i, delta) => {
+    const a = arows && arows[i];
+    if (!a || a.skipped) return '';
+    if (a.explanation && a.explanation.text) return `<tr class="explain"><td colspan="${cols}"><p>${esc(a.explanation.text)}</p><small class="muted">${esc(t('coach_explain_by', { model: a.explanation.model || '?' }))}</small></td></tr>`;
+    const flagged = (typeof a.delta === 'number' && a.delta >= 0.05) || (delta !== null && delta <= BAD);
+    if (!flagged || !coachServer || !coachServer.explain) return '';
+    const busy = explaining.has(`${m.id}|${g.n}|${i}`);
+    return `<tr class="explain"><td colspan="${cols}"><button type="button" class="btn-text" data-explain="${i}" data-game="${esc(g.n)}"${busy ? ' disabled' : ''}>${esc(busy ? t('coach_explain_wait') : t('coach_explain'))}</button></td></tr>`;
+  };
   const body = rows.map(({ d, before, after, delta }, i) => {
     const cls = delta !== null && delta <= BLUNDER ? 'blunder bad' : delta !== null && delta <= BAD ? 'bad' : '';
     const flag = delta !== null && delta <= BLUNDER ? `<span class="flag bad">${esc(t('coach_blunder'))}</span>` : delta !== null && delta <= BAD ? `<span class="flag bad">${esc(t('coach_mistake'))}</span>` : '';
     const sign = delta === null ? '' : delta > 0 ? '+' : '';
     return `<tr class="${cls}"><td class="turn">T${esc(d.turn)} ${esc(d.phase || '')}</td><td>${esc(describeAction(d.answer || {}))}${flag}</td>`
       + `<td class="num">${pct(before)}</td><td class="num">${pct(after)}</td><td class="num delta ${delta > 0.05 ? 'good' : ''}">${delta === null ? '—' : `${sign}${Math.round(delta * 100)}`}</td>`
-      + (arows ? bestCell(i) : '') + '</tr>';
+      + (arows ? bestCell(i) : '') + '</tr>' + explainRow(i, delta);
   }).join('');
   const flagged = rows.filter((r) => r.delta !== null && r.delta <= BAD).length;
   const source = coachModel ? t('coach_model_note', { n: coachModel.games || '?' }) : t('coach_heuristic_note');
@@ -863,6 +899,13 @@ $('#matches').addEventListener('click', (e) => {
     const id = use.closest('.match').dataset.id;
     notes[id] = Object.assign({}, notes[id], { archetype: use.dataset.useGuess });
     chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
+    return;
+  }
+  const ex = e.target.closest('[data-explain]');
+  if (ex) {
+    const id = ex.closest('.match').dataset.id;
+    const m = matches.find((x) => x.id === id);
+    if (m) explainDecision(m, ex.dataset.game, Number(ex.dataset.explain));
     return;
   }
   if (e.target.closest('[data-analyse]')) {
