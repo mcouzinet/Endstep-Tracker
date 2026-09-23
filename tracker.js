@@ -188,7 +188,9 @@
             const owner = seatOf(c.ownerId) === null ? i : seatOf(c.ownerId);
             if (owner === rec.mySeat) continue;
             see(sg, owner, c.name, c.id);
-            if (c.color && !(c.types || []).includes('Land')) addColors(rec, owner, c.color);
+            // Colours of what the deck casts: a card that is never cast (Sneaky Snacker discarded then returned,
+            // a reanimated creature) does not colour the deck. Lands are never cast either.
+            if (c.color && rt.cast && rt.cast[owner] && rt.cast[owner].has(c.name)) addColors(rec, owner, c.color);
           }
         }
       });
@@ -265,7 +267,10 @@
         g.outcome = true;
         break;
       default:
-        if (PLAYED.has(ev.type) && ev.cardName && seat !== null && seat !== rec.mySeat) see(g, seat, ev.cardName, ev.cardId);
+        if (PLAYED.has(ev.type) && ev.cardName && seat !== null && seat !== rec.mySeat) {
+          see(g, seat, ev.cardName, ev.cardId);
+          if (ev.type === 'SPELL_CAST') ((rt.cast = rt.cast || {})[seat] = rt.cast[seat] || new Set()).add(ev.cardName);
+        }
     }
 
     if (!NOISE.has(ev.type) && !(ev.type === 'CARD_ZONE_CHANGE' && !ev.cardName)) {

@@ -26,7 +26,7 @@ const state = (seq, s) => ({
     },
     players: [
       { id: '0', name: ME, life: s.life0 || 20, hand: s.hand0 || [], battlefield: s.bf0 || [], graveyard: [], exile: [] },
-      { id: '1', name: AI, life: 20, hand: hidden(s.oppHand || 0), battlefield: s.bf1 || [], graveyard: [], exile: [] },
+      { id: '1', name: AI, life: 20, hand: hidden(s.oppHand || 0), battlefield: s.bf1 || [], graveyard: s.gy1 || [], exile: [] },
     ],
   },
 });
@@ -38,6 +38,7 @@ const G1_KEPT6 = G1_SECOND7.slice(1); // Rift Bolt went to the bottom
 const G2_HAND7 = [mine(13, 'Mountain'), mine(19, 'Mountain'), mine(11, 'Mountain'), mine(56, 'Eidolon of the Great Revel'), mine(41, 'Boros Charm'), mine(38, 'Searing Blaze'), mine(29, 'Lightning Bolt')];
 const OPP_MOUNTAIN = card(88, 'Mountain', '1', ['Land'], 'C');
 const OPP_GUIDE = card(65, 'Goblin Guide', '1', ['Creature'], 'R');
+const OPP_SNACKER = card(70, 'Sneaky Snacker', '1', ['Creature'], 'UB'); // discarded, never cast
 
 const wire = [
   { type: 'MATCH_STATUS', payload: { matchId: M, status: 'active', format: 'constructed' }, timestamp: clock },
@@ -74,7 +75,8 @@ const wire = [
   ev(64, 'LAND_PLAYED', { cardName: 'Mountain', cardId: 88, playerIndex: '1' }),
   ev(68, 'SPELL_CAST', { cardName: 'Goblin Guide', cardId: 65, playerIndex: '1' }),
   ev(76, 'TRIGGER_FIRED', { cardName: 'Goblin Guide', cardId: 65, playerIndex: '1' }),
-  state(27, { n: 2, turn: 2, active: '1', wins: [0, 1], hand0: G2_HAND7.slice(1), oppHand: 5, bf0: [mine(13, 'Mountain')], bf1: [OPP_MOUNTAIN, OPP_GUIDE] }),
+  ev(77, 'CARD_ZONE_CHANGE', { cardName: 'Sneaky Snacker', cardId: 70, fromZone: 'Hand', toZone: 'Graveyard', zoneOwnerIndex: '1', message: 'Forge AI discards Sneaky Snacker' }),
+  state(27, { n: 2, turn: 2, active: '1', wins: [0, 1], hand0: G2_HAND7.slice(1), oppHand: 4, bf0: [mine(13, 'Mountain')], bf1: [OPP_MOUNTAIN, OPP_GUIDE], gy1: [OPP_SNACKER] }),
   // Goblin Guide reveals MY top card: must not count as an opponent card.
   ev(1473171363882280200, 'CARD_REVEALED', { cardName: 'Searing Blaze', cardId: 40, toZone: 'Library', playerIndex: '0', cardNames: ['Searing Blaze'], cardIds: [40], message: "Look at guest_rZ8gWdWE's library: Searing Blaze" }),
   ev(83, 'PLAYER_DAMAGED', { cardName: 'Goblin Guide', cardId: 65, amount: 2, playerIndex: '0' }),
@@ -127,8 +129,8 @@ assert.deepEqual(g2.openingHand, G2_HAND7.map((c) => c.name));
 assert.equal(g2.life[0], 18);
 
 const opp = T.seenCards(rec, 1);
-assert.deepEqual(opp, { Mountain: 1, 'Goblin Guide': 1 }, 'opponent cards seen, no Searing Blaze (mine)');
-assert.equal(rec.colors[1], 'R');
+assert.deepEqual(opp, { Mountain: 1, 'Goblin Guide': 1, 'Sneaky Snacker': 1 }, 'opponent cards seen, no Searing Blaze (mine)');
+assert.equal(rec.colors[1], 'R', 'Sneaky Snacker (UB) was discarded, never cast: only cast spells colour the deck');
 assert.equal(T.seenCards(rec, 0)['Searing Blaze'], undefined);
 
 const myLands = g2.log.filter((l) => l[2] === 'LAND_PLAYED' && l[1] === 0).map((l) => l[3]);

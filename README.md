@@ -19,7 +19,7 @@ Par game :
 - play/draw, qui a gagné le toss
 - mulligans des deux joueurs, ma main de départ gardée
 - vainqueur, raison de fin (concession…), nombre de tours, PV finaux, durée
-- cartes adverses vues (sorts, terrains, cimetière, exil, cartes révélées) avec le nombre max d'exemplaires vus, couleurs
+- cartes adverses vues (sorts, terrains, cimetière, exil, cartes révélées) avec le nombre max d'exemplaires vus, couleurs (celles des sorts lancés uniquement : une carte défaussée puis renvoyée en jeu sans être lancée, comme Sneaky Snacker, ne colore pas le deck)
 - cartes jouées tour par tour (moi et l'adversaire) et journal complet
 
 Dans le tableau de bord (clic sur l'icône) :
