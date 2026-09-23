@@ -88,19 +88,19 @@ dessous : PARTIEL avec analyse, la profondeur reste à 0 par défaut.
 
 ## Livrables et critères de fin
 
-- [ ] A1 : `bot/CoachServer.java` : `GET /health`, `POST /analyse` (contrat ci-dessous), CORS, verrou, Forge chargé
+- [x] A1 : `bot/CoachServer.java` : `GET /health`, `POST /analyse` (contrat ci-dessous), CORS, verrou, Forge chargé
       une fois ; `bot/coach-server.sh` (démarrage/arrêt, journal) ; test par `curl` sur le contexte de démo.
-- [ ] A2 : tableau de bord : détection du serveur, bouton « Analyser avec le coach local » dans le détail, envoi,
+- [x] A2 : tableau de bord : détection du serveur, bouton « Analyser avec le coach local » dans le détail, envoi,
       réception, stockage `ana:`, états (en cours, erreur), i18n, tests, harnais (serveur lancé pendant le harnais).
-- [ ] A3 : e2e réel (une exécution) : match joué, analyse par le bouton, colonnes affichées ; README.
-- [ ] B1 : déterminisation + rollout dans `CoachController` (`depth`) : après mon option, fin de mon tour puis tour
+- [x] A3 : e2e réel (une exécution) : match joué, analyse par le bouton, colonnes affichées ; README.
+- [x] B1 : déterminisation + rollout dans `CoachController` (`depth`) : après mon option, fin de mon tour puis tour
       adverse par Forge, évaluation au début de mon tour suivant ; test anti-triche ; test « le rollout change une
       décision-piège ».
-- [ ] B2 : bot : profondeur 1 sur les décisions serrées (`BOT_DEPTH=1`, écart des deux meilleures < 3 pts, K = 3),
+- [x] B2 : bot : profondeur 1 sur les décisions serrées (`BOT_DEPTH=1`, écart des deux meilleures < 3 pts, K = 3),
       mesure miroir 300 parties et temps/partie ; décision par défaut selon le critère.
-- [ ] B3 : rejeu : `depth` et K exposés (`coach-replay.js`, serveur) ; écart-type affiché dans le bloc Coach ;
+- [x] B3 : rejeu : `depth` et K exposés (`coach-replay.js`, serveur) ; écart-type affiché dans le bloc Coach ;
       analyse de démo et e2e refaites.
-- [ ] Rapport, limites, prochaines étapes, `STATUT FINAL`.
+- [x] Rapport, limites, prochaines étapes, `STATUT FINAL`.
 
 ## Contrat HTTP (partie A)
 
