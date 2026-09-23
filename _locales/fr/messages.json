@@ -565,5 +565,44 @@
   },
   "coach_after_note": {
     "message": "« après » = le plateau à ta décision suivante, réponse adverse comprise"
+  },
+  "import_analysis": {
+    "message": "Importer une analyse…"
+  },
+  "analysis_imported_one": {
+    "message": "Analyse importée pour {n} match"
+  },
+  "analysis_imported_other": {
+    "message": "Analyse importée pour {n} matchs"
+  },
+  "analysis_none": {
+    "message": "Aucun des matchs analysés n'est ici"
+  },
+  "coach_best": {
+    "message": "Meilleur coup"
+  },
+  "coach_gap": {
+    "message": "Écart"
+  },
+  "coach_gap_title": {
+    "message": "ton coup moins le meilleur coup, en points de probabilité de victoire"
+  },
+  "coach_best_title": {
+    "message": "{p} % de victoire après le meilleur coup"
+  },
+  "coach_same": {
+    "message": "= ton coup"
+  },
+  "coach_pass": {
+    "message": "passer"
+  },
+  "coach_no_attack": {
+    "message": "pas d'attaque"
+  },
+  "coach_attack_prefix": {
+    "message": "attaquer :"
+  },
+  "coach_analysis_note": {
+    "message": "analyse du {date}, modèle entraîné sur {model} parties, rejouée dans Forge avec des mains adverses tirées au sort"
   }
 }

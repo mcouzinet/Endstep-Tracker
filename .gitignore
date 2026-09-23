@@ -6,3 +6,5 @@ test/harness/meta-stub.js
 test/harness/legend*.png
 .DS_Store
 dist/
+test/harness/e2e-export.json
+test/harness/demo-export.json

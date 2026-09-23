@@ -22,7 +22,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     page.on('console', (m) => { if (/endstep-tracker|Uncaught|Error/i.test(m.text())) console.log('[page]', m.text().slice(0, 300)); });
     await page.goto('https://endstep.cc/', { waitUntil: 'networkidle2' });
     console.log('title:', await page.title());
-    await page.locator('::-p-text(Continue as Guest)').setTimeout(15000).click();
+    // A profile reused from a previous run is already a guest: the button is then absent.
+    try { await page.locator('::-p-text(Continue as Guest)').setTimeout(8000).click(); console.log('guest: clicked'); } catch { console.log('guest: no button (already signed in?)'); }
     await sleep(4000);
 
     const setup = await page.evaluate(async () => {
@@ -104,6 +105,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     console.log('coach block:', JSON.stringify(await dash.evaluate(() => { const c = document.querySelector('.coach'); return c && { summary: c.querySelector('summary').textContent.trim(), rows: c.querySelectorAll('tbody tr').length, note: c.querySelector('.coach-note').textContent.slice(0, 60) }; })));
     await sleep(500);
     await dash.screenshot({ path: OUT + '/e2e-dashboard-detail.png', fullPage: true });
+    // The Data menu's JSON export, as a file: input for Endstep-coach/bot/coach-replay.js (best play per decision).
+    const exp = await dash.evaluate(async () => {
+      const all = await chrome.storage.local.get(null);
+      const ms = Object.entries(all).filter(([k]) => k.startsWith('match:')).map(([, v]) => v);
+      const ns = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('note:')).map(([k, v]) => [k.slice(5), v]));
+      const ds = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
+      return { version: 1, exportedAt: new Date().toISOString(), matches: ms, notes: ns, decisions: ds };
+    });
+    require('fs').writeFileSync(OUT + '/e2e-export.json', JSON.stringify(exp));
+    console.log('export:', OUT + '/e2e-export.json', exp.matches.length, 'matches,', Object.keys(exp.decisions).length, 'with decisions');
   } finally {
     await browser.close();
   }

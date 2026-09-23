@@ -38,6 +38,14 @@ assert.ok(Coach.heuristic(x) > 0.6 && Coach.heuristic(y) < 0.4);
 assert.ok(Math.abs(Coach.heuristic(x) + Coach.heuristic(y) - 1) < 1e-9, 'symmetric');
 assert.equal(Coach.predict(x, null), Coach.heuristic(x), 'no model -> heuristic');
 
+// Ranked-option labels from the lab become readable words.
+assert.equal(Coach.describeOption('Lightning Bolt (151) -> <$> deals 3 damage to any target. -> Opponent'), 'Lightning Bolt → Opponent');
+assert.equal(Coach.describeOption('Goblin Guide (15) -> <$> - Creature 2 / 2'), 'Goblin Guide');
+assert.equal(Coach.describeOption('Mountain (23) -> Play land'), 'Mountain');
+assert.equal(Coach.describeOption('attack: Goblin Guide Kor Skyfisher', { attack: 'attaquer :' }), 'attaquer : Goblin Guide Kor Skyfisher');
+assert.equal(Coach.describeOption('pass', { pass: 'passer' }), 'passer');
+assert.equal(Coach.describeOption('no attack', { noAttack: "pas d'attaque" }), "pas d'attaque");
+
 // Trained model, when present: the JS forward pass must reproduce Python's probabilities.
 const modelPath = path.join(__dirname, '..', 'coach-model.json');
 const parityPath = path.join(process.env.HOME, 'Developer', 'Endstep-coach', 'model', 'js-parity.json');

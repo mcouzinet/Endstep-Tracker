@@ -110,7 +110,24 @@
     return heuristic(x);
   }
 
-  const Coach = { FEATURES, features, heuristic, predict };
+  // A ranked option's label from Endstep-coach (bot/DecisionReplay), made readable: "Lightning Bolt -> <$> deals 3
+  // damage to any target. -> Opponent" becomes "Lightning Bolt → Opponent"; "pass", "no attack" and "attack: A B" use
+  // the given words. words: { pass, noAttack, attack } (attack is a prefix, e.g. "attack:").
+  function describeOption(label, words) {
+    const w = Object.assign({ pass: 'pass', noAttack: 'no attack', attack: 'attack:' }, words);
+    if (label === null || label === undefined) return '';
+    const s = String(label);
+    if (s === 'pass') return w.pass;
+    if (s === 'no attack') return w.noAttack;
+    if (s.startsWith('attack:')) return `${w.attack} ${s.slice(7).trim()}`.trim();
+    const parts = s.split(' -> ');
+    const name = parts[0].replace(/ \(\d+\)$/, '').trim();
+    if (parts.length >= 3) return `${name} → ${parts[parts.length - 1].replace(/ \(\d+\)$/, '').trim()}`;
+    if (parts.length === 2 && /^Play land$/i.test(parts[1])) return name;
+    return name;
+  }
+
+  const Coach = { FEATURES, features, heuristic, predict, describeOption };
   if (typeof module === 'object' && module.exports) module.exports = Coach;
   else root.EndstepCoach = Coach;
 })(typeof self !== 'undefined' ? self : this);

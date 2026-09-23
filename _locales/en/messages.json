@@ -565,5 +565,44 @@
   },
   "coach_after_note": {
     "message": "“after” is the board at your next decision, so it includes the opponent’s reply"
+  },
+  "import_analysis": {
+    "message": "Import an analysis…"
+  },
+  "analysis_imported_one": {
+    "message": "Analysis imported for {n} match"
+  },
+  "analysis_imported_other": {
+    "message": "Analysis imported for {n} matches"
+  },
+  "analysis_none": {
+    "message": "None of the analysed matches is here"
+  },
+  "coach_best": {
+    "message": "Best play"
+  },
+  "coach_gap": {
+    "message": "Gap"
+  },
+  "coach_gap_title": {
+    "message": "your play minus the best play, in win-probability points"
+  },
+  "coach_best_title": {
+    "message": "{p} % win probability after the best play"
+  },
+  "coach_same": {
+    "message": "= your play"
+  },
+  "coach_pass": {
+    "message": "pass"
+  },
+  "coach_no_attack": {
+    "message": "no attack"
+  },
+  "coach_attack_prefix": {
+    "message": "attack:"
+  },
+  "coach_analysis_note": {
+    "message": "analysis of {date}, model trained on {model} games, replayed in Forge with random opponent hands"
   }
 }

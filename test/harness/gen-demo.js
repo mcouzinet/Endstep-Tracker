@@ -73,6 +73,11 @@ for (const m of matches) data['match:' + m.id] = m;
 for (const [id, d] of Object.entries(decisions)) data['dec:' + id] = d;
 for (const [id, n] of Object.entries(notes)) data['note:' + id] = n;
 data.decks = myDecks;
+// Best plays for m1's decisions, as bot/coach-replay.js (Endstep-coach) produced them from this demo's export.
+try {
+  const a = JSON.parse(fs.readFileSync(__dirname + '/analysis-demo.json', 'utf8'));
+  if (a.matches && a.matches.m1) data['ana:m1'] = { model: a.model, at: a.at, determinizations: a.determinizations, games: a.matches.m1 };
+} catch { /* no analysis fixture */ }
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');
 

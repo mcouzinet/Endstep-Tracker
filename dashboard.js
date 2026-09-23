@@ -57,6 +57,7 @@ let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the li
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
+let analyses = {}; // matchId -> { model, at, determinizations, games: { gameNumber: [row per decision] } }, imported from Endstep-coach
 let pending = null; // storage changes held back while the user is editing or selecting inside a match
 let toastTimer;
 
@@ -190,6 +191,7 @@ async function load() {
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
+    else if (k.startsWith('ana:')) analyses[k.slice(4)] = obj(v);
     else if (k === 'decks') decks = obj(v);
   }
   refresh();
@@ -213,6 +215,10 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
+    } else if (k.startsWith('ana:')) {
+      const id = k.slice(4);
+      if (c.newValue === undefined) delete analyses[id];
+      else analyses[id] = obj(c.newValue);
     } else if (k === 'decks') decks = obj(c.newValue);
   }
   refresh();
@@ -266,18 +272,34 @@ function coachBlock(m, g) {
   const rows = coachRows(m, g);
   if (!rows.length) return '';
   const pct = (v) => (v === null ? '—' : `${Math.round(v * 100)} %`);
-  const body = rows.map(({ d, before, after, delta }) => {
+  // Imported analysis (best play per decision, from Endstep-coach): two more columns when it exists for this game.
+  const ana = analyses[m.id];
+  const arows = ana && ana.games && Array.isArray(ana.games[g.n]) ? ana.games[g.n] : null;
+  const bestCell = (i) => {
+    const a = arows && arows[i];
+    if (!a) return '<td></td><td class="num"></td>';
+    if (a.skipped) return `<td class="muted" title="${esc(a.skipped)}">—</td><td class="num"></td>`;
+    const gap = typeof a.delta === 'number' ? -a.delta : null; // played minus best, in probability
+    const cls = gap !== null && gap <= BLUNDER ? 'bad' : gap !== null && gap <= BAD ? 'bad' : '';
+    const same = a.played !== null && a.played === a.best;
+    const label = Coach.describeOption(a.best, { pass: t('coach_pass'), noAttack: t('coach_no_attack'), attack: t('coach_attack_prefix') });
+    return `<td class="${same ? 'muted' : ''}" title="${esc(t('coach_best_title', { p: Math.round((a.bestScore || 0) * 100) }))}">${same ? esc(t('coach_same')) : esc(label)}</td>`
+      + `<td class="num delta ${cls}">${gap === null ? '—' : gap === 0 ? '0' : `${gap > 0 ? '+' : ''}${Math.round(gap * 100)}`}</td>`;
+  };
+  const body = rows.map(({ d, before, after, delta }, i) => {
     const cls = delta !== null && delta <= BLUNDER ? 'blunder bad' : delta !== null && delta <= BAD ? 'bad' : '';
     const flag = delta !== null && delta <= BLUNDER ? `<span class="flag bad">${esc(t('coach_blunder'))}</span>` : delta !== null && delta <= BAD ? `<span class="flag bad">${esc(t('coach_mistake'))}</span>` : '';
     const sign = delta === null ? '' : delta > 0 ? '+' : '';
     return `<tr class="${cls}"><td class="turn">T${esc(d.turn)} ${esc(d.phase || '')}</td><td>${esc(describeAction(d.answer || {}))}${flag}</td>`
-      + `<td class="num">${pct(before)}</td><td class="num">${pct(after)}</td><td class="num delta ${delta > 0.05 ? 'good' : ''}">${delta === null ? '—' : `${sign}${Math.round(delta * 100)}`}</td></tr>`;
+      + `<td class="num">${pct(before)}</td><td class="num">${pct(after)}</td><td class="num delta ${delta > 0.05 ? 'good' : ''}">${delta === null ? '—' : `${sign}${Math.round(delta * 100)}`}</td>`
+      + (arows ? bestCell(i) : '') + '</tr>';
   }).join('');
   const flagged = rows.filter((r) => r.delta !== null && r.delta <= BAD).length;
   const source = coachModel ? t('coach_model_note', { n: coachModel.games || '?' }) : t('coach_heuristic_note');
+  const anaNote = arows ? ` · ${esc(t('coach_analysis_note', { date: ana.at ? new Date(ana.at).toLocaleDateString(locale) : '?', model: ana.model || '?' }))}` : '';
   return `<details class="coach" data-key="coach:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('coach_title', { n: rows.length }))}${flagged ? ` · <b>${esc(tn('coach_flagged', flagged))}</b>` : ''}</summary>
-    <p class="coach-note">${esc(source)} · ${esc(t('coach_after_note'))}</p>
-    <table><thead><tr><th></th><th>${esc(t('coach_decision'))}</th><th>${esc(t('coach_before'))}</th><th>${esc(t('coach_after'))}</th><th>Δ</th></tr></thead><tbody>${body}</tbody></table></details>`;
+    <p class="coach-note">${esc(source)} · ${esc(t('coach_after_note'))}${anaNote}</p>
+    <table><thead><tr><th></th><th>${esc(t('coach_decision'))}</th><th>${esc(t('coach_before'))}</th><th>${esc(t('coach_after'))}</th><th>Δ</th>${arows ? `<th>${esc(t('coach_best'))}</th><th title="${esc(t('coach_gap_title'))}">${esc(t('coach_gap'))}</th>` : ''}</tr></thead><tbody>${body}</tbody></table></details>`;
 }
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
@@ -699,7 +721,8 @@ const ACTIONS = {
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs }), 'application/json');
+    const anas = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('ana:')).map(([k, v]) => [k.slice(4), v]));
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, analyses: anas, decks: obj(all.decks) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -719,10 +742,11 @@ const ACTIONS = {
     toast(tn('csv_exported', rows.length - 1));
   },
   import: () => $('#import').click(),
+  'import-analysis': () => $('#import-analysis').click(),
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec):/.test(k)));
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec|ana):/.test(k)));
     openId = null;
     toast(t('all_deleted'));
   },
@@ -749,9 +773,32 @@ $('#import').addEventListener('change', async (e) => {
     for (const m of list) items['match:' + m.id] = m;
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
+    for (const [id, a] of Object.entries(obj(data && data.analyses))) if (items['match:' + id]) items['ana:' + id] = obj(a);
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
+  } catch {
+    toast(t('import_failed'), true);
+  }
+});
+
+// An analysis produced by Endstep-coach/bot/coach-replay.js from this dashboard's JSON export: the best play per
+// recorded decision. Kept under its own key, only for matches that are here.
+$('#import-analysis').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    const per = obj(data && data.matches);
+    const items = {};
+    for (const [id, games] of Object.entries(per)) {
+      if (!matches.some((m) => m.id === id)) continue;
+      items['ana:' + id] = { model: data.model || '', at: data.at || '', determinizations: data.determinizations || 1, games: obj(games) };
+    }
+    const n = Object.keys(items).length;
+    if (n) await chrome.storage.local.set(items);
+    toast(n ? tn('analysis_imported', n) : t('analysis_none'), !n);
   } catch {
     toast(t('import_failed'), true);
   }
@@ -769,7 +816,7 @@ $('#matches').addEventListener('click', (e) => {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
-    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id]).then(() => toast(t('match_deleted')));
+    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, 'ana:' + id]).then(() => toast(t('match_deleted')));
     return;
   }
   const btn = e.target.closest('.match-row');
