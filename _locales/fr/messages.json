@@ -655,5 +655,56 @@
   },
   "others_other": {
     "message": "Autres · {n} archétypes"
+  },
+  "g1": {
+    "message": "G1"
+  },
+  "g23": {
+    "message": "G2-G3"
+  },
+  "g1_title": {
+    "message": "Game 1, avec le main deck"
+  },
+  "g23_title": {
+    "message": "Games 2 et 3, après le sideboard"
+  },
+  "col_archetype": {
+    "message": "Archétype"
+  },
+  "col_deck": {
+    "message": "Deck"
+  },
+  "version_label": {
+    "message": "Version de la liste"
+  },
+  "version_n": {
+    "message": "v{n}"
+  },
+  "version_current": {
+    "message": "v{n} · actuelle"
+  },
+  "versions_all": {
+    "message": "Toutes versions"
+  },
+  "version_unknown": {
+    "message": "Sans liste enregistrée"
+  },
+  "version_since": {
+    "message": "v{n} depuis le {date}"
+  },
+  "version_first": {
+    "message": "première liste enregistrée"
+  },
+  "version_more": {
+    "message": "et {n} autres"
+  },
+  "compare_with": {
+    "message": "Comparer à v{n}"
+  },
+  "compare_stop": {
+    "message": "Arrêter la comparaison"
+  },
+  "cmp_title": {
+    "message": "Bilan avec {v}, en matchs"
   }
 }

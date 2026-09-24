@@ -53,7 +53,8 @@ const PREFS = 'endstep-tracker.filters';
 
 // scope: null = the default (my most played deck over 30 days), else { format, deck }; a null format means every format,
 // a null deck every deck of that format. Stats cover scope + period + opponent; result and search only narrow the history.
-const state = { q: '', scope: null, period: 'all', result: 'all', opp: null };
+// version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
@@ -161,18 +162,66 @@ function activeScope() {
 }
 const sameScope = (a, b) => a.format === b.format && a.deck === b.deck;
 const scopeFor = (s) => (sameScope(s, defaultScope()) ? null : s); // stored as null when it is the default
-const scopeActive = () => !!((state.scope && !sameScope(activeScope(), defaultScope())) || state.opp || state.period !== 'all');
+const scopeActive = () => !!((state.scope && !sameScope(activeScope(), defaultScope())) || state.version || state.opp || state.period !== 'all');
 function setFilter(patch) { Object.assign(state, patch); savePrefs(); render(); }
 function resetFilters() {
   $('#q').value = '';
-  setFilter({ q: '', scope: null, period: 'all', result: 'all', opp: null });
+  setFilter({ q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null });
 }
 
-// What the stats are about: the scope, the period, the opponent facet.
-function scoped() {
+// --- list versions: a version is a distinct main deck (sideboard tweaks do not split the stats) ---
+function listKey(cards) {
+  if (!Array.isArray(cards)) return null;
+  const c = {};
+  for (const x of cards) {
+    const name = typeof x === 'string' ? x : x && x.name;
+    if (name) c[name] = (c[name] || 0) + (typeof x === 'string' ? 1 : x.quantity || 1);
+  }
+  const names = Object.keys(c).sort();
+  return names.length ? names.map((n) => `${c[n]} ${n}`).join('\n') : null;
+}
+const versionKey = (m) => listKey((myDeck(m) || {}).cards);
+// One deck's versions, oldest first and numbered from 1; the current one is the list of my latest match.
+function versionsOf(s) {
+  const out = { list: [], current: null, unknown: 0 };
+  if (s.format === null || s.deck === null) return out;
+  const by = new Map();
+  for (const m of matches) { // newest first
+    if (formatOf(m) !== s.format || deckName(m) !== s.deck) continue;
+    const k = versionKey(m);
+    if (k === null) { out.unknown++; continue; }
+    if (out.current === null) out.current = k;
+    const v = by.get(k) || { key: k, from: m.startedAt, count: 0 };
+    v.from = Math.min(v.from, m.startedAt);
+    v.count++;
+    by.set(k, v);
+  }
+  out.list = [...by.values()].sort((a, b) => a.from - b.from);
+  out.list.forEach((v, i) => { v.n = i + 1; });
+  return out;
+}
+// Version in view: 'all', '?' or a list key; the current list by default, every match when the deck has one list.
+function activeVersion(vs) {
+  if (vs.list.length < 2) return 'all';
+  const v = state.version;
+  return v === 'all' || (v === '?' && vs.unknown) || vs.list.some((x) => x.key === v) ? v : vs.current;
+}
+// Cards added (+) and cut (−) from one list key to another, additions first.
+function listDiff(from, to) {
+  const counts = (key) => Object.fromEntries(key.split('\n').map((l) => [l.slice(l.indexOf(' ') + 1), Number(l.slice(0, l.indexOf(' ')))]));
+  const a = counts(from); const b = counts(to);
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])].map((n) => [n, (b[n] || 0) - (a[n] || 0)]).filter(([, d]) => d)
+    .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], locale));
+}
+
+// What the stats are about: the scope, its list version, the period, the opponent facet.
+function scoped(version) {
   const s = activeScope();
+  const v = version === undefined ? activeVersion(versionsOf(s)) : version;
   const since = state.period === 'all' ? 0 : Date.now() - Number(state.period) * 864e5;
-  return matches.filter((m) => inScope(m, s) && m.startedAt >= since && (!state.opp || oppKey(m)[0] === state.opp.key));
+  return matches.filter((m) => inScope(m, s) && m.startedAt >= since
+    && (v === 'all' || (v === '?' ? versionKey(m) === null : versionKey(m) === v))
+    && (!state.opp || oppKey(m)[0] === state.opp.key));
 }
 // The history list: the same matches, narrowed by result and search (which never change the stats).
 function listed(list) {
@@ -507,11 +556,17 @@ function render() {
   renderHeader();
   if (!has) { $('#matches').innerHTML = onboarding(); return; }
   const s = activeScope();
-  const stats = scoped();
+  const vs = versionsOf(s);
+  const v = activeVersion(vs);
+  const stats = scoped(v);
   const list = listed(stats);
-  renderFilters(s, stats, list);
-  renderOverview(stats);
-  renderBreakdown('#by-opp', stats, oppKey, 'opp');
+  const cur = vs.list.find((x) => x.key === v);
+  const prev = cur && vs.list[cur.n - 2];
+  const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
+  renderFilters(s, stats, list, vs, v);
+  renderVersions(cur, prev);
+  renderOverview(stats, cmp);
+  renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
   if (s.deck === null) {
     renderBreakdown('#by-deck', stats, (m) => [JSON.stringify([formatOf(m), deckName(m)]),
@@ -532,8 +587,17 @@ function renderHeader() {
   }
 }
 
-function renderFilters(s, stats, list) {
+function renderFilters(s, stats, list, vs, v) {
   $('#f-scope').value = JSON.stringify([s.format, s.deck]);
+  const sel = $('#f-version'); // options carry version numbers; the state keeps the list itself, which survives renumbering
+  sel.hidden = vs.list.length < 2;
+  if (!sel.hidden) {
+    const total = vs.list.reduce((n, x) => n + x.count, vs.unknown);
+    sel.innerHTML = [...vs.list].reverse().map((x) => `<option value="${x.n}">${esc(t(x.key === vs.current ? 'version_current' : 'version_n', { n: x.n }))} (${x.count})</option>`).join('')
+      + `<option value="all">${esc(t('versions_all'))} (${total})</option>`
+      + (vs.unknown ? `<option value="?">${esc(t('version_unknown'))} (${vs.unknown})</option>` : '');
+    sel.value = v === 'all' || v === '?' ? v : String(vs.list.find((x) => x.key === v).n);
+  }
   $('#count').textContent = tn('n_matches', list.length) + (list.length !== stats.length ? t('of_total', { total: stats.length }) : '');
   $('#reset').classList.toggle('off', !scopeActive());
   $('#facet').hidden = !state.opp;
@@ -546,7 +610,20 @@ function renderFilters(s, stats, list) {
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
 // Below MIN_SAMPLE results a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
 const MIN_SAMPLE = 5;
-function rec(labelHtml, r, { tag = 'div', attrs = '' } = {}) {
+const wl = (r) => `${r.W}–${r.L}${r.D ? `–${r.D}` : ''}`;
+// Game 1 is played with the main deck, games 2 and 3 after sideboarding: every game record splits along that line.
+const half = (gm) => (gm.n === 1 ? 'g1' : 'g23');
+const halves = () => ({ g1: tally(), g23: tally() });
+// A secondary record cell (G1, G2-G3, a compared version): W–L, plus the rate once the sample allows it.
+// Its key is read by screen readers and shown in narrow windows, where the column captions are hidden.
+function subCell(key, title, r, cls = '') {
+  const n = r.W + r.L + r.D;
+  return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>${n >= MIN_SAMPLE ? `<b>${pct(r)}</b> ` : ''}${n ? wl(r) : '—'}</span>`;
+}
+// Column captions above records that carry G1 / G2-G3 (and a compared version).
+const recHead = (first, main, cmp) => `<div class="rec halves head${cmp ? ' with-cmp' : ''}" aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
+  + `<span title="${esc(t('g1_title'))}">${esc(t('g1'))}</span><span title="${esc(t('g23_title'))}">${esc(t('g23'))}</span>${cmp ? `<span>${esc(cmp)}</span>` : ''}</div>`;
+function rec(labelHtml, r, { tag = 'div', attrs = '', split = null, cmp = null } = {}) {
   const n = r.W + r.L + r.D;
   const aria = n ? [tn('wins', r.W), tn('losses', r.L), r.D ? tn('draws', r.D) : ''].filter(Boolean).join(', ') : t('no_data');
   const early = n < MIN_SAMPLE;
@@ -554,17 +631,21 @@ function rec(labelHtml, r, { tag = 'div', attrs = '' } = {}) {
     ? `<span class="dots" role="img" aria-label="${esc(aria)}" title="${esc(aria)}">${'<i class="w"></i>'.repeat(r.W)}${'<i class="d"></i>'.repeat(r.D)}${'<i class="l"></i>'.repeat(r.L)}</span>`
     : `<span class="bar" role="img" aria-label="${esc(aria)}" title="${esc(aria)}">${[['w', r.W], ['d', r.D], ['l', r.L]].filter(([, v]) => v)
       .map(([c, v]) => `<i class="${c}" style="flex-grow:${v}"></i>`).join('')}</span>`;
-  const rate = !n ? '—' : early ? `<span class="early" title="${esc(t('too_early_title', { n: MIN_SAMPLE }))}">${esc(t('too_early'))}</span>` : pct(r);
-  return `<${tag} class="rec" ${attrs}>
+  const rate = !n ? '<span class="early">—</span>' : early ? `<span class="early" title="${esc(t('too_early_title', { n: MIN_SAMPLE }))}">${esc(t('too_early'))}</span>` : pct(r);
+  const extra = (split ? subCell(t('g1'), t('g1_title'), split.g1) + subCell(t('g23'), t('g23_title'), split.g23) : '')
+    + (cmp ? subCell(cmp.label, t('cmp_title', { v: cmp.label }), cmp.r, ' cmp') : '');
+  return `<${tag} class="rec${split ? ' halves' : ''}${cmp ? ' with-cmp' : ''}" ${attrs}>
     <span class="rec-label">${labelHtml}</span>
     ${marks}
     <span class="rec-pct">${rate}</span>
-    <span class="rec-count">${r.W}–${r.L}${r.D ? `–${r.D}` : ''}</span>
+    <span class="rec-count">${wl(r)}</span>${extra}
   </${tag}>`;
 }
 
-function renderOverview(list) {
-  const m = tally(); const g = tally(); const play = tally(); const draw = tally(); const keep = tally(); const mull = tally();
+function renderOverview(list, cmp) {
+  const m = tally(); const g = tally(); const gs = halves();
+  const ctx = { play: [tally(), halves()], draw: [tally(), halves()], keep: [tally(), halves()], mull: [tally(), halves()] };
+  const add = (k, gm, r) => { ctx[k][0][r]++; ctx[k][1][half(gm)][r]++; };
   let turns = 0; let nTurns = 0; let myMulls = 0; let nGames = 0; let time = 0; let nTimed = 0;
   for (const x of list) {
     if (isLive(x)) continue; // a match in progress has no record yet, nor do its games count
@@ -573,10 +654,11 @@ function renderOverview(list) {
       const r = gRes(x, gm);
       if (!r) continue;
       g[r]++;
+      gs[half(gm)][r]++;
       const p = onPlay(x, gm);
-      if (p !== null) (p ? play : draw)[r]++;
+      if (p !== null) add(p ? 'play' : 'draw', gm, r);
       const k = gm.mulligans[x.mySeat] || 0;
-      (k ? mull : keep)[r]++;
+      add(k ? 'mull' : 'keep', gm, r);
       myMulls += k;
       nGames++;
       if (gm.turns) { turns += gm.turns; nTurns++; }
@@ -589,42 +671,52 @@ function renderOverview(list) {
     nTurns ? `<span><b>${num(turns / nTurns)}</b> ${esc(t('avg_turns'))}</span>` : '',
     nTimed ? `<span><b>${Math.max(1, Math.round(time / nTimed / 60000))} ${esc(t('min'))}</b> ${esc(t('per_game'))}</span>` : '',
   ].join('');
-  const line = (label, r) => `<span>${esc(label)} <b>${r.W}–${r.L}${r.D ? `–${r.D}` : ''}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</span>`;
-  $('#scope-sum').innerHTML = line(t('matches'), m) + line(t('games'), g) + facts;
-  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2>
-    ${rec(esc(t('on_play')), play)}${rec(esc(t('on_draw')), draw)}${rec(esc(t('kept_seven')), keep)}${rec(esc(t('after_mulligan')), mull)}`;
+  const line = (label, r, cls = '') => `<span${cls ? ` class="${cls}"` : ''}>${esc(label)} <b>${r.W}–${r.L}${r.D ? `–${r.D}` : ''}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</span>`;
+  let cm = null;
+  if (cmp) { cm = tally(); for (const x of cmp.list) if (x.result) cm[x.result]++; }
+  $('#scope-sum').innerHTML = line(t('matches'), m) + (cm ? line(`${cmp.label} · ${t('matches')}`, cm, 'cmp') : '')
+    + line(t('games'), g) + line(t('g1'), gs.g1) + line(t('g23'), gs.g23) + facts;
+  const row = (label, k) => rec(esc(label), ctx[k][0], { split: ctx[k][1] });
+  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2>${recHead('', t('games'))}
+    ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}`;
 }
 
-function renderBreakdown(sel, list, keyOf, kind) {
+// cmp: { label, list }, another list version whose match record sits beside each row.
+function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   const groups = new Map();
-  for (const m of list) {
+  const group = (m) => {
     const [key, label, text] = keyOf(m);
-    const e = groups.get(key) || { key, label, text, n: 0, m: tally(), g: tally() };
+    if (!groups.has(key)) groups.set(key, { key, label, text, n: 0, m: tally(), g: tally(), s: halves(), c: tally() });
+    return groups.get(key);
+  };
+  for (const m of list) {
+    const e = group(m);
     e.n++;
     if (m.result) e.m[m.result]++;
-    if (!isLive(m)) for (const gm of m.games) { const r = gRes(m, gm); if (r) e.g[r]++; }
-    groups.set(key, e);
+    if (!isLive(m)) for (const gm of m.games) { const r = gRes(m, gm); if (r) { e.g[r]++; e.s[half(gm)][r]++; } }
   }
-  // Only groups with at least one finished match: an in-progress match has no record yet.
-  const rows = [...groups.values()].filter((e) => e.m.W + e.m.L + e.m.D > 0).sort((a, b) => b.n - a.n);
+  if (cmp) for (const m of cmp.list) if (m.result) group(m).c[m.result]++;
+  const finished = (r) => r.W + r.L + r.D;
+  // Only groups with a finished match (in either version): an in-progress match has no record yet.
+  const rows = [...groups.values()].filter((e) => finished(e.m) || finished(e.c)).sort((a, b) => b.n - a.n || finished(b.c) - finished(a.c));
   const button = (e) => {
     const active = kind === 'opp' && !!state.opp && state.opp.key === e.key;
     const title = `${active ? t('remove_this_filter') : t('only_show', { label: e.text })} · ${t('games_record', { w: e.g.W, l: e.g.L })}`;
     const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" aria-pressed="${active}" title="${esc(title)}"`;
-    return rec(e.label, e.m, { tag: 'button', attrs });
+    return rec(e.label, e.m, { tag: 'button', attrs, split: e.s, cmp: cmp && { label: cmp.label, r: e.c } });
   };
   // Archetypes met fewer than RARE times fold into one "Others" row, as long as some are met more often.
   const RARE = 3;
-  const finished = (e) => e.m.W + e.m.L + e.m.D;
-  const rare = kind === 'opp' ? rows.filter((e) => finished(e) < RARE) : [];
+  const rare = kind === 'opp' ? rows.filter((e) => finished(e.m) < RARE) : [];
   const fold = rare.length >= 2 && rare.length < rows.length;
-  let html = (fold ? rows.filter((e) => finished(e) >= RARE) : rows).map(button).join('');
+  let html = (fold ? rows.filter((e) => finished(e.m) >= RARE) : rows).map(button).join('');
   if (fold) {
-    const sum = tally();
-    for (const e of rare) for (const k of ['W', 'L', 'D']) sum[k] += e.m[k];
+    const sum = tally(); const s = halves(); const c = tally();
+    for (const e of rare) for (const k of ['W', 'L', 'D']) { sum[k] += e.m[k]; s.g1[k] += e.s.g1[k]; s.g23[k] += e.s.g23[k]; c[k] += e.c[k]; }
     const open = !!($(sel).querySelector('details.others') || {}).open || rare.some((e) => state.opp && state.opp.key === e.key);
-    html += `<details class="others"${open ? ' open' : ''}><summary>${rec(`<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('others', rare.length))}`, sum, { tag: 'span' })}</summary>${rare.map(button).join('')}</details>`;
+    html += `<details class="others"${open ? ' open' : ''}><summary>${rec(`<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('others', rare.length))}`, sum, { tag: 'span', split: s, cmp: cmp && { label: cmp.label, r: c } })}</summary>${rare.map(button).join('')}</details>`;
   }
+  if (html) html = recHead(t(kind === 'opp' ? 'col_archetype' : 'col_deck'), t('matches'), cmp && cmp.label) + html;
   $(sel).innerHTML = html || `<p class="muted" style="padding:6px 8px 10px">${esc(t(scopeActive() ? 'no_finished_selection' : 'no_finished_all'))}</p>`;
 }
 
@@ -689,7 +781,7 @@ function detail(m) {
   const seen = opps(m).map((p) => `<section><h3>${esc(t('seen_at', { name: p.name }))} ${pips(m.colors[p.seat] || '')}</h3>${cardList(T.seenCards(m, p.seat))}</section>`).join('');
   const md = myDeck(m);
   const mine = md && md.cards
-    ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_list', { deck: deckName(m) }))}</summary>${deckList(md.cards)}</details>`
+    ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_list', { deck: deckName(m) }) + listVersion(m, md))}</summary>${deckList(md.cards)}</details>`
     : m.limitedDeck ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_limited_deck'))}</summary>${deckList(m.limitedDeck.deck)}</details>` : '';
   // "My deck" picker: the tracker's own attribution stays the default; any deck seen on the site can replace it.
   const auto = m.myDeck ? m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown');
@@ -731,6 +823,27 @@ function cardList(cards) {
   const spells = names.filter((c) => !BASICS.test(c)).sort(byCount);
   const basics = names.filter((c) => BASICS.test(c)).sort(byCount);
   return `<ul class="cardlist">${spells.map(li).join('')}${basics.length ? `<li class="sep">${esc(t('basic_lands'))}</li>${basics.map(li).join('')}` : ''}</ul>`;
+}
+
+// " · v3" when the deck has had several lists.
+function listVersion(m, md) {
+  const vs = versionsOf({ format: formatOf(m), deck: deckName(m) });
+  const x = vs.list.length > 1 && vs.list.find((y) => y.key === listKey(md.cards));
+  return x ? ` · ${t('version_n', { n: x.n })}` : '';
+}
+
+// The version in view and what changed from the previous list; a toggle sets the previous list's records beside.
+function renderVersions(cur, prev) {
+  const el = $('#versions');
+  el.hidden = !cur;
+  if (!cur) return;
+  const since = t('version_since', { n: cur.n, date: new Date(cur.from).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) });
+  if (!prev) { el.innerHTML = `<span><b>${esc(since)}</b> · ${esc(t('version_first'))}</span>`; return; }
+  const changes = listDiff(prev.key, cur.key);
+  const MAX = 8;
+  const shown = changes.slice(0, MAX).map(([name, d]) => `<span class="chg ${d > 0 ? 'add' : 'cut'}">${d > 0 ? '+' : '−'}${Math.abs(d)} ${cardLink(name)}</span>`).join(', ');
+  el.innerHTML = `<span><b>${esc(since)}</b>${esc(t('colon'))}${shown}${changes.length > MAX ? ` ${esc(t('version_more', { n: changes.length - MAX }))}` : ''}</span>`
+    + `<button class="link" data-action="compare" aria-pressed="${!!state.compare}">${esc(state.compare ? t('compare_stop') : t('compare_with', { n: prev.n }))}</button>`;
 }
 
 function deckList(list) {
@@ -897,6 +1010,7 @@ const ACTIONS = {
     toast(t('all_deleted'));
   },
   reset: resetFilters,
+  compare: () => setFilter({ compare: !state.compare }),
 };
 
 document.addEventListener('click', (e) => {
@@ -1001,14 +1115,20 @@ $('#matches').addEventListener('change', (e) => {
 $('#split').addEventListener('click', (e) => {
   const b = e.target.closest('button.rec');
   if (!b) return;
-  if (b.dataset.kind === 'deck') { const [format, deck] = JSON.parse(b.dataset.key); setFilter({ scope: scopeFor({ format, deck }), opp: null }); }
+  if (b.dataset.kind === 'deck') { const [format, deck] = JSON.parse(b.dataset.key); setFilter({ scope: scopeFor({ format, deck }), version: null, compare: false, opp: null }); }
   else setFilter({ opp: state.opp && state.opp.key === b.dataset.key ? null : { key: b.dataset.key, label: b.dataset.label } });
 });
 
 $('#q').addEventListener('input', (e) => setFilter({ q: e.target.value }));
 $('#f-scope').addEventListener('change', (e) => {
   const [format, deck] = JSON.parse(e.target.value);
-  setFilter({ scope: scopeFor({ format, deck }), opp: null }); // an archetype facet rarely survives a change of deck
+  setFilter({ scope: scopeFor({ format, deck }), version: null, compare: false, opp: null }); // an archetype facet rarely survives a change of deck
+});
+$('#f-version').addEventListener('change', (e) => {
+  const v = e.target.value;
+  const vs = versionsOf(activeScope());
+  const x = vs.list.find((y) => String(y.n) === v);
+  setFilter({ version: x ? (x.key === vs.current ? null : x.key) : v, compare: false }); // the current list is the default
 });
 for (const seg of document.querySelectorAll('.seg[data-filter]')) {
   seg.addEventListener('click', (e) => {
@@ -1027,7 +1147,8 @@ $('#live').addEventListener('click', () => {
   if (!m) return;
   if (!listed(scoped()).includes(m)) { // bring the live match into view: its own deck, no other filter
     $('#q').value = '';
-    setFilter({ q: '', result: 'all', period: 'all', opp: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
+    setFilter({ q: '', result: 'all', period: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
+    if (!listed(scoped()).includes(m)) setFilter({ version: 'all' }); // its list is not recorded yet
   }
   openId = m.id;
   loadDecisions(m.id).then(render);

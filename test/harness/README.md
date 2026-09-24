@@ -6,6 +6,7 @@ aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écriv
 - `gen-demo.js` : génère des données de démo + les pages `harness-*.html` (dashboard réel avec `chrome.storage` simulé et le métagame Modern servi depuis `meta-Modern.json`).
 - `shots.js` : captures du tableau de bord (large, étroit, détail, menu, vide, filtres, anglais).
 - `qa-live.js` : mise à jour en direct (journal conservé, report pendant saisie/sélection, suppression, import invalide).
+- `qa-versions.js` : versions de liste (deux listes pour Burn en Modern), comparaison avec la version précédente, colonnes G1 / G2-G3 ; assertions, sort en erreur si l'une échoue.
 - `qa-guess.js` : reconnaissance du deck adverse dans le harnais.
 - `e2e.js` : extension réellement chargée dans Chrome for Testing, partie rapide contre le bot puis vérification du stockage et du tableau de bord.
 - `e2e-reload.js` : onglet endstep.cc ouvert avant l'installation de l'extension (même chemin que ↻ / mise à jour) : le traqueur doit être injecté dans l'onglet et enregistrer une trame ; ne joue aucune partie.

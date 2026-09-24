@@ -25,6 +25,8 @@ Par game :
 Dans le tableau de bord (clic sur l'icône) :
 - en tête, le deck analysé : par défaut mon deck le plus joué sur 30 jours, sinon un autre deck, tous les decks d'un format ou tous mes decks (menu groupé par format) ; la période et un archétype adverse s'y ajoutent, et toutes les stats portent sur cette portée ;
 - bilan matchs/games, matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et les archétypes croisés moins de 3 fois se regroupent en « Autres » ; le match en cours ne compte pas ;
+- chaque bilan se lit aussi en G1 (main deck) et en G2-G3 (après sideboard), pour les matchups, le contexte et mes decks ;
+- versions de la liste : quand le main deck enregistré d'un deck change, une nouvelle version commence (les retouches de side ne comptent pas) ; la portée montre la version actuelle par défaut, avec les cartes ajoutées et retirées depuis la précédente, un bouton pour mettre le bilan de la précédente à côté de chaque matchup, et un menu pour les autres versions ou toutes ;
 - historique des matchs, avec sa recherche (adversaire, archétype, carte vue, note — touche `/`) et son filtre victoires/défaites, qui ne changent que la liste ;
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, cartes jouées tour par tour, journal, archétype adverse et notes ;
 - menu « Données » : export JSON (sauvegarde), export CSV (une ligne par game), import, tout effacer.

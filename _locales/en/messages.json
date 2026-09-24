@@ -655,5 +655,56 @@
   },
   "others_other": {
     "message": "Others · {n} archetypes"
+  },
+  "g1": {
+    "message": "G1"
+  },
+  "g23": {
+    "message": "G2-G3"
+  },
+  "g1_title": {
+    "message": "Game 1, with the main deck"
+  },
+  "g23_title": {
+    "message": "Games 2 and 3, after sideboarding"
+  },
+  "col_archetype": {
+    "message": "Archetype"
+  },
+  "col_deck": {
+    "message": "Deck"
+  },
+  "version_label": {
+    "message": "List version"
+  },
+  "version_n": {
+    "message": "v{n}"
+  },
+  "version_current": {
+    "message": "v{n} · current"
+  },
+  "versions_all": {
+    "message": "All versions"
+  },
+  "version_unknown": {
+    "message": "No list recorded"
+  },
+  "version_since": {
+    "message": "v{n} since {date}"
+  },
+  "version_first": {
+    "message": "first list recorded"
+  },
+  "version_more": {
+    "message": "and {n} more"
+  },
+  "compare_with": {
+    "message": "Compare with v{n}"
+  },
+  "compare_stop": {
+    "message": "Stop comparing"
+  },
+  "cmp_title": {
+    "message": "Record with {v}, in matches"
   }
 }
