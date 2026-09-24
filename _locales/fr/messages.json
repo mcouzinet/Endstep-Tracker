@@ -363,7 +363,7 @@
     "message": "Deck limité"
   },
   "casual": {
-    "message": "Casual"
+    "message": "Sans banlist"
   },
   "ranked_suffix": {
     "message": " (classé)"

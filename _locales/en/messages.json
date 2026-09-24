@@ -363,7 +363,7 @@
     "message": "Limited deck"
   },
   "casual": {
-    "message": "Casual"
+    "message": "No banlist"
   },
   "ranked_suffix": {
     "message": " (ranked)"

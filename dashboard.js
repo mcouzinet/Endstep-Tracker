@@ -83,10 +83,13 @@ const endReason = (r) => (r ? (END_REASON[r] ? t(END_REASON[r]) : r) : '');
 const resultLabel = (r) => t(RESULT[r]);
 const liveMatch = () => matches.find((m) => m.status === 'active' && Date.now() - m.updatedAt < STALE_MS);
 
-function fmt(m) {
+// The format alone (the site's formatId, else its game kind; constructed without a banlist is "no banlist").
+function formatOf(m) {
   const base = m.formatId && m.formatId !== 'casual' ? m.formatId : m.format && m.format !== 'constructed' ? m.format : t('casual');
-  return base.charAt(0).toUpperCase() + base.slice(1) + (m.ranked ? t('ranked_suffix') : '');
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
+// Format as displayed: ranked is a queue, not a format, so it is a suffix here and absent from the format chips.
+const fmt = (m) => formatOf(m) + (m.ranked ? t('ranked_suffix') : '');
 
 function scoreText(m) {
   if (!m.score || !m.score.length) return '';
@@ -132,7 +135,7 @@ function savePrefs() {
   try { localStorage.setItem(PREFS, JSON.stringify(state)); } catch { /* storage unavailable */ }
 }
 // Formats by number of matches, most played first. Default selection: the most played one alone; none selected = all.
-const formatCounts = () => { const c = {}; for (const m of matches) c[fmt(m)] = (c[fmt(m)] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale)); };
+const formatCounts = () => { const c = {}; for (const m of matches) c[formatOf(m)] = (c[formatOf(m)] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale)); };
 const defaultFormats = () => (matches.length ? [formatCounts()[0][0]] : []);
 const activeFormats = () => (state.formats === null ? defaultFormats() : state.formats);
 const formatsDefault = () => state.formats === null || (state.formats.length === defaultFormats().length && state.formats.every((f) => defaultFormats().includes(f)));
@@ -147,7 +150,7 @@ function filtered() {
   const q = state.q.trim().toLowerCase();
   const since = state.period === 'all' ? 0 : Date.now() - Number(state.period) * 864e5;
   const fmts = activeFormats();
-  return matches.filter((m) => (!fmts.length || fmts.includes(fmt(m)))
+  return matches.filter((m) => (!fmts.length || fmts.includes(formatOf(m)))
     && (!state.deck || deckName(m) === state.deck)
     && m.startedAt >= since
     && (state.result === 'all' || m.result === state.result)
