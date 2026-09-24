@@ -99,7 +99,7 @@
 
     /* ---- filters ---- */
     .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
-    .search { position: relative; flex: 1 1 280px; display: flex; }
+    .search { position: relative; flex: 0 1 340px; display: flex; } /* fixed width: the bar must not reflow when the count, the reset link or a facet appear */
     .search svg { position: absolute; left: 10px; top: 50%; translate: 0 -50%; color: var(--ink-3); pointer-events: none; }
     .search input { width: 100%; padding-left: 34px; }
     .search input::-webkit-search-cancel-button {
@@ -115,7 +115,8 @@
     .facet { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: rgb(212 174 98 / .12); border: 1px solid rgb(212 174 98 / .4); font-size: 13px; }
     .facet button { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer; }
     .facet button:hover { background: rgb(212 174 98 / .2); color: var(--ink); }
-    .count { color: var(--ink-3); font-size: 13px; margin-left: auto; }
+    .count { color: var(--ink-3); font-size: 13px; margin-left: auto; font-variant-numeric: tabular-nums; }
+    #reset.off { visibility: hidden; } /* keeps its width so the count does not move ([hidden] would collapse it) */
 
     /* ---- panels ---- */
     .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
@@ -382,7 +383,7 @@
       </div>
       <span id="facet" class="facet" hidden><span id="facet-label"></span><button id="facet-clear" data-i18n-attr="aria-label:remove_filter"><svg class="i"><use href="#i-x"/></svg></button></span>
       <span id="count" class="count" aria-live="polite"></span>
-      <button id="reset" class="link" hidden data-i18n="reset"></button>
+      <button id="reset" class="link off" data-i18n="reset"></button>
     </div>
 
     <section id="overview" class="panel overview" data-i18n-attr="aria-label:overview"></section>

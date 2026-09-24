@@ -498,7 +498,7 @@ function renderHeader() {
 
 function renderFilters(list) {
   $('#count').textContent = tn('n_matches', list.length) + (list.length !== matches.length ? t('of_total', { total: matches.length }) : '');
-  $('#reset').hidden = !filtersActive();
+  $('#reset').classList.toggle('off', !filtersActive());
   $('#facet').hidden = !state.opp;
   if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: state.opp.label });
   for (const seg of document.querySelectorAll('.seg[data-filter]')) {
