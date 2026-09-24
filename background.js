@@ -1,11 +1,4 @@
-// Toolbar click: bring back the dashboard tab if one is already open, otherwise open it.
-chrome.action.onClicked.addListener(async () => {
-  const url = chrome.runtime.getURL('dashboard.html');
-  const open = (await chrome.runtime.getContexts({ contextTypes: ['TAB'] })).find((c) => (c.documentUrl || '').startsWith(url));
-  if (!open) return chrome.tabs.create({ url });
-  await chrome.tabs.update(open.tabId, { active: true });
-  await chrome.windows.update(open.windowId, { focused: true });
-});
+// The toolbar icon opens popup.html, which also brings back an open dashboard tab.
 
 // Reloading or updating the extension kills its content scripts in open Endstep tabs (Chrome only injects them on
 // page load). Put them back: hook.js keeps running in the page and replays what the tab missed to the new content.js.

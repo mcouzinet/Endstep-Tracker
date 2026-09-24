@@ -7,7 +7,7 @@ Extension Chrome (Manifest V3, sans dépendance) qui enregistre automatiquement 
 1. `chrome://extensions` → activer **Mode développeur**
 2. **Charger l'extension non empaquetée** → sélectionner ce dossier
 3. Recharger les onglets endstep.cc déjà ouverts. Pendant un match, l'icône affiche un badge **REC**.
-4. Clic sur l'icône → dashboard (historique, stats, exports).
+4. Clic sur l'icône → popup : le match en cours (archétype adverse, mon bilan contre lui, mon plan de side) ou la session, et le bouton du tableau de bord (historique, stats, exports).
 
 Après une modification du code : bouton ↻ de l'extension dans `chrome://extensions`. Les onglets endstep.cc ouverts sont rattachés automatiquement (`background.js` réinjecte le traqueur et `hook.js`, qui survit dans la page, lui rejoue ce qu'il a manqué depuis le dernier état complet de la partie).
 

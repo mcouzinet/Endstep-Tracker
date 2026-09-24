@@ -9,6 +9,26 @@
   const NO_RECOGNITION = /draft|sealed|momir|fish|(?<!-)commander|brawl|oathbreaker/i; // "duel-commander" is tracked by the site
   const BASIC = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/;
 
+  const esc = (s) => String(s === undefined || s === null ? '' : s)
+    .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  // Records come from the tracker or from an imported file: keep only what the pages can render.
+  function normalizeMatch(m) {
+    if (!m || typeof m !== 'object' || typeof m.id !== 'string' || !m.id || !Number.isFinite(m.startedAt)) return null;
+    if (!Array.isArray(m.players) || !Array.isArray(m.games)) return null;
+    m.players = m.players.filter((p) => p && typeof p === 'object' && Number.isInteger(p.seat)).map((p) => ({ ...p, name: String(p.name || '?') }));
+    m.games = m.games.filter((g) => g && typeof g === 'object' && Number.isFinite(g.n)).map((g) => ({
+      ...g, mulligans: obj(g.mulligans), life: obj(g.life), seen: obj(g.seen), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
+    }));
+    m.mySeat = Number.isInteger(m.mySeat) ? m.mySeat : null;
+    m.score = Array.isArray(m.score) ? m.score.map(Number) : [];
+    m.colors = obj(m.colors);
+    m.status = m.status === 'complete' || m.status === 'abandoned' ? m.status : 'active';
+    if (!Number.isFinite(m.updatedAt)) m.updatedAt = m.startedAt;
+    if (m.myDeck && (typeof m.myDeck !== 'object' || typeof m.myDeck.id !== 'string')) m.myDeck = null;
+    return m;
+  }
+
   const opps = (m) => m.players.filter((p) => p && p.seat !== m.mySeat);
   const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
   const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
@@ -20,6 +40,25 @@
   const pct = (r) => (r.W + r.L ? `${Math.round((100 * r.W) / (r.W + r.L))} %` : '—');
   const wl = (r) => `${r.W}–${r.L}${r.D ? `–${r.D}` : ''}`;
   const isLive = (m, now = Date.now()) => m.status === 'active' && now - m.updatedAt < STALE_MS;
+  function scoreText(m) {
+    if (!m.score || !m.score.length) return '';
+    const others = m.score.filter((_, i) => i !== m.mySeat);
+    return `${m.score[m.mySeat] || 0}–${Math.max(0, ...others)}`;
+  }
+  const pips = (c, t) => `<span class="pips">${String(c).replace(/[^WUBRG]/g, '').split('')
+    .map((x) => `<span class="pip pip-${x}" title="${esc(t('color_' + x))}" aria-label="${esc(t('color_' + x))}">${x}</span>`).join('')}</span>`;
+  // "5 minutes ago", "yesterday", then a date. i18n: { locale, t }.
+  function ago(ts, i18n) {
+    const rtf = new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto' });
+    const diff = (ts - Date.now()) / 1000;
+    const a = Math.abs(diff);
+    if (a < 60) return i18n.t('just_now');
+    if (a < 3600) return rtf.format(Math.round(diff / 60), 'minute');
+    if (a < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
+    if (a < 7 * 86400) return rtf.format(Math.round(diff / 86400), 'day');
+    const d = new Date(ts);
+    return d.toLocaleDateString(i18n.locale, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+  }
 
   // A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
   function myDeck(m, c) {
@@ -45,8 +84,9 @@
     const col = colorsOf(m);
     return col ? 'c:' + col : '?';
   }
-  // One side plan per deck and opposing archetype.
-  const planKey = (format, deck, key) => 'plan:' + JSON.stringify([format, deck, key]);
+  // One side plan per deck and opposing archetype. The format is the only translated part of a key ("no banlist"):
+  // it is stored untranslated so a plan survives a change of language and reads the same from the in-page panel.
+  const planKey = (format, deck, key, t) => 'plan:' + JSON.stringify([format === t('casual') ? 'casual' : format, deck, key]);
 
   // The archetype endstep.cc's metagame suggests from the cards seen. meta: { formats, byFormat } as cached by the dashboard.
   function recognize(m, meta, Meta, T) {
@@ -117,6 +157,7 @@
 
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
+    esc, obj, normalizeMatch, scoreText, pips, ago,
     opps, colorsOf, gRes, onPlay, tally, half, halves, pct, wl, isLive,
     myDeck, deckName, formatOf, archetype, oppKey, planKey, recognize, lastSession, sessionOpen, records,
     loadI18n, browserI18n, translator,

@@ -775,5 +775,32 @@
   },
   "hint_browse": {
     "message": "to browse"
+  },
+  "open_dashboard": {
+    "message": "Open the dashboard"
+  },
+  "popup_live": {
+    "message": "In progress against {opp}"
+  },
+  "popup_vs_record": {
+    "message": "Against them with {deck}"
+  },
+  "popup_no_plan": {
+    "message": "No sideboard plan for this matchup yet: write it in the dashboard."
+  },
+  "popup_first_time": {
+    "message": "First match against them with this deck."
+  },
+  "popup_unknown_opp": {
+    "message": "Not recognized yet: it takes two of their cards seen."
+  },
+  "popup_empty": {
+    "message": "No match recorded yet. Play on endstep.cc: the icon shows REC during a match."
+  },
+  "overlay_toggle": {
+    "message": "Panel on endstep.cc during matches"
+  },
+  "recognized_pct": {
+    "message": "recognized, {p} %"
   }
 }

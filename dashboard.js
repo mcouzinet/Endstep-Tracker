@@ -3,8 +3,7 @@ const T = self.EndstepTracker;
 const Meta = self.EndstepMeta;
 const Coach = self.EndstepCoach;
 const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s === undefined || s === null ? '' : s)
-  .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = self.EndstepShared.esc;
 
 // --- i18n: every string lives in _locales/<lang>/messages.json (the manifest reads the same files) ---
 const S = self.EndstepShared;
@@ -70,30 +69,13 @@ const formatOf = (m) => S.formatOf(m, C);
 // Format as displayed: ranked is a queue, not a format, so it is a suffix here and absent from the format chips.
 const fmt = (m) => formatOf(m) + (m.ranked ? t('ranked_suffix') : '');
 
-function scoreText(m) {
-  if (!m.score || !m.score.length) return '';
-  const others = m.score.filter((_, i) => i !== m.mySeat);
-  return `${m.score[m.mySeat] || 0}–${Math.max(0, ...others)}`;
-}
+const scoreText = S.scoreText;
 
-function pips(c) {
-  return `<span class="pips">${String(c).replace(/[^WUBRG]/g, '').split('')
-    .map((x) => `<span class="pip pip-${x}" title="${esc(t('color_' + x))}" aria-label="${esc(t('color_' + x))}">${x}</span>`).join('')}</span>`;
-}
+const pips = (c) => S.pips(c, t);
 
 const cardLink = (name) => `<a class="card" data-card="${esc(name)}" href="https://scryfall.com/search?q=${encodeURIComponent(`!"${name}"`)}" target="_blank" rel="noopener">${esc(name)}</a>`;
 
-function ago(ts) {
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  const diff = (ts - Date.now()) / 1000;
-  const a = Math.abs(diff);
-  if (a < 60) return t('just_now');
-  if (a < 3600) return rtf.format(Math.round(diff / 60), 'minute');
-  if (a < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
-  if (a < 7 * 86400) return rtf.format(Math.round(diff / 86400), 'day');
-  const d = new Date(ts);
-  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
-}
+const ago = (ts) => S.ago(ts, I18N);
 const fullDate = (ts) => new Date(ts).toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' });
 
 function oppKey(m) {
@@ -228,22 +210,8 @@ function fillScope() {
 
 // --- data loading ---
 // Records come from the tracker or from an imported file: keep only what the page can render.
-const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-function normalizeMatch(m) {
-  if (!m || typeof m !== 'object' || typeof m.id !== 'string' || !m.id || !Number.isFinite(m.startedAt)) return null;
-  if (!Array.isArray(m.players) || !Array.isArray(m.games)) return null;
-  m.players = m.players.filter((p) => p && typeof p === 'object' && Number.isInteger(p.seat)).map((p) => ({ ...p, name: String(p.name || '?') }));
-  m.games = m.games.filter((g) => g && typeof g === 'object' && Number.isFinite(g.n)).map((g) => ({
-    ...g, mulligans: obj(g.mulligans), life: obj(g.life), seen: obj(g.seen), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
-  }));
-  m.mySeat = Number.isInteger(m.mySeat) ? m.mySeat : null;
-  m.score = Array.isArray(m.score) ? m.score.map(Number) : [];
-  m.colors = obj(m.colors);
-  m.status = m.status === 'complete' || m.status === 'abandoned' ? m.status : 'active';
-  if (!Number.isFinite(m.updatedAt)) m.updatedAt = m.startedAt;
-  if (m.myDeck && (typeof m.myDeck !== 'object' || typeof m.myDeck.id !== 'string')) m.myDeck = null;
-  return m;
-}
+const obj = S.obj;
+const normalizeMatch = S.normalizeMatch;
 
 async function load() {
   const all = await chrome.storage.local.get(null);
@@ -676,7 +644,7 @@ function sortRows(rows, how) {
 // First line of the side plan written for this matchup, for the deck in view.
 function planPeek(key) {
   const s = curScope;
-  const text = s && s.deck !== null ? plans[S.planKey(s.format, s.deck, key)] : '';
+  const text = s && s.deck !== null ? plans[S.planKey(s.format, s.deck, key, t)] : '';
   return text ? text.split('\n').find((l) => l.trim()) || '' : '';
 }
 
@@ -762,7 +730,7 @@ function renderDrawer(s, stats, vs) {
   if (!drawer) return;
   const r = S.records(list);
   const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
-  const pk = s.deck !== null ? S.planKey(s.format, s.deck, drawer.key) : null;
+  const pk = s.deck !== null ? S.planKey(s.format, s.deck, drawer.key, t) : null;
   const plan = pk ? `<textarea id="plan" data-plan="${esc(pk)}" rows="5" placeholder="${esc(t('side_plan_placeholder'))}">${esc(plans[pk] || '')}</textarea>`
     : `<p class="muted">${esc(t('side_plan_needs_deck'))}</p>`;
   const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {

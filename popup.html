@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Endstep Tracker</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body { width: 360px; }
+    body.loading main { visibility: hidden; }
+    header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+    header img { width: 24px; height: 24px; }
+    header b { font-weight: 650; margin-right: auto; }
+    header .btn { padding: 5px 10px; font-size: 13px; }
+    main { display: grid; gap: 14px; padding: 14px; }
+    h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 650; }
+    h2 .muted { font-weight: 400; font-size: 13px; }
+    h3 { margin-bottom: 6px; font-size: 12px; font-weight: 500; color: var(--ink-3); }
+    .arch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+    .stats dt { font-size: 12px; color: var(--ink-3); }
+    .stats dd { margin: 0; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    .stats dd b { color: var(--ink); font-weight: 600; }
+    .plan { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); white-space: pre-wrap; font: inherit; font-size: 13px; line-height: 1.45; }
+    .note { font-size: 13px; color: var(--ink-3); }
+    ul { list-style: none; margin: 0; padding: 0; }
+    .recent li { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgb(44 38 30 / .6); font-size: 13px; }
+    .recent .who { min-width: 0; display: grid; }
+    .recent .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent .score { font-weight: 600; font-variant-numeric: tabular-nums; }
+    footer { padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+    .switch { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+    .switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--gold); }
+  </style>
+</head>
+<body class="loading">
+  <header>
+    <img src="icons/icon-32.png" alt="">
+    <b>Endstep Tracker</b>
+    <button id="open" class="btn primary" data-i18n="open_dashboard"></button>
+  </header>
+  <main id="main" aria-live="polite"></main>
+  <footer>
+    <label class="switch"><input type="checkbox" id="overlay"><span data-i18n="overlay_toggle"></span></label>
+  </footer>
+  <script src="tracker.js"></script>
+  <script src="meta.js"></script>
+  <script src="shared.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

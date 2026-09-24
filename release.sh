@@ -10,7 +10,7 @@ suffix=$([ "$target" = firefox ] && echo -firefox || true)
 out="$PWD/dist/endstep-tracker-$v$suffix.zip"
 mkdir -p dist && rm -f "$out"
 stage=$(mktemp -d)
-cp -R manifest.json background.js hook.js tracker.js content.js dashboard.js meta.js shared.js _locales "$stage"/
+cp -R manifest.json background.js hook.js tracker.js content.js dashboard.js meta.js shared.js theme.css popup.html popup.js _locales "$stage"/
 mkdir "$stage/icons" && cp icons/*.png "$stage/icons/"
 grep -v '<script src="coach.js">' dashboard.html > "$stage/dashboard.html"
 if [ "$target" = firefox ]; then

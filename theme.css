@@ -1,0 +1,81 @@
+/* Endstep Tracker's visual world, shared by the dashboard and the toolbar popup: palette, type, controls, identity marks.
+   The in-page panel on endstep.cc lives in a shadow root and carries its own copy of the few tokens it uses (overlay.js). */
+:root {
+  color-scheme: dark;
+  --bg: #0c0a08;
+  --surface: #14110d;
+  --surface-2: #1b1712;
+  --surface-3: #251f18;
+  --line: #2c261e;
+  --line-strong: #43392c;
+  --ink: #efe7d7;
+  --ink-2: #bfb29a;
+  --ink-3: #8f846f;
+  --gold: #d4ae62;
+  --gold-hi: #ecca86;
+  --on-fill: #0c0a08;
+  /* Result colors, checked for colour-blind separation on --surface (dataviz validator). */
+  --win: #1a9f86;
+  --loss: #e5664b;
+  --draw: #6f685d;
+  --danger: #f08a73;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-pop: 0 14px 34px -10px rgb(0 0 0 / .7), 0 2px 8px rgb(0 0 0 / .45);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; }
+html { scrollbar-color: var(--line-strong) var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); caret-color: var(--gold-hi);
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgb(212 174 98 / .32); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+h1, h2, h3, h4, p { margin: 0; }
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+a:hover { color: var(--gold-hi); text-decoration-color: currentColor; }
+svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.muted { color: var(--ink-3); }
+[hidden] { display: none !important; }
+
+/* ---- controls ---- */
+.btn, select, input, textarea {
+  font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--line-strong); background: var(--surface-3); color: var(--ink); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--gold); border-color: var(--gold); color: var(--on-fill); font-weight: 600; }
+.btn.primary:hover { background: var(--gold-hi); border-color: var(--gold-hi); }
+select { padding: 7px 30px 7px 10px; appearance: none; cursor: pointer;
+  background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f846f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center / 14px; }
+select:hover, input:hover, textarea:hover { border-color: var(--line-strong); }
+input, textarea { padding: 7px 10px; }
+input::placeholder, textarea::placeholder { color: var(--ink-3); }
+.link { background: none; border: 0; padding: 4px 2px; color: var(--gold); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.link:hover { color: var(--gold-hi); }
+
+/* ---- identity marks ---- */
+.pips { display: inline-flex; gap: 3px; vertical-align: -2px; }
+.pip { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; font-size: 9.5px; font-weight: 700; line-height: 1; color: #fff; }
+.pip-W { background: #efe6c8; color: #2b2418; }
+.pip-U { background: #2f76c0; }
+.pip-B { background: #4b4139; box-shadow: inset 0 0 0 1px #8f846f; }
+.pip-R { background: #c9432d; }
+.pip-G { background: #2d8550; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: rgb(212 174 98 / .12); color: var(--gold-hi); font-size: 12px; white-space: nowrap; }
+.tag.guess { background: none; border: 1px dashed rgb(212 174 98 / .55); color: var(--ink-2); } /* recognized, not confirmed by the user */
+.guess-line { margin-top: -8px; font-size: 13px; color: var(--ink-2); }
+.guess-line b { color: var(--ink); font-weight: 600; }
+.guess-line .link { padding: 0 2px; margin-left: 4px; }
+.result { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
+.result i { width: 10px; height: 10px; border-radius: 3px; background: var(--ink-3); }
+.result.W i { background: var(--win); }
+.result.L i { background: var(--loss); }
+.result.D i { background: var(--draw); }
+.result.ongoing i { background: var(--gold-hi); border-radius: 50%; }
+.result.open { color: var(--ink-2); font-weight: 500; }
+

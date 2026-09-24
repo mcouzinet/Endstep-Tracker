@@ -775,5 +775,32 @@
   },
   "hint_browse": {
     "message": "pour parcourir"
+  },
+  "open_dashboard": {
+    "message": "Ouvrir le tableau de bord"
+  },
+  "popup_live": {
+    "message": "En cours contre {opp}"
+  },
+  "popup_vs_record": {
+    "message": "Contre eux avec {deck}"
+  },
+  "popup_no_plan": {
+    "message": "Pas encore de plan de side pour ce matchup : écris-le dans le tableau de bord."
+  },
+  "popup_first_time": {
+    "message": "Premier match contre eux avec ce deck."
+  },
+  "popup_unknown_opp": {
+    "message": "Pas encore reconnu : il faut deux de leurs cartes vues."
+  },
+  "popup_empty": {
+    "message": "Aucun match enregistré. Joue sur endstep.cc : l’icône affiche REC pendant la partie."
+  },
+  "overlay_toggle": {
+    "message": "Panneau sur endstep.cc pendant les parties"
+  },
+  "recognized_pct": {
+    "message": "reconnu à {p} %"
   }
 }
