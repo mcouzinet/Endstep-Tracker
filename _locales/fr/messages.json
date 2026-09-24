@@ -134,9 +134,6 @@
   "no_finished_selection": {
     "message": "Aucun match terminé dans cette sélection."
   },
-  "remove_this_filter": {
-    "message": "Retirer le filtre"
-  },
   "only_show": {
     "message": "Voir uniquement : {label}"
   },
@@ -706,5 +703,77 @@
   },
   "cmp_title": {
     "message": "Bilan avec {v}, en matchs"
+  },
+  "session_now": {
+    "message": "Session en cours"
+  },
+  "session_last": {
+    "message": "Dernière session · {when}"
+  },
+  "session_effects": {
+    "message": "Ce que la session change"
+  },
+  "session_from_to": {
+    "message": "de {from} à {to}"
+  },
+  "confirm_guess": {
+    "message": "Confirmer {name}"
+  },
+  "confirm_guess_title": {
+    "message": "Reconnu à {p} % d’après les cartes vues"
+  },
+  "col_play": {
+    "message": "Play"
+  },
+  "col_draw": {
+    "message": "Draw"
+  },
+  "sort_label": {
+    "message": "Trier les matchups"
+  },
+  "sort_n": {
+    "message": "Fréquence"
+  },
+  "sort_worst": {
+    "message": "Pire d’abord"
+  },
+  "sort_best": {
+    "message": "Meilleur d’abord"
+  },
+  "open_matchup": {
+    "message": "Ouvrir le matchup {label}"
+  },
+  "drawer_close": {
+    "message": "Fermer"
+  },
+  "side_plan": {
+    "message": "Plan de side"
+  },
+  "side_plan_placeholder": {
+    "message": "Ce qui entre, ce qui sort, ce qu’il faut surveiller"
+  },
+  "side_plan_needs_deck": {
+    "message": "Choisis un deck en haut de la page pour écrire son plan de side."
+  },
+  "plan_saved": {
+    "message": "Enregistré"
+  },
+  "by_version": {
+    "message": "Par version de liste"
+  },
+  "cards_seen_there": {
+    "message": "Leurs cartes que j’ai vues"
+  },
+  "seen_in": {
+    "message": "{n} sur {total}"
+  },
+  "matches_vs": {
+    "message": "Matchs contre eux"
+  },
+  "filter_matchup": {
+    "message": "Filtrer la page sur ce matchup"
+  },
+  "hint_browse": {
+    "message": "pour parcourir"
   }
 }

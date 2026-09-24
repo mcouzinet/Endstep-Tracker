@@ -134,9 +134,6 @@
   "no_finished_selection": {
     "message": "No finished match in this selection."
   },
-  "remove_this_filter": {
-    "message": "Remove the filter"
-  },
   "only_show": {
     "message": "Show only: {label}"
   },
@@ -706,5 +703,77 @@
   },
   "cmp_title": {
     "message": "Record with {v}, in matches"
+  },
+  "session_now": {
+    "message": "Session in progress"
+  },
+  "session_last": {
+    "message": "Last session · {when}"
+  },
+  "session_effects": {
+    "message": "What this session changes"
+  },
+  "session_from_to": {
+    "message": "from {from} to {to}"
+  },
+  "confirm_guess": {
+    "message": "Confirm {name}"
+  },
+  "confirm_guess_title": {
+    "message": "Recognized at {p} % from the cards seen"
+  },
+  "col_play": {
+    "message": "Play"
+  },
+  "col_draw": {
+    "message": "Draw"
+  },
+  "sort_label": {
+    "message": "Sort matchups"
+  },
+  "sort_n": {
+    "message": "Most met"
+  },
+  "sort_worst": {
+    "message": "Worst first"
+  },
+  "sort_best": {
+    "message": "Best first"
+  },
+  "open_matchup": {
+    "message": "Open the {label} matchup"
+  },
+  "drawer_close": {
+    "message": "Close"
+  },
+  "side_plan": {
+    "message": "Sideboard plan"
+  },
+  "side_plan_placeholder": {
+    "message": "What comes in, what goes out, what to watch for"
+  },
+  "side_plan_needs_deck": {
+    "message": "Pick one deck at the top of the page to write its sideboard plan."
+  },
+  "plan_saved": {
+    "message": "Saved"
+  },
+  "by_version": {
+    "message": "By list version"
+  },
+  "cards_seen_there": {
+    "message": "Their cards I have seen"
+  },
+  "seen_in": {
+    "message": "{n} of {total}"
+  },
+  "matches_vs": {
+    "message": "Matches against them"
+  },
+  "filter_matchup": {
+    "message": "Filter the page to this matchup"
+  },
+  "hint_browse": {
+    "message": "to browse"
   }
 }

@@ -7,31 +7,16 @@ const esc = (s) => String(s === undefined || s === null ? '' : s)
   .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // --- i18n: every string lives in _locales/<lang>/messages.json (the manifest reads the same files) ---
-const LANGS = ['en', 'fr'];
-const LANG_PREF = 'endstep-tracker.lang';
+const S = self.EndstepShared;
+const LANG_PREF = S.LANG_PREF;
 let locale = 'en';
-let messages = {};
-let pluralRules = new Intl.PluralRules('en');
-const t = (key, vars) => {
-  let s = messages[key] ? messages[key].message : key;
-  if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(v);
-  return s;
-};
-const tn = (key, n, vars) => t(`${key}_${pluralRules.select(n)}`, { n, ...vars });
-
-function pickLocale() {
-  const base = (l) => String(l || '').toLowerCase().split('-')[0];
-  let saved = null;
-  try { saved = localStorage.getItem(LANG_PREF); } catch { /* storage unavailable */ }
-  for (const l of [saved, navigator.language]) if (LANGS.includes(base(l))) return base(l);
-  return 'en';
-}
+let I18N = S.translator('en', () => null);
+const t = (key, vars) => I18N.t(key, vars);
+const tn = (key, n, vars) => I18N.tn(key, n, vars);
 
 async function initI18n() {
-  locale = pickLocale();
-  const read = async (lang) => { try { return await (await fetch(`_locales/${lang}/messages.json`)).json(); } catch { return {}; } };
-  messages = Object.assign(await read('en'), locale === 'en' ? {} : await read(locale)); // English fills any gap
-  pluralRules = new Intl.PluralRules(locale);
+  I18N = await S.loadI18n(); // the language picked here wins over the browser's; English fills any gap
+  locale = I18N.locale;
   document.documentElement.lang = locale;
   $('#lang').value = locale;
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
@@ -48,16 +33,19 @@ const END_REASON = {
 };
 const PLAYS = new Set(['LAND_PLAYED', 'SPELL_CAST']);
 const BASICS = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/;
-const STALE_MS = 3 * 3600e3;
+const STALE_MS = S.STALE_MS;
 const PREFS = 'endstep-tracker.filters';
 
 // scope: null = the default (my most played deck over 30 days), else { format, deck }; a null format means every format,
 // a null deck every deck of that format. Stats cover scope + period + opponent; result and search only narrow the history.
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
-const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null };
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null, sort: 'n' };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
+let plans = {}; // side plans: shared.js planKey (deck + archetype) -> text
+let drawer = null; // { key } of the matchup open in the side panel
+let curScope = null; // the scope of the last render
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
 let analyses = {}; // matchId -> { model, at, determinizations, games: { gameNumber: [row per decision] } }, imported from Endstep-coach
@@ -65,33 +53,20 @@ let pending = null; // storage changes held back while the user is editing or se
 let toastTimer;
 
 // --- data helpers ---
-const opps = (m) => m.players.filter((p) => p && p.seat !== m.mySeat);
+// Context for shared.js: my notes and decks as currently loaded, and the translator.
+const C = { get notes() { return notes; }, get decks() { return decks; }, t: (k, v) => t(k, v) };
+const { opps, colorsOf, gRes, onPlay, tally, pct } = S;
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
-const archetype = (m) => (notes[m.id] && notes[m.id].archetype) || '';
-const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
-const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
-const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
-// A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
-function myDeck(m) {
-  const id = notes[m.id] && notes[m.id].deckId;
-  if (!id) return m.myDeck;
-  const d = decks[id] || {};
-  return { id, name: d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
-}
-const deckName = (m) => { const d = myDeck(m); return d ? d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown'); };
-const tally = () => ({ W: 0, L: 0, D: 0 });
-const pct = (t) => (t.W + t.L ? `${Math.round((100 * t.W) / (t.W + t.L))} %` : '—');
+const archetype = (m) => S.archetype(m, C);
+const myDeck = (m) => S.myDeck(m, C);
+const deckName = (m) => S.deckName(m, C);
 const minutes = (from, to) => (from && to ? t('minutes', { n: Math.max(1, Math.round((to - from) / 60000)) }) : '');
 const endReason = (r) => (r ? (END_REASON[r] ? t(END_REASON[r]) : r) : '');
 const resultLabel = (r) => t(RESULT[r]);
-const isLive = (m) => m.status === 'active' && Date.now() - m.updatedAt < STALE_MS;
+const isLive = (m) => S.isLive(m);
 const liveMatch = () => matches.find(isLive);
 
-// The format alone (the site's formatId, else its game kind; constructed without a banlist is "no banlist").
-function formatOf(m) {
-  const base = m.formatId && m.formatId !== 'casual' ? m.formatId : m.format && m.format !== 'constructed' ? m.format : t('casual');
-  return base.charAt(0).toUpperCase() + base.slice(1);
-}
+const formatOf = (m) => S.formatOf(m, C);
 // Format as displayed: ranked is a queue, not a format, so it is a suffix here and absent from the format chips.
 const fmt = (m) => formatOf(m) + (m.ranked ? t('ranked_suffix') : '');
 
@@ -274,6 +249,7 @@ async function load() {
   const all = await chrome.storage.local.get(null);
   matches = [];
   notes = {};
+  plans = {};
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) {
       const m = normalizeMatch(v);
@@ -281,6 +257,7 @@ async function load() {
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
     else if (k.startsWith('ana:')) analyses[k.slice(4)] = obj(v);
+    else if (k.startsWith('plan:')) plans[k] = String(v || '');
     else if (k === 'decks') decks = obj(v);
   }
   refresh();
@@ -308,6 +285,9 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete analyses[id];
       else analyses[id] = obj(c.newValue);
+    } else if (k.startsWith('plan:')) {
+      if (c.newValue === undefined) delete plans[k];
+      else plans[k] = String(c.newValue);
     } else if (k === 'decks') decks = obj(c.newValue);
   }
   refresh();
@@ -480,7 +460,6 @@ function coachBlock(m, g) {
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
 const META_TTL = 7 * 864e5;
-const NO_RECOGNITION = /draft|sealed|momir|fish|(?<!-)commander|brawl|oathbreaker/i; // "duel-commander" is tracked by the site
 const metaData = {}; // formatId -> { at, decks }
 let metaFormats = null; // formats that have metagame data
 let metaFormatsAt = 0;
@@ -497,8 +476,8 @@ async function initMeta() {
 const persistMeta = () => chrome.storage.local.set({ meta: { formats: metaFormats, formatsAt: metaFormatsAt, byFormat: metaData } });
 
 const oppCards = (m) => opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)));
-const recognizable = (m) => !archetype(m) && !NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)
-  && oppCards(m).filter((c) => !/^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/.test(c)).length >= 2;
+const recognizable = (m) => !archetype(m) && !S.NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)
+  && oppCards(m).filter((c) => !S.BASIC.test(c)).length >= 2;
 // Formats whose archetypes a match is compared with: its own when the site tracks it, otherwise every tracked format.
 const metaFormatsFor = (m) => (!metaFormats ? [] : metaFormats.includes(m.formatId) ? [m.formatId] : metaFormats);
 const fresh = (f) => metaData[f] && Date.now() - metaData[f].at < META_TTL;
@@ -508,7 +487,7 @@ function guessFor(m) {
   const formats = metaFormatsFor(m).filter((f) => metaData[f]);
   if (!formats.length) return null;
   const key = `${m.id}|${m.updatedAt}|${formats.map((f) => f + metaData[f].at).join()}`;
-  if (!guessMemo.has(key)) guessMemo.set(key, Meta.classify(oppCards(m), formats.flatMap((f) => metaData[f].decks)));
+  if (!guessMemo.has(key)) guessMemo.set(key, S.recognize(m, { formats: metaFormats, byFormat: metaData }, Meta, T));
   return guessMemo.get(key);
 }
 
@@ -563,7 +542,9 @@ function render() {
   const cur = vs.list.find((x) => x.key === v);
   const prev = cur && vs.list[cur.n - 2];
   const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
+  curScope = s;
   renderFilters(s, stats, list, vs, v);
+  renderSession(s, stats);
   renderVersions(cur, prev);
   renderOverview(stats, cmp);
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
@@ -574,6 +555,7 @@ function render() {
   }
   $('#history').classList.toggle('one-deck', s.deck !== null);
   renderMatches(list);
+  renderDrawer(s, stats, vs);
 }
 
 function renderHeader() {
@@ -610,20 +592,20 @@ function renderFilters(s, stats, list, vs, v) {
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
 // Below MIN_SAMPLE results a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
 const MIN_SAMPLE = 5;
-const wl = (r) => `${r.W}–${r.L}${r.D ? `–${r.D}` : ''}`;
-// Game 1 is played with the main deck, games 2 and 3 after sideboarding: every game record splits along that line.
-const half = (gm) => (gm.n === 1 ? 'g1' : 'g23');
-const halves = () => ({ g1: tally(), g23: tally() });
-// A secondary record cell (G1, G2-G3, a compared version): W–L, plus the rate once the sample allows it.
-// Its key is read by screen readers and shown in narrow windows, where the column captions are hidden.
-function subCell(key, title, r, cls = '') {
+const { wl, half, halves } = S; // G1 = main deck, G2-G3 = after sideboarding
+// Secondary record cells: [{ key, title, r, cls }], each W–L plus the rate once the sample allows it.
+// Their key is read by screen readers and shown in narrow windows, where the column captions are hidden.
+const halfCells = (s) => [{ key: t('g1'), title: t('g1_title'), r: s.g1 }, { key: t('g23'), title: t('g23_title'), r: s.g23 }];
+const sideCells = (r) => [{ key: t('col_play'), title: t('on_play'), r: r.play }, { key: t('col_draw'), title: t('on_draw'), r: r.draw }];
+const cmpCell = (label, r) => ({ key: label, title: t('cmp_title', { v: label }), r, cls: ' cmp' });
+function subCell({ key, title, r, cls = '' }) {
   const n = r.W + r.L + r.D;
   return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>${n >= MIN_SAMPLE ? `<b>${pct(r)}</b> ` : ''}${n ? wl(r) : '—'}</span>`;
 }
-// Column captions above records that carry G1 / G2-G3 (and a compared version).
-const recHead = (first, main, cmp) => `<div class="rec halves head${cmp ? ' with-cmp' : ''}" aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
-  + `<span title="${esc(t('g1_title'))}">${esc(t('g1'))}</span><span title="${esc(t('g23_title'))}">${esc(t('g23'))}</span>${cmp ? `<span>${esc(cmp)}</span>` : ''}</div>`;
-function rec(labelHtml, r, { tag = 'div', attrs = '', split = null, cmp = null } = {}) {
+// Column captions above records that carry cells; `opens` rows end with an arrow (they open the matchup panel).
+const recHead = (first, main, cells, opens = false) => `<div class="rec cells head${opens ? ' opens' : ''}" style="--cells:${cells.length}" aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
+  + `${cells.map((c) => `<span title="${esc(c.title)}">${esc(c.key)}</span>`).join('')}${opens ? '<span></span>' : ''}</div>`;
+function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false } = {}) {
   const n = r.W + r.L + r.D;
   const aria = n ? [tn('wins', r.W), tn('losses', r.L), r.D ? tn('draws', r.D) : ''].filter(Boolean).join(', ') : t('no_data');
   const early = n < MIN_SAMPLE;
@@ -632,13 +614,12 @@ function rec(labelHtml, r, { tag = 'div', attrs = '', split = null, cmp = null }
     : `<span class="bar" role="img" aria-label="${esc(aria)}" title="${esc(aria)}">${[['w', r.W], ['d', r.D], ['l', r.L]].filter(([, v]) => v)
       .map(([c, v]) => `<i class="${c}" style="flex-grow:${v}"></i>`).join('')}</span>`;
   const rate = !n ? '<span class="early">—</span>' : early ? `<span class="early" title="${esc(t('too_early_title', { n: MIN_SAMPLE }))}">${esc(t('too_early'))}</span>` : pct(r);
-  const extra = (split ? subCell(t('g1'), t('g1_title'), split.g1) + subCell(t('g23'), t('g23_title'), split.g23) : '')
-    + (cmp ? subCell(cmp.label, t('cmp_title', { v: cmp.label }), cmp.r, ' cmp') : '');
-  return `<${tag} class="rec${split ? ' halves' : ''}${cmp ? ' with-cmp' : ''}" ${attrs}>
+  const cls = `rec${cells.length ? ' cells' : ''}${opens ? ' opens' : ''}`;
+  return `<${tag} class="${cls}" ${cells.length ? `style="--cells:${cells.length}" ` : ''}${attrs}>
     <span class="rec-label">${labelHtml}</span>
     ${marks}
     <span class="rec-pct">${rate}</span>
-    <span class="rec-count">${wl(r)}</span>${extra}
+    <span class="rec-count">${wl(r)}</span>${cells.map(subCell).join('')}${opens ? '<svg class="i open-chev" aria-hidden="true"><use href="#i-chevron"/></svg>' : ''}
   </${tag}>`;
 }
 
@@ -676,48 +657,173 @@ function renderOverview(list, cmp) {
   if (cmp) { cm = tally(); for (const x of cmp.list) if (x.result) cm[x.result]++; }
   $('#scope-sum').innerHTML = line(t('matches'), m) + (cm ? line(`${cmp.label} · ${t('matches')}`, cm, 'cmp') : '')
     + line(t('games'), g) + line(t('g1'), gs.g1) + line(t('g23'), gs.g23) + facts;
-  const row = (label, k) => rec(esc(label), ctx[k][0], { split: ctx[k][1] });
-  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2>${recHead('', t('games'))}
+  const row = (label, k) => rec(esc(label), ctx[k][0], { cells: halfCells(ctx[k][1]) });
+  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2>${recHead('', t('games'), halfCells(halves()))}
     ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}`;
 }
 
-// cmp: { label, list }, another list version whose match record sits beside each row.
+// A rate needs enough matches to rank: under MIN_SAMPLE a matchup sorts after the ones that have them.
+const rate = (r) => { const n = r.W + r.L + r.D; return n ? (r.W + r.D / 2) / n : 0; };
+function sortRows(rows, how) {
+  const few = (e) => (e.r.m.W + e.r.m.L + e.r.m.D >= MIN_SAMPLE ? 0 : 1);
+  const by = {
+    worst: (a, b) => few(a) - few(b) || rate(a.r.m) - rate(b.r.m) || b.n - a.n,
+    best: (a, b) => few(a) - few(b) || rate(b.r.m) - rate(a.r.m) || b.n - a.n,
+    n: (a, b) => b.n - a.n,
+  };
+  return rows.sort((a, b) => (by[how] || by.n)(a, b) || (b.c.W + b.c.L + b.c.D) - (a.c.W + a.c.L + a.c.D));
+}
+// First line of the side plan written for this matchup, for the deck in view.
+function planPeek(key) {
+  const s = curScope;
+  const text = s && s.deck !== null ? plans[S.planKey(s.format, s.deck, key)] : '';
+  return text ? text.split('\n').find((l) => l.trim()) || '' : '';
+}
+
+// kind 'opp': the matchup guide, whose rows open the matchup panel; kind 'deck': my decks, whose rows scope the page.
+// cmp: { label, list }, another list version whose match record sits beside each matchup.
 function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   const groups = new Map();
   const group = (m) => {
     const [key, label, text] = keyOf(m);
-    if (!groups.has(key)) groups.set(key, { key, label, text, n: 0, m: tally(), g: tally(), s: halves(), c: tally() });
+    if (!groups.has(key)) groups.set(key, { key, label, text, list: [], cmp: [] });
     return groups.get(key);
   };
-  for (const m of list) {
-    const e = group(m);
-    e.n++;
-    if (m.result) e.m[m.result]++;
-    if (!isLive(m)) for (const gm of m.games) { const r = gRes(m, gm); if (r) { e.g[r]++; e.s[half(gm)][r]++; } }
-  }
-  if (cmp) for (const m of cmp.list) if (m.result) group(m).c[m.result]++;
+  for (const m of list) group(m).list.push(m);
+  if (cmp) for (const m of cmp.list) group(m).cmp.push(m);
   const finished = (r) => r.W + r.L + r.D;
   // Only groups with a finished match (in either version): an in-progress match has no record yet.
-  const rows = [...groups.values()].filter((e) => finished(e.m) || finished(e.c)).sort((a, b) => b.n - a.n || finished(b.c) - finished(a.c));
+  const rows = sortRows([...groups.values()].map((e) => Object.assign(e, { r: S.records(e.list), c: S.records(e.cmp).m, n: e.list.length }))
+    .filter((e) => finished(e.r.m) || finished(e.c)), kind === 'opp' ? state.sort : 'n');
+  const opp = kind === 'opp';
+  const cellsOf = (r, c) => [...halfCells(r.s), ...(opp ? sideCells(r) : []), ...(cmp ? [cmpCell(cmp.label, c)] : [])];
   const button = (e) => {
-    const active = kind === 'opp' && !!state.opp && state.opp.key === e.key;
-    const title = `${active ? t('remove_this_filter') : t('only_show', { label: e.text })} · ${t('games_record', { w: e.g.W, l: e.g.L })}`;
-    const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" aria-pressed="${active}" title="${esc(title)}"`;
-    return rec(e.label, e.m, { tag: 'button', attrs, split: e.s, cmp: cmp && { label: cmp.label, r: e.c } });
+    const title = opp ? t('open_matchup', { label: e.text }) : t('only_show', { label: e.text });
+    const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" title="${esc(title)}"`
+      + (opp ? ` aria-controls="drawer" aria-expanded="${!!drawer && drawer.key === e.key}"` : '');
+    const peek = opp ? planPeek(e.key) : '';
+    return rec(e.label + (peek ? `<span class="plan-peek">${esc(peek)}</span>` : ''), e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp });
   };
   // Archetypes met fewer than RARE times fold into one "Others" row, as long as some are met more often.
   const RARE = 3;
-  const rare = kind === 'opp' ? rows.filter((e) => finished(e.m) < RARE) : [];
+  const rare = opp ? rows.filter((e) => finished(e.r.m) < RARE) : [];
   const fold = rare.length >= 2 && rare.length < rows.length;
-  let html = (fold ? rows.filter((e) => finished(e.m) >= RARE) : rows).map(button).join('');
+  let html = (fold ? rows.filter((e) => finished(e.r.m) >= RARE) : rows).map(button).join('');
   if (fold) {
-    const sum = tally(); const s = halves(); const c = tally();
-    for (const e of rare) for (const k of ['W', 'L', 'D']) { sum[k] += e.m[k]; s.g1[k] += e.s.g1[k]; s.g23[k] += e.s.g23[k]; c[k] += e.c[k]; }
-    const open = !!($(sel).querySelector('details.others') || {}).open || rare.some((e) => state.opp && state.opp.key === e.key);
-    html += `<details class="others"${open ? ' open' : ''}><summary>${rec(`<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('others', rare.length))}`, sum, { tag: 'span', split: s, cmp: cmp && { label: cmp.label, r: c } })}</summary>${rare.map(button).join('')}</details>`;
+    const sum = S.records(rare.flatMap((e) => e.list));
+    const c = S.records(rare.flatMap((e) => e.cmp)).m;
+    const open = !!($(sel).querySelector('details.others') || {}).open || rare.some((e) => drawer && drawer.key === e.key);
+    html += `<details class="others"${open ? ' open' : ''}><summary>${rec(`<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('others', rare.length))}`, sum.m, { tag: 'span', cells: cellsOf(sum, c), opens: opp })}</summary>${rare.map(button).join('')}</details>`;
   }
-  if (html) html = recHead(t(kind === 'opp' ? 'col_archetype' : 'col_deck'), t('matches'), cmp && cmp.label) + html;
+  if (html) html = recHead(t(opp ? 'col_archetype' : 'col_deck'), t('matches'), cellsOf(S.records([]), S.tally()), opp) + html;
   $(sel).innerHTML = html || `<p class="muted" style="padding:6px 8px 10px">${esc(t(scopeActive() ? 'no_finished_selection' : 'no_finished_all'))}</p>`;
+}
+
+// --- session: the latest run of matches with the deck in view, and what it changed to each matchup ---
+function renderSession(s, stats) {
+  const el = $('#session');
+  const sess = S.lastSession(matches.filter((m) => inScope(m, s)));
+  el.hidden = !sess.length;
+  if (!sess.length) return;
+  const open = S.sessionOpen(sess);
+  const r = S.records(sess);
+  const first = sess[sess.length - 1];
+  const span = minutes(first.startedAt, sess[0].endedAt || sess[0].updatedAt);
+  const ids = new Set(sess.map((m) => m.id));
+  const touched = new Map();
+  for (const m of stats) if (ids.has(m.id) && m.result) { const [key, label] = oppKey(m); touched.set(key, label); }
+  const effects = [...touched].map(([key, label]) => {
+    const all = stats.filter((m) => oppKey(m)[0] === key);
+    const before = S.records(all.filter((m) => !ids.has(m.id))).m;
+    return `<li><span>${label}</span><span class="muted">${esc(t('session_from_to', { from: wl(before), to: wl(S.records(all).m) }))}</span></li>`;
+  }).join('');
+  const title = open ? t('session_now') : t('session_last', { when: ago(sess[0].startedAt) });
+  el.innerHTML = `<summary><span><b>${esc(title)}</b> · ${wl(r.m)} · ${esc(tn('n_matches', sess.length))}${span ? ` · ${esc(span)}` : ''}</span><svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+    <div class="session-body"><ol class="session-list">${sess.map(sessionRow).join('')}</ol>
+    ${effects ? `<div class="session-effects"><h3>${esc(t('session_effects'))}</h3><ul>${effects}</ul></div>` : ''}</div>`;
+  if (!el.dataset.touched) el.open = open; // open while the session runs, until the user decides otherwise
+}
+function sessionRow(m) {
+  const a = archetype(m);
+  const g = !a && guessFor(m);
+  const tag = a ? `<span class="tag">${esc(a)}</span>`
+    : g ? `<button class="tag guess" data-confirm="${esc(m.id)}" data-name="${esc(g.name)}" title="${esc(t('confirm_guess_title', { p: Math.round(g.p * 100) }))}">${esc(t('confirm_guess', { name: g.name }))}</button>` : '';
+  return `<li><button class="session-row" data-show="${esc(m.id)}">${resultBadge(m)}<span class="who"><span class="opp-name">${esc(oppLabel(m))}</span>${pips(colorsOf(m))}</span>`
+    + `<span class="chips">${m.games.map((gm) => chip(m, gm)).join('')}</span></button>${tag}</li>`;
+}
+
+// --- matchup panel: one archetype against the deck in view, its side plan, its cards, its matches ---
+function renderDrawer(s, stats, vs) {
+  const el = $('#drawer');
+  const list = drawer ? stats.filter((m) => oppKey(m)[0] === drawer.key) : [];
+  if (drawer && !list.length) drawer = null; // gone from the page's scope
+  el.hidden = !drawer;
+  document.body.classList.toggle('drawer-open', !!drawer);
+  if (!drawer) return;
+  const r = S.records(list);
+  const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
+  const pk = s.deck !== null ? S.planKey(s.format, s.deck, drawer.key) : null;
+  const plan = pk ? `<textarea id="plan" data-plan="${esc(pk)}" rows="5" placeholder="${esc(t('side_plan_placeholder'))}">${esc(plans[pk] || '')}</textarea>`
+    : `<p class="muted">${esc(t('side_plan_needs_deck'))}</p>`;
+  const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {
+    const rr = S.records(scoped(x.key).filter((m) => oppKey(m)[0] === drawer.key)).m;
+    return rr.W + rr.L + rr.D ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
+  }).join('') : '';
+  const seen = new Map(); // card -> number of these matches where it showed up
+  for (const m of list) for (const name of new Set(opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat))))) seen.set(name, (seen.get(name) || 0) + 1);
+  const cards = [...seen].filter(([n]) => !S.BASIC.test(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale)).slice(0, 24)
+    .map(([name, n]) => `<li>${cardLink(name)} <span class="muted">${esc(t('seen_in', { n, total: list.length }))}</span></li>`).join('');
+  const where = s.deck !== null ? t('scope_deck', { deck: s.deck, format: s.format }) : s.format !== null ? t('scope_all_format', { format: s.format }) : t('scope_all');
+  const ver = vs.list.find((x) => x.key === activeVersion(vs));
+  el.innerHTML = `<header><h2 id="drawer-title">${oppKey(list[0])[1]}</h2><button class="icon-btn" data-close-drawer aria-label="${esc(t('drawer_close'))}" title="${esc(t('drawer_close'))}"><svg class="i"><use href="#i-x"/></svg></button></header>
+    <p class="muted drawer-scope">${esc(where)}${ver ? ` · ${esc(t('version_n', { n: ver.n }))}` : ''}</p>
+    <dl class="drawer-stats">${stat(t('matches'), r.m)}${stat(t('g1'), r.s.g1)}${stat(t('g23'), r.s.g23)}${stat(t('on_play'), r.play)}${stat(t('on_draw'), r.draw)}</dl>
+    <section><h3><label for="plan">${esc(t('side_plan'))}</label><span id="plan-state" aria-live="polite"></span></h3>${plan}</section>
+    ${byVersion ? `<section><h3>${esc(t('by_version'))}</h3><ul class="versions-list">${byVersion}</ul></section>` : ''}
+    ${cards ? `<section><h3>${esc(t('cards_seen_there'))}</h3><ul class="seen-list">${cards}</ul></section>` : ''}
+    <section><h3>${esc(t('matches_vs'))}</h3><ul class="drawer-matches">${list.map((m) => `<li><button class="drawer-match" data-show="${esc(m.id)}">${resultBadge(m)}`
+      + `<span class="who"><span class="opp-name">${esc(oppLabel(m))}</span><span class="muted">${esc(ago(m.startedAt))}</span></span><span class="score">${scoreText(m)}</span></button></li>`).join('')}</ul></section>
+    <div><button class="btn" data-filter-matchup>${esc(t('filter_matchup'))}</button></div>`;
+}
+function openDrawer(key) {
+  drawer = { key };
+  render();
+  const close = $('#drawer [data-close-drawer]');
+  if (close) close.focus();
+}
+function closeDrawer() {
+  if (!drawer) return;
+  const { key } = drawer;
+  drawer = null;
+  render();
+  const row = [...document.querySelectorAll('#by-opp button.rec')].find((b) => b.dataset.key === key);
+  if (row) row.focus();
+}
+let planTimer;
+function savePlan(el) {
+  const k = el.dataset.plan;
+  const text = el.value.trim() ? el.value : '';
+  if (text) plans[k] = text; else delete plans[k];
+  clearTimeout(planTimer);
+  planTimer = setTimeout(() => (text ? chrome.storage.local.set({ [k]: text }) : chrome.storage.local.remove(k))
+    .then(() => { const st = $('#plan-state'); if (st) st.textContent = t('plan_saved'); }), 400);
+}
+
+// Open a match in the history, widening the filters when they hide it (its own deck, every list version if need be).
+function showMatch(m) {
+  if (!listed(scoped()).includes(m)) {
+    $('#q').value = '';
+    setFilter({ q: '', result: 'all', period: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
+    if (!listed(scoped()).includes(m)) setFilter({ version: 'all' }); // its list is not recorded (yet)
+  }
+  openId = m.id;
+  loadDecisions(m.id).then(() => {
+    render();
+    const el = document.querySelector(`.match[data-id="${CSS.escape(m.id)}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    el.querySelector('.match-row').focus({ preventScroll: true });
+  });
 }
 
 function renderMatches(list) {
@@ -981,7 +1087,7 @@ const ACTIONS = {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
     const anas = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('ana:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, analyses: anas, decks: obj(all.decks) }), 'application/json');
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, analyses: anas, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -1005,7 +1111,7 @@ const ACTIONS = {
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec|ana):/.test(k)));
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec|ana|plan):/.test(k)));
     openId = null;
     toast(t('all_deleted'));
   },
@@ -1034,6 +1140,7 @@ $('#import').addEventListener('change', async (e) => {
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
     for (const [id, a] of Object.entries(obj(data && data.analyses))) if (items['match:' + id]) items['ana:' + id] = obj(a);
+    for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
@@ -1113,11 +1220,34 @@ $('#matches').addEventListener('change', (e) => {
 });
 
 $('#split').addEventListener('click', (e) => {
+  const show = e.target.closest('[data-show]');
+  if (show) { const m = matches.find((x) => x.id === show.dataset.show); if (m) showMatch(m); return; }
+  const confirmBtn = e.target.closest('[data-confirm]');
+  if (confirmBtn) {
+    const id = confirmBtn.dataset.confirm;
+    notes[id] = Object.assign({}, notes[id], { archetype: confirmBtn.dataset.name });
+    chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
+    return;
+  }
+  if (e.target.closest('#session > summary')) $('#session').dataset.touched = '1';
   const b = e.target.closest('button.rec');
   if (!b) return;
   if (b.dataset.kind === 'deck') { const [format, deck] = JSON.parse(b.dataset.key); setFilter({ scope: scopeFor({ format, deck }), version: null, compare: false, opp: null }); }
-  else setFilter({ opp: state.opp && state.opp.key === b.dataset.key ? null : { key: b.dataset.key, label: b.dataset.label } });
+  else if (drawer && drawer.key === b.dataset.key) closeDrawer();
+  else openDrawer(b.dataset.key);
 });
+$('#drawer').addEventListener('click', (e) => {
+  if (e.target.closest('[data-close-drawer]')) { closeDrawer(); return; }
+  const show = e.target.closest('[data-show]');
+  if (show) { const m = matches.find((x) => x.id === show.dataset.show); drawer = null; if (m) showMatch(m); return; }
+  if (e.target.closest('[data-filter-matchup]')) {
+    const { key } = drawer;
+    const row = [...document.querySelectorAll('#by-opp button.rec')].find((x) => x.dataset.key === key);
+    drawer = null;
+    setFilter({ opp: { key, label: row ? row.dataset.label : key.slice(2) } });
+  }
+});
+$('#drawer').addEventListener('input', (e) => { if (e.target.matches('[data-plan]')) savePlan(e.target); });
 
 $('#q').addEventListener('input', (e) => setFilter({ q: e.target.value }));
 $('#f-scope').addEventListener('change', (e) => {
@@ -1142,23 +1272,18 @@ $('#lang').addEventListener('change', (e) => {
   try { localStorage.setItem(LANG_PREF, e.target.value); } catch { /* storage unavailable */ }
   location.reload();
 });
-$('#live').addEventListener('click', () => {
-  const m = liveMatch();
-  if (!m) return;
-  if (!listed(scoped()).includes(m)) { // bring the live match into view: its own deck, no other filter
-    $('#q').value = '';
-    setFilter({ q: '', result: 'all', period: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
-    if (!listed(scoped()).includes(m)) setFilter({ version: 'all' }); // its list is not recorded yet
-  }
-  openId = m.id;
-  loadDecisions(m.id).then(render);
-  const el = document.querySelector(`.match[data-id="${CSS.escape(m.id)}"]`);
-  if (el) el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-});
+$('#live').addEventListener('click', () => { const m = liveMatch(); if (m) showMatch(m); });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === '/' && !e.target.closest('input, textarea, select')) { e.preventDefault(); $('#q').focus(); }
-  if (e.key === 'Escape') hidePreview();
+  if (e.key === 'Escape') { hidePreview(); if (drawer && !e.target.closest('input, textarea, select')) closeDrawer(); }
+  // j / k walk the matchups and the history rows
+  if ((e.key === 'j' || e.key === 'k') && !e.target.closest('input, textarea, select') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    const rows = [...document.querySelectorAll('#by-opp > button.rec, #by-opp details[open] > button.rec, #matches .match-row')];
+    const i = rows.indexOf(document.activeElement);
+    const next = rows[e.key === 'j' ? i + 1 : Math.max(0, i - 1)];
+    if (next) { e.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest' }); }
+  }
 });
 document.addEventListener('pointerover', (e) => {
   const el = e.target.closest('[data-card]');
@@ -1179,7 +1304,7 @@ document.addEventListener('focusin', (e) => {
 // selected in the list (a re-render would destroy both), applied as soon as they are done.
 const busy = () => {
   const a = document.activeElement;
-  if (a && a.matches('input, textarea, select') && a.closest('.detail')) return true;
+  if (a && a.matches('input, textarea, select') && a.closest('.detail, .drawer')) return true;
   const s = getSelection();
   return !!(s && !s.isCollapsed && s.anchorNode && $('#matches').contains(s.anchorNode));
 };
@@ -1199,7 +1324,7 @@ document.addEventListener('selectionchange', () => { if (pending) flushPending()
 addEventListener('scroll', hidePreview, { passive: true });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|ana):/.test(k)));
+  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|ana|plan):/.test(k)));
   if (!Object.keys(mine).length) return;
   if (busy() || pending) { pending = Object.assign(pending || {}, mine); flushPending(); return; }
   applyChanges(mine);

@@ -25,6 +25,8 @@ Par game :
 Dans le tableau de bord (clic sur l'icône) :
 - en tête, le deck analysé : par défaut mon deck le plus joué sur 30 jours, sinon un autre deck, tous les decks d'un format ou tous mes decks (menu groupé par format) ; la période et un archétype adverse s'y ajoutent, et toutes les stats portent sur cette portée ;
 - bilan matchs/games, matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et les archétypes croisés moins de 3 fois se regroupent en « Autres » ; le match en cours ne compte pas ;
+- en haut, la session en cours (ou la dernière, repliée) : ses matchs, l'archétype reconnu à confirmer en un clic, et ce qu'elle change à chaque matchup ; une session, ce sont des matchs à moins de 2 h d'écart ;
+- le guide des matchups : bilan en matchs, G1, G2-G3, games au play et à la draw, tri par fréquence, pire ou meilleur d'abord (un taux sur moins de 5 matchs ne passe jamais en tête) ; un clic ouvre le panneau du matchup : son plan de side (une note par deck et par archétype, enregistrée pendant la frappe et rappelée sous la ligne), ses bilans par version, les cartes vues chez lui avec leur fréquence, ses matchs, et un bouton pour filtrer la page sur lui ; `j` / `k` parcourent les lignes, Échap ferme le panneau ;
 - chaque bilan se lit aussi en G1 (main deck) et en G2-G3 (après sideboard), pour les matchups, le contexte et mes decks ;
 - versions de la liste : quand le main deck enregistré d'un deck change, une nouvelle version commence (les retouches de side ne comptent pas) ; la portée montre la version actuelle par défaut, avec les cartes ajoutées et retirées depuis la précédente, un bouton pour mettre le bilan de la précédente à côté de chaque matchup, et un menu pour les autres versions ou toutes ;
 - historique des matchs, avec sa recherche (adversaire, archétype, carte vue, note — touche `/`) et son filtre victoires/défaites, qui ne changent que la liste ;
@@ -49,7 +51,7 @@ La probabilité vient de `coach-model.json`, un petit modèle (depuis 0.9.1 un r
 
 ## Langues
 
-L'interface existe en français et en anglais : elle suit la langue de Chrome, et un sélecteur dans l'en-tête permet de forcer l'une ou l'autre. Les textes sont dans `_locales/en/messages.json` et `_locales/fr/messages.json` (le manifest utilise les mêmes fichiers). Pour ajouter une langue : copier `_locales/en`, traduire, puis l'ajouter à `LANGS` dans `dashboard.js`.
+L'interface existe en français et en anglais : elle suit la langue de Chrome, et un sélecteur dans l'en-tête permet de forcer l'une ou l'autre. Les textes sont dans `_locales/en/messages.json` et `_locales/fr/messages.json` (le manifest utilise les mêmes fichiers). Pour ajouter une langue : copier `_locales/en`, traduire, puis l'ajouter à `LANGS` dans `shared.js`.
 
 ## Fonctionnement
 
