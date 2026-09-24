@@ -89,20 +89,20 @@ les mesures sont notées.
 
 ## Livrables et critères de fin
 
-- [ ] Phase 0 : journal, tests verts, auto-jeu profondeur 1 lancé (4 JVM, 600 parties), heure de fin estimée notée.
-- [ ] A1 : `lists.js` : source de chaque partie (`forge`, `selfplay0`, `selfplay1`), partage `test1` (15 % des parties
+- [x] Phase 0 : journal, tests verts, auto-jeu profondeur 1 lancé (4 JVM, 600 parties), heure de fin estimée notée.
+- [x] A1 : `lists.js` : source de chaque partie (`forge`, `selfplay0`, `selfplay1`), partage `test1` (15 % des parties
       profondeur 1, par md5), poids par ligne ; cible de recherche `v` attachée aux états quand le journal la donne.
-- [ ] A2 : `train_sets.py` : pondération par source, fine-tuning depuis un modèle donné, table apprise (option), perte
+- [x] A2 : `train_sets.py` : pondération par source, fine-tuning depuis un modèle donné, table apprise (option), perte
       auxiliaire sur `v` (option), rapport sur `test` et `test1` ; répétable avec les 54 parties déjà là.
-- [ ] B1 : quand ≥ 400 parties profondeur 1 sont finies : jeu de données reconstruit ; 4 entraînements (base pondérée,
+- [x] B1 : quand ≥ 400 parties profondeur 1 sont finies : jeu de données reconstruit ; 4 entraînements (base pondérée,
       fine-tuning, table apprise, cible de recherche), ≤ 30 min chacun ; tableau AUC/log-loss `test` et `test1`.
-- [ ] B2 : deux candidats retenus (meilleure log-loss `test1`, et le meilleur sans table apprise si ce n'est pas le
+- [x] B2 : deux candidats retenus (meilleure log-loss `test1`, et le meilleur sans table apprise si ce n'est pas le
       même) exportés et vérifiés en parité.
-- [ ] C1 : miroir 300 (défauts, profondeur 0) pour chaque candidat, témoin actuel re-mesuré (76 parties) à charge égale.
-- [ ] C2 : archétype de contrôle : 150 parties contre `terror` pour le meilleur candidat et le témoin.
-- [ ] D : livraison (ou non) : `coach-model.json`, `bot/coach-model.txt`, table si apprise, `coach-model-sets-*.json`
+- [x] C1 : miroir 300 (défauts, profondeur 0) pour chaque candidat, témoin actuel re-mesuré (76 parties) à charge égale.
+- [x] C2 : archétype de contrôle : 150 parties contre `terror` pour le meilleur candidat et le témoin.
+- [x] D : livraison (ou non) : `coach-model.json`, `bot/coach-model.txt`, table si apprise, `coach-model-sets-*.json`
       versionné, `coach.test.js` vert, démo et captures, version de l'extension, README (une phrase).
-- [ ] Rapport, limites, prochaines étapes, `STATUT FINAL`.
+- [x] Rapport, limites, prochaines étapes, `STATUT FINAL`.
 
 ## Phase 0 — Préparation et lancement de l'auto-jeu (20 min)
 
