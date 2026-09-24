@@ -102,7 +102,7 @@
   // Card-set model: per card f(v) = W2·relu(W1·v + b1) + b2 (at most per_zone cards, unknown names skipped), summed per
   // zone, plus the zone bias; the flat 6 × dim block the head reads after the standardized counts.
   function zoneInput(model, zones, cards) {
-    const table = cards && cards.cards ? cards.cards : cards;
+    const table = model.table ? model.table : cards && cards.cards ? cards.cards : cards; // a learned table travels with the model
     const dim = model.dim || DIM;
     const [W1, W2] = model.card_coef;
     const [b1, b2] = model.card_intercept;
