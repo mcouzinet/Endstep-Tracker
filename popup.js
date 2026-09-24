@@ -8,15 +8,9 @@ const { esc, wl, pct } = S;
 let I18N;
 const t = (k, v) => I18N.t(k, v);
 
-// The dashboard tab if one is open, else a new one.
+// background.js brings back an open dashboard tab, or opens one.
 async function openDashboard() {
-  const url = chrome.runtime.getURL('dashboard.html');
-  const open = (await chrome.runtime.getContexts({ contextTypes: ['TAB'] })).find((c) => (c.documentUrl || '').startsWith(url));
-  if (!open) await chrome.tabs.create({ url });
-  else {
-    await chrome.tabs.update(open.tabId, { active: true });
-    await chrome.windows.update(open.windowId, { focused: true });
-  }
+  await chrome.runtime.sendMessage({ openDashboard: true });
   window.close();
 }
 

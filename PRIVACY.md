@@ -20,7 +20,7 @@ Nothing is recorded when you are spectating.
 
 ## Where it is stored
 
-Everything stays in your browser, in the extension's local storage (`chrome.storage.local`). The developer has no access to it. It is never transmitted to any server, never synced, never sold, never used for advertising. Uninstalling the extension deletes it. You can export it (JSON, CSV) or delete it at any time from the dashboard's "Data" menu.
+Everything stays in your browser, in the extension's local storage (`chrome.storage.local`). The panel shown on endstep.cc during matches displays this data on your screen from a closed shadow root that the page's own scripts cannot read. The developer has no access to it. It is never transmitted to any server, never synced, never sold, never used for advertising. Uninstalling the extension deletes it. You can export it (JSON, CSV) or delete it at any time from the dashboard's "Data" menu.
 
 ## Network requests the extension makes
 
@@ -50,7 +50,7 @@ Uniquement des informations visibles à l'écran pendant tes propres parties sur
 
 ## Où c'est stocké
 
-Tout reste dans ton navigateur (`chrome.storage.local`). Le développeur n'y a pas accès. Rien n'est transmis à un serveur, synchronisé, vendu ni utilisé à des fins publicitaires. Désinstaller l'extension supprime ces données ; le menu « Données » du tableau de bord permet de les exporter (JSON, CSV) ou de tout effacer.
+Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur endstep.cc pendant les parties montre ces données à ton écran depuis un shadow root fermé, que les scripts de la page ne peuvent pas lire. Le développeur n'y a pas accès. Rien n'est transmis à un serveur, synchronisé, vendu ni utilisé à des fins publicitaires. Désinstaller l'extension supprime ces données ; le menu « Données » du tableau de bord permet de les exporter (JSON, CSV) ou de tout effacer.
 
 ## Requêtes réseau
 

@@ -35,6 +35,12 @@ Dans le tableau de bord (clic sur l'icône) :
 
 Seules les informations publiques (visibles en jeu) sont enregistrées. Tout reste en local (`chrome.storage.local`) ; seul l'aperçu au survol charge l'image de la carte depuis Scryfall.
 
+## Pendant la partie
+
+- **Panneau sur endstep.cc** (`overlay.js`) : pendant une game, une pastille « REC · session 4–2 » ; entre deux games, il se déplie sur l'adversaire, l'archétype reconnu, mon bilan contre lui avec ce deck (matchs, G1, G2-G3) et mon plan de side ; après le match, le résultat et l'archétype à confirmer en un clic. Il se replie d'un clic, se déplace à la souris (la place est gardée), ne prend jamais le focus clavier (Espace reste au jeu) et vit dans un shadow root fermé. Il suit la langue du navigateur. Il se coupe depuis la popup.
+- **Popup de l'icône** (`popup.html`) : la même chose pendant un match, la session sinon, et le bouton du tableau de bord.
+- La reconnaissance d'archétype du panneau et de la popup utilise le métagame mis en cache par le tableau de bord : ouvrir le tableau de bord une fois suffit à le charger.
+
 ## Reconnaissance du deck adverse
 
 Le tableau de bord reconnaît le deck adverse à partir des cartes vues, grâce au métagame public d'endstep.cc (`/api/metagame/v1`) : pour chaque archétype, le site publie la liste des cartes et leur taux de présence. Le score est un classement bayésien naïf (part de métagame × taux de présence de chaque carte vue) ; en dessous de 60 % de certitude, ou avec moins de 2 cartes non-terrain, rien n'est proposé. Le nom reconnu s'affiche en pointillés dans la liste (le survol donne la certitude et les cartes décisives) et dans le détail, avec un bouton « Utiliser » pour le confirmer ; un archétype saisi à la main a toujours priorité. Les matchs d'un format suivi par le site (Modern, Pauper, Legacy, Premodern, Vintage, Duel Commander…) sont comparés aux archétypes de ce format, les autres (casual, freeplay) à tous. Les données sont chargées au besoin (environ une requête par archétype), mises en cache 7 jours dans `chrome.storage.local` (clé `meta`) ; les archétypes trop rares, dont le site ne publie pas la liste, ne peuvent pas être reconnus.
@@ -58,6 +64,7 @@ L'interface existe en français et en anglais : elle suit la langue de Chrome, e
 - `hook.js` s'exécute dans la page avant le code d'Endstep et observe le WebSocket (`GAME_STATE`, `GAME_DELTA`, `GAME_EVENT`, `GAME_OVER`…) ainsi que quelques réponses `fetch` (noms de decks, format du match).
 - `tracker.js` transforme ces messages en fiche de match (logique pure, testée).
 - `content.js` persiste les fiches (et mes décisions sous `dec:<matchId>`) ; `dashboard.html` les affiche ; `meta.js` reconnaît le deck adverse ; `coach.js` évalue les décisions.
+- `shared.js` : ce que le tableau de bord, la popup et le panneau calculent de la même façon (noms de deck et de format, clé d'archétype, sessions, bilans, clés de plan de side, reconnaissance, textes) ; `theme.css` : palette et composants communs au tableau de bord et à la popup ; `popup.js` ; `overlay.js`.
 - `icons/` : sources SVG des icônes (`icon.svg` pour 48/128 px, `icon-32.svg`, `icon-16.svg`) et leurs PNG.
 
 Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rechargement de la page en plein match) ne sont pas rattrapés ; la liste adverse est un minimum (uniquement ce qui a été vu) ; un match supprimé du tableau de bord pendant qu'il se joue n'est plus suivi ; le deck attribué à un match est celui du siège de sa table, sinon le dernier deck choisi dans les 6 heures. Un match enregistré sans deck (ou avec le mauvais) se corrige dans son détail avec le sélecteur « Mon deck », qui propose tous les decks vus sur le site ; ce choix est gardé à part (`note:<matchId>`) et prime sur l'attribution automatique.

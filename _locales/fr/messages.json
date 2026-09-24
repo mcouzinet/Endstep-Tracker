@@ -802,5 +802,32 @@
   },
   "recognized_pct": {
     "message": "reconnu à {p} %"
+  },
+  "ov_session": {
+    "message": "session {wl}"
+  },
+  "ov_collapse": {
+    "message": "Replier"
+  },
+  "ov_expand": {
+    "message": "Afficher le matchup"
+  },
+  "ov_against": {
+    "message": "Contre {opp}"
+  },
+  "ov_no_plan": {
+    "message": "Pas encore de plan de side contre eux : écris-le dans le tableau de bord."
+  },
+  "ov_result_W": {
+    "message": "Victoire {score} contre {opp}"
+  },
+  "ov_result_L": {
+    "message": "Défaite {score} contre {opp}"
+  },
+  "ov_result_D": {
+    "message": "Match nul {score} contre {opp}"
+  },
+  "ov_move": {
+    "message": "Glisser pour déplacer"
   }
 }

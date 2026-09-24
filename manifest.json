@@ -48,7 +48,10 @@
       ],
       "js": [
         "tracker.js",
-        "content.js"
+        "meta.js",
+        "shared.js",
+        "content.js",
+        "overlay.js"
       ],
       "run_at": "document_start"
     }

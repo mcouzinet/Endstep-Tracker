@@ -3,7 +3,7 @@ slug: dashboard-html
 primary_target: dashboard.html
 related_targets: ["dashboard.js", "popup.html", "content.js"]
 mode: operate
-status: confirmed 2026-09-24
+status: implemented 2026-09-24 (lots 1 to 5)
 ---
 
 # Refonte UX : dashboard, popup, incrustation

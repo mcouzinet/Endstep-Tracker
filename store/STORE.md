@@ -15,13 +15,18 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 
 Endstep Tracker automatically records the Magic: The Gathering matches you play on endstep.cc and turns them into a personal match history, all stored locally in your browser.
 
-While you play, the extension icon shows a REC badge. Click it to open the dashboard:
+While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype, your record against it and your sideboard plan for that matchup. The toolbar popup shows the same during a match, and your session otherwise.
 
+The dashboard opens on the deck you play most:
+
+• Your session in progress, and how it moved each matchup.
+• Matchups: record in matches, game 1 (main deck) and games 2-3 (after sideboarding), on the play and on the draw; a sideboard plan per matchup.
+• List versions: when your main deck changes, compare the new list with the previous one, matchup by matchup.
 • Match history: date, format, opponent, your deck, score, result.
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
 • Opponent cards seen, with card preview on hover, and automatic archetype recognition from endstep.cc's public metagame (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
-• Stats: win rates on the play and on the draw, with and without mulligan, by your deck and by opponent archetype. Click a row to filter.
-• Filters and search: opponent, archetype, card seen, note, format, deck, period, result.
+• Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 5 results.
+• Search the history: opponent, archetype, card seen, note.
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
 Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no server, account, analytics or ads. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
@@ -32,13 +37,18 @@ Not affiliated with endstep.cc or Wizards of the Coast.
 
 Endstep Tracker enregistre automatiquement les parties de Magic: The Gathering que tu joues sur endstep.cc et en fait un historique personnel, stocké uniquement dans ton navigateur.
 
-Pendant une partie, l'icône affiche un badge REC. Un clic ouvre le tableau de bord :
+Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse, ton bilan contre lui et ton plan de side pour ce matchup. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
 
+Le tableau de bord s'ouvre sur le deck que tu joues le plus :
+
+• Ta session en cours, et ce qu'elle a changé à chaque matchup.
+• Matchups : bilan en matchs, en game 1 (main deck) et en games 2-3 (après side), au play et à la draw ; un plan de side par matchup.
+• Versions de liste : quand ton main deck change, compare la nouvelle liste à la précédente, matchup par matchup.
 • Historique des matchs : date, format, adversaire, ton deck, score, résultat.
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
 • Cartes adverses vues, aperçu au survol, et reconnaissance automatique de l'archétype grâce au métagame public d'endstep.cc (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
-• Statistiques : au play et à la draw, avec ou sans mulligan, par deck joué et par archétype adverse. Un clic sur une ligne filtre la liste.
-• Filtres et recherche : adversaire, archétype, carte vue, note, format, deck, période, résultat.
+• Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 5 résultats.
+• Recherche dans l’historique : adversaire, archétype, carte vue, note.
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 
 Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni serveur, ni compte, ni analytique, ni publicité. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
@@ -53,7 +63,7 @@ Non affilié à endstep.cc ni à Wizards of the Coast.
 
 - `storage` / `unlimitedStorage`: the match history (including full game logs) is stored locally in `chrome.storage.local`; a heavy user exceeds the default 10 MB quota.
 - `scripting`: after the extension is installed or updated, the background worker re-injects the tracker into endstep.cc tabs that are already open, so a match in progress is not lost.
-- Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record. Nothing is sent.
+- Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record, and shows a small panel with the user's own records and notes (in a closed shadow root, never focused, never acting on the game). Nothing is sent.
 - Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only.
 
 **Remote code**: No. All code is in the package.

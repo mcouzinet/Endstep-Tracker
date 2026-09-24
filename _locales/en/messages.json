@@ -802,5 +802,32 @@
   },
   "recognized_pct": {
     "message": "recognized, {p} %"
+  },
+  "ov_session": {
+    "message": "session {wl}"
+  },
+  "ov_collapse": {
+    "message": "Collapse"
+  },
+  "ov_expand": {
+    "message": "Show the matchup"
+  },
+  "ov_against": {
+    "message": "Against {opp}"
+  },
+  "ov_no_plan": {
+    "message": "No sideboard plan against them yet: write it in the dashboard."
+  },
+  "ov_result_W": {
+    "message": "Won {score} against {opp}"
+  },
+  "ov_result_L": {
+    "message": "Lost {score} against {opp}"
+  },
+  "ov_result_D": {
+    "message": "Draw {score} against {opp}"
+  },
+  "ov_move": {
+    "message": "Drag to move"
   }
 }
