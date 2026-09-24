@@ -51,7 +51,7 @@ const BASICS = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/;
 const STALE_MS = 3 * 3600e3;
 const PREFS = 'endstep-tracker.filters';
 
-const state = { q: '', format: '', deck: '', period: 'all', result: 'all', opp: null };
+const state = { q: '', formats: null, deck: '', period: 'all', result: 'all', opp: null }; // formats: null = the most played one, [] = all
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
@@ -125,22 +125,29 @@ function oppKey(m) {
 // --- filters ---
 function loadPrefs() {
   try { Object.assign(state, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch { /* storage unavailable */ }
+  if ('format' in state) { state.formats = state.format ? [state.format] : null; delete state.format; } // pre-chips single select
   $('#q').value = state.q;
 }
 function savePrefs() {
   try { localStorage.setItem(PREFS, JSON.stringify(state)); } catch { /* storage unavailable */ }
 }
-const filtersActive = () => !!(state.q || state.format || state.deck || state.opp || state.period !== 'all' || state.result !== 'all');
+// Formats by number of matches, most played first. Default selection: the most played one alone; none selected = all.
+const formatCounts = () => { const c = {}; for (const m of matches) c[fmt(m)] = (c[fmt(m)] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale)); };
+const defaultFormats = () => (matches.length ? [formatCounts()[0][0]] : []);
+const activeFormats = () => (state.formats === null ? defaultFormats() : state.formats);
+const formatsDefault = () => state.formats === null || (state.formats.length === defaultFormats().length && state.formats.every((f) => defaultFormats().includes(f)));
+const filtersActive = () => !!(state.q || !formatsDefault() || state.deck || state.opp || state.period !== 'all' || state.result !== 'all');
 function setFilter(patch) { Object.assign(state, patch); savePrefs(); render(); }
 function resetFilters() {
   $('#q').value = '';
-  setFilter({ q: '', format: '', deck: '', period: 'all', result: 'all', opp: null });
+  setFilter({ q: '', formats: null, deck: '', period: 'all', result: 'all', opp: null });
 }
 
 function filtered() {
   const q = state.q.trim().toLowerCase();
   const since = state.period === 'all' ? 0 : Date.now() - Number(state.period) * 864e5;
-  return matches.filter((m) => (!state.format || fmt(m) === state.format)
+  const fmts = activeFormats();
+  return matches.filter((m) => (!fmts.length || fmts.includes(fmt(m)))
     && (!state.deck || deckName(m) === state.deck)
     && m.startedAt >= since
     && (state.result === 'all' || m.result === state.result)
@@ -152,6 +159,15 @@ function haystack(m) {
   const n = notes[m.id] || {};
   const seen = opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)));
   return [oppLabel(m), n.archetype, (guessFor(m) || {}).name, n.notes, deckName(m), fmt(m), ...seen].join('\n').toLowerCase();
+}
+
+function fillFormats() {
+  const counts = formatCounts();
+  if (state.formats && state.formats.length) { // a saved format whose matches were deleted
+    state.formats = state.formats.filter((f) => counts.some(([v]) => v === f));
+    if (!state.formats.length) state.formats = null;
+  }
+  $('#f-format').innerHTML = counts.map(([v, n]) => `<button type="button" data-value="${esc(v)}" aria-pressed="false" title="${esc(tn('n_matches', n))}">${esc(v)}</button>`).join('');
 }
 
 function fillSelect(sel, key, values) {
@@ -231,7 +247,7 @@ async function loadDecisions(id) {
 
 function refresh() {
   matches.sort((a, b) => b.startedAt - a.startedAt);
-  fillSelect('#f-format', 'format', matches.map(fmt));
+  fillFormats();
   fillSelect('#f-deck', 'deck', matches.map(deckName));
   const names = new Set(Object.values(notes).map((n) => n.archetype).filter(Boolean));
   for (const f of Object.values(metaData)) for (const d of f.decks) names.add(d.name); // the site's own archetype names
@@ -491,9 +507,11 @@ function renderFilters(list) {
   $('#reset').hidden = !filtersActive();
   $('#facet').hidden = !state.opp;
   if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: state.opp.label });
-  for (const seg of document.querySelectorAll('.seg')) {
+  for (const seg of document.querySelectorAll('.seg[data-filter]')) {
     for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(state[seg.dataset.filter] === b.dataset.value));
   }
+  const on = new Set(activeFormats());
+  for (const b of $('#f-format').querySelectorAll('button')) b.setAttribute('aria-pressed', String(on.has(b.dataset.value)));
 }
 
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
@@ -949,9 +967,15 @@ $('#split').addEventListener('click', (e) => {
 });
 
 $('#q').addEventListener('input', (e) => setFilter({ q: e.target.value }));
-$('#f-format').addEventListener('change', (e) => setFilter({ format: e.target.value }));
+$('#f-format').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const on = new Set(activeFormats());
+  if (on.has(b.dataset.value)) on.delete(b.dataset.value); else on.add(b.dataset.value);
+  setFilter({ formats: [...on] });
+});
 $('#f-deck').addEventListener('change', (e) => setFilter({ deck: e.target.value }));
-for (const seg of document.querySelectorAll('.seg')) {
+for (const seg of document.querySelectorAll('.seg[data-filter]')) {
   seg.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (b) setFilter({ [seg.dataset.filter]: b.dataset.value });

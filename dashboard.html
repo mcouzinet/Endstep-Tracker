@@ -111,6 +111,7 @@
     .seg button { border: 0; background: none; color: var(--ink-2); font: inherit; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
     .seg button:hover { color: var(--ink); }
     .seg button[aria-pressed="true"] { background: var(--surface-3); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+    #f-format { flex-wrap: wrap; } /* one chip per format seen, can be many */
     .facet { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: rgb(212 174 98 / .12); border: 1px solid rgb(212 174 98 / .4); font-size: 13px; }
     .facet button { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer; }
     .facet button:hover { background: rgb(212 174 98 / .2); color: var(--ink); }
@@ -372,7 +373,7 @@
         <svg class="i"><use href="#i-search"/></svg>
         <input id="q" type="search" data-i18n-attr="placeholder:search_placeholder,aria-label:search" aria-keyshortcuts="/">
       </label>
-      <select id="f-format" data-i18n-attr="aria-label:format"><option value="" data-i18n="all_formats"></option></select>
+      <div id="f-format" class="seg" role="group" data-i18n-attr="aria-label:format"></div>
       <select id="f-deck" data-i18n-attr="aria-label:my_deck"><option value="" data-i18n="all_decks"></option></select>
       <div class="seg" role="group" data-i18n-attr="aria-label:period" data-filter="period">
         <button data-value="all" data-i18n="period_all"></button><button data-value="30" data-i18n="period_30"></button><button data-value="7" data-i18n="period_7"></button>
