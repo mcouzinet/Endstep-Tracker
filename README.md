@@ -23,8 +23,9 @@ Par game :
 - cartes jouées tour par tour (moi et l'adversaire) et journal complet
 
 Dans le tableau de bord (clic sur l'icône) :
-- bilan matchs/games, résultats au play / à la draw, avec ou sans mulligan, par deck joué et par deck adverse (un clic sur une ligne filtre la liste) ;
-- filtres : recherche (adversaire, archétype, carte vue, note — touche `/`), format, deck, période, résultat ;
+- en tête, le deck analysé : par défaut mon deck le plus joué sur 30 jours, sinon un autre deck, tous les decks d'un format ou tous mes decks (menu groupé par format) ; la période et un archétype adverse s'y ajoutent, et toutes les stats portent sur cette portée ;
+- bilan matchs/games, matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et les archétypes croisés moins de 3 fois se regroupent en « Autres » ; le match en cours ne compte pas ;
+- historique des matchs, avec sa recherche (adversaire, archétype, carte vue, note — touche `/`) et son filtre victoires/défaites, qui ne changent que la liste ;
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, cartes jouées tour par tour, journal, archétype adverse et notes ;
 - menu « Données » : export JSON (sauvegarde), export CSV (une ligne par game), import, tout effacer.
 

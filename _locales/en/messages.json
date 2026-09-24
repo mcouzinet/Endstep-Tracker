@@ -41,12 +41,6 @@
   "search": {
     "message": "Search"
   },
-  "all_formats": {
-    "message": "All formats"
-  },
-  "all_decks": {
-    "message": "All my decks"
-  },
   "format": {
     "message": "Format"
   },
@@ -98,9 +92,6 @@
   "opponent_facet": {
     "message": "Opponent: {label}"
   },
-  "overview": {
-    "message": "Overview"
-  },
   "matches": {
     "message": "Matches"
   },
@@ -136,9 +127,6 @@
   },
   "my_decks": {
     "message": "My decks"
-  },
-  "opp_decks": {
-    "message": "Opponents' decks"
   },
   "no_finished_all": {
     "message": "No finished match yet."
@@ -637,5 +625,35 @@
   },
   "coach_explain_by": {
     "message": "explained by {model} from the board and the scores"
+  },
+  "scope_label": {
+    "message": "Deck in view"
+  },
+  "scope_all": {
+    "message": "All my decks · every format"
+  },
+  "scope_all_format": {
+    "message": "All my decks · {format}"
+  },
+  "scope_deck": {
+    "message": "{deck} · {format}"
+  },
+  "matchups": {
+    "message": "Matchups"
+  },
+  "history": {
+    "message": "History"
+  },
+  "too_early": {
+    "message": "too early"
+  },
+  "too_early_title": {
+    "message": "Fewer than {n} results: too early to tell"
+  },
+  "others_one": {
+    "message": "Others · {n} archetype"
+  },
+  "others_other": {
+    "message": "Others · {n} archetypes"
   }
 }

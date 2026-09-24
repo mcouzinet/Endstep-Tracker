@@ -41,12 +41,6 @@
   "search": {
     "message": "Rechercher"
   },
-  "all_formats": {
-    "message": "Tous les formats"
-  },
-  "all_decks": {
-    "message": "Tous mes decks"
-  },
   "format": {
     "message": "Format"
   },
@@ -98,9 +92,6 @@
   "opponent_facet": {
     "message": "Adversaire : {label}"
   },
-  "overview": {
-    "message": "Bilan"
-  },
   "matches": {
     "message": "Matchs"
   },
@@ -136,9 +127,6 @@
   },
   "my_decks": {
     "message": "Mes decks"
-  },
-  "opp_decks": {
-    "message": "Decks adverses"
   },
   "no_finished_all": {
     "message": "Aucun match terminé pour l’instant."
@@ -637,5 +625,35 @@
   },
   "coach_explain_by": {
     "message": "explication par {model}, à partir du plateau et des scores"
+  },
+  "scope_label": {
+    "message": "Deck analysé"
+  },
+  "scope_all": {
+    "message": "Tous mes decks · tous formats"
+  },
+  "scope_all_format": {
+    "message": "Tous mes decks · {format}"
+  },
+  "scope_deck": {
+    "message": "{deck} · {format}"
+  },
+  "matchups": {
+    "message": "Matchups"
+  },
+  "history": {
+    "message": "Historique"
+  },
+  "too_early": {
+    "message": "trop tôt"
+  },
+  "too_early_title": {
+    "message": "Moins de {n} résultats : trop tôt pour conclure"
+  },
+  "others_one": {
+    "message": "Autres · {n} archétype"
+  },
+  "others_other": {
+    "message": "Autres · {n} archétypes"
   }
 }

@@ -99,6 +99,9 @@ for (const name of ['demo', 'empty']) {
     set: async (items) => { const ch = {}; for (const [k, v] of Object.entries(items)) { ch[k] = { oldValue: window.__DATA[k], newValue: JSON.parse(JSON.stringify(v)) }; window.__DATA[k] = v; } fire(ch); },
     remove: async (keys) => { const ch = {}; for (const k of [].concat(keys)) { if (k in window.__DATA) { ch[k] = { oldValue: window.__DATA[k] }; delete window.__DATA[k]; } } fire(ch); },
   }, onChanged: { addListener(fn) { listeners.push(fn); } } } };
+  // The QA scripts clear localStorage and expect every demo match listed: default to all decks, all formats
+  // (the real default, my most played deck, is set by writing the filters pref before loading).
+  try { if (!localStorage.getItem('endstep-tracker.filters')) localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {}
 </script>`;
   const out = html.replace('<head>', `<head><base href="file://${P}/">`).replace('<script src="tracker.js"></script>', stub + '\n  <script src="tracker.js"></script>')
     .replace('<script src="meta.js"></script>', `<script src="meta.js"></script>\n  <script src="file://${__dirname}/meta-stub.js"></script>`);

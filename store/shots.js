@@ -24,7 +24,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.hidden = true; });
     await p.screenshot({ path: `${__dirname}/${name}` });
   };
-  const ALL = { formats: [] }; // every format: the default (most played only) shows a thinner demo
+  const ALL = { scope: { format: null, deck: null } }; // all decks: the default (most played deck) shows a thinner demo
   let p = await open('en', ALL);
   await shot(p, '1-dashboard-en.png');
   await p.click('.match[data-id="m1"] .match-row');
