@@ -173,14 +173,6 @@ function fillFormats() {
   $('#f-format').innerHTML = counts.map(([v, n]) => `<button type="button" data-value="${esc(v)}" aria-pressed="false" title="${esc(tn('n_matches', n))}">${esc(v)}</button>`).join('');
 }
 
-function fillSelect(sel, key, values) {
-  const el = $(sel);
-  const opts = [...new Set(values)].sort((a, b) => a.localeCompare(b, locale));
-  if (state[key] && !opts.includes(state[key])) state[key] = '';
-  el.innerHTML = el.options[0].outerHTML + opts.map((v) => `<option>${esc(v)}</option>`).join('');
-  el.value = state[key];
-}
-
 // --- data loading ---
 // Records come from the tracker or from an imported file: keep only what the page can render.
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
@@ -251,7 +243,6 @@ async function loadDecisions(id) {
 function refresh() {
   matches.sort((a, b) => b.startedAt - a.startedAt);
   fillFormats();
-  fillSelect('#f-deck', 'deck', matches.map(deckName));
   const names = new Set(Object.values(notes).map((n) => n.archetype).filter(Boolean));
   for (const f of Object.values(metaData)) for (const d of f.decks) names.add(d.name); // the site's own archetype names
   $('#archetypes').innerHTML = [...names].sort((a, b) => a.localeCompare(b, locale)).map((a) => `<option value="${esc(a)}">`).join('');
@@ -977,7 +968,6 @@ $('#f-format').addEventListener('click', (e) => {
   if (on.has(b.dataset.value)) on.delete(b.dataset.value); else on.add(b.dataset.value);
   setFilter({ formats: [...on] });
 });
-$('#f-deck').addEventListener('change', (e) => setFilter({ deck: e.target.value }));
 for (const seg of document.querySelectorAll('.seg[data-filter]')) {
   seg.addEventListener('click', (e) => {
     const b = e.target.closest('button');
