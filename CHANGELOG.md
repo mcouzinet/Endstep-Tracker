@@ -18,6 +18,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Modifié
 
+- Les matchs contre l'IA du site restent dans l'historique (étiquette « IA ») mais ne comptent plus dans aucun bilan.
 - Le tableau de bord part de mon deck : les matchups d'abord, le résultat et la recherche dans l'historique.
 - Les couleurs adverses viennent des sorts lancés, plus de toutes les cartes vues.
 - Popup : le bouton « Ouvrir le tableau de bord » passe en bas, sur toute la largeur.

@@ -853,5 +853,11 @@
   },
   "promo_shot_alt": {
     "message": "Aperçu de Deck Compare : deux listes comparées, 82 % similaires"
+  },
+  "ai_tag": {
+    "message": "IA"
+  },
+  "ai_tag_title": {
+    "message": "Contre l’IA : hors des bilans"
   }
 }

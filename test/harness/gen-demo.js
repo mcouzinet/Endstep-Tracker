@@ -24,6 +24,7 @@ function match(id, o) {
     formatId: o.formatId || 'casual', ranked: !!o.ranked, gamesPerMatch: o.bo || 3, score: o.score, colors: { 1: o.colors },
     myDeck: { id: 'deck-' + o.deck, name: o.deck, cards: o.deck === 'Burn' ? [{ name: 'Lightning Bolt', quantity: 4 }, { name: 'Goblin Guide', quantity: 4 }, { name: 'Mountain', quantity: 20 }] : null } });
   m.players = [{ seat: 0, name: 'guest_rZ8gWdWE' }, { seat: 1, name: o.opp }];
+  m.participants = m.players.map((p) => ({ userId: 'u' + p.seat, username: p.name, isBot: p.name === 'Forge AI' })); // m2 is the one match against the AI
   m.games = o.games.map((g, i) => game(i + 1, { ...g, from: o.at + i * 14 * 60e3 }));
   if (o.keepBaseLogs) m.games.forEach((g, i) => { g.log = clone(base.games[i % 2].log); g.openingHand = base.games[i % 2].openingHand; });
   return m;

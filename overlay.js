@@ -124,7 +124,7 @@
       const head = phase === 'after'
         ? `<h2>${esc(t('ov_result_' + (m.result || 'D'), { score: S.scoreText(m), opp }))}</h2>`
         : `<h2>${esc(t('ov_against', { opp }))}</h2>`;
-      const vs = list.filter((x) => x !== m && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
+      const vs = list.filter((x) => x !== m && !S.vsAI(x) && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
       const r = S.records(vs, now);
       const stat = (label, x) => `<span>${esc(label)} <b>${wl(x)}</b>${x.W + x.L + x.D >= 5 ? ` · ${pct(x)}` : ''}</span>`;
       const record = key === '?' ? '' : `<div><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((x) => x.result)

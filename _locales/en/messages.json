@@ -853,5 +853,11 @@
   },
   "promo_shot_alt": {
     "message": "Deck Compare preview: two lists compared, 82 % similar"
+  },
+  "ai_tag": {
+    "message": "AI"
+  },
+  "ai_tag_title": {
+    "message": "Against the AI: left out of every record"
   }
 }

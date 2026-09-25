@@ -28,6 +28,7 @@ Dans le tableau de bord (clic sur l'icône) :
 - en haut, la session en cours (ou la dernière, repliée) : ses matchs, l'archétype reconnu à confirmer en un clic, et ce qu'elle change à chaque matchup ; une session, ce sont des matchs à moins de 2 h d'écart ;
 - le guide des matchups : bilan en matchs, G1, G2-G3, games au play et à la draw, tri par fréquence, pire ou meilleur d'abord (un taux sur moins de 5 matchs ne passe jamais en tête) ; un clic ouvre le panneau du matchup : son plan de side (une note par deck et par archétype, enregistrée pendant la frappe et rappelée sous la ligne), ses bilans par version, les cartes vues chez lui avec leur fréquence, ses matchs, et un bouton pour filtrer la page sur lui ; `j` / `k` parcourent les lignes, Échap ferme le panneau ;
 - chaque bilan se lit aussi en G1 (main deck) et en G2-G3 (après sideboard), pour les matchups, le contexte et mes decks ;
+- les matchs contre l'IA du site (Forge AI, Auto-Pilot), que le site signale dans les participants du match, restent dans l'historique avec une étiquette « IA » mais ne comptent dans aucun bilan : ni matchups, ni session, ni popup, ni panneau, ni portée par défaut ;
 - versions de la liste : quand le main deck enregistré d'un deck change, une nouvelle version commence (les retouches de side ne comptent pas) ; la portée montre la version actuelle par défaut, avec les cartes ajoutées et retirées depuis la précédente, un bouton pour mettre le bilan de la précédente à côté de chaque matchup, et un menu pour les autres versions ou toutes ;
 - historique des matchs, avec sa recherche (adversaire, archétype, carte vue, note — touche `/`) et son filtre victoires/défaites, qui ne changent que la liste ;
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, cartes jouées tour par tour, journal, archétype adverse et notes ;
@@ -74,10 +75,10 @@ Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rec
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js
+node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js
 ```
 
-Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS ; le dernier vérifie que le commandant adverse nomme l'archétype en Duel Commander. Le harnais Puppeteer est dans `test/harness/`.
+Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS ; l'avant-dernier vérifie que le commandant adverse nomme l'archétype en Duel Commander, le dernier que les matchs contre l'IA ne comptent dans aucun bilan. Le harnais Puppeteer est dans `test/harness/`.
 
 ## Publication (Chrome, Edge, Firefox, Safari)
 

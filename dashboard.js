@@ -103,7 +103,8 @@ function defaultScope() {
     for (const m of list) { const k = JSON.stringify([formatOf(m), deckName(m)]); c.set(k, (c.get(k) || 0) + 1); }
     return [...c].sort((a, b) => b[1] - a[1])[0];
   };
-  const best = top(matches.filter((m) => m.startedAt >= Date.now() - 30 * 864e5)) || top(matches);
+  const rated = matches.filter((m) => !S.vsAI(m)); // a deck trained against the AI would open on empty records
+  const best = top(rated.filter((m) => m.startedAt >= Date.now() - 30 * 864e5)) || top(rated);
   if (!best) return { format: null, deck: null };
   const [format, deck] = JSON.parse(best[0]);
   return { format, deck };
@@ -171,14 +172,16 @@ function listDiff(from, to) {
     .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], locale));
 }
 
-// What the stats are about: the scope, its list version, the period, the opponent facet.
-function scoped(version) {
+// What the stats are about: the scope, its list version, the period, the opponent facet; never a match against the AI,
+// which only the history lists (withAI).
+function scoped(version, withAI = false) {
   const s = activeScope();
   const v = version === undefined ? activeVersion(versionsOf(s)) : version;
   const since = state.period === 'all' ? 0 : Date.now() - Number(state.period) * 864e5;
   return matches.filter((m) => inScope(m, s) && m.startedAt >= since
     && (v === 'all' || (v === '?' ? versionKey(m) === null : versionKey(m) === v))
-    && (!state.opp || oppKey(m)[0] === state.opp.key));
+    && (!state.opp || oppKey(m)[0] === state.opp.key)
+    && (withAI || !S.vsAI(m)));
 }
 // The history list: the same matches, narrowed by result and search (which never change the stats).
 function listed(list) {
@@ -194,8 +197,9 @@ function haystack(m) {
 
 // Scope menu: every deck, grouped by format, most played first.
 function fillScope() {
-  const tree = new Map(); // format -> { n, decks: Map(deck -> n) }
-  for (const m of matches) {
+  const tree = new Map(); // format -> { n, decks: Map(deck -> n) }, counting the matches the records are made of
+  const rated = matches.filter((m) => !S.vsAI(m));
+  for (const m of rated) {
     const e = tree.get(formatOf(m)) || { n: 0, decks: new Map() };
     e.n++;
     e.decks.set(deckName(m), (e.decks.get(deckName(m)) || 0) + 1);
@@ -203,7 +207,7 @@ function fillScope() {
   }
   const byCount = (a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), locale);
   const opt = (format, deck, label, n) => `<option value="${esc(JSON.stringify([format, deck]))}">${esc(label)} (${n})</option>`;
-  $('#f-scope').innerHTML = opt(null, null, t('scope_all'), matches.length) + [...tree].sort((a, b) => byCount([a[0], a[1].n], [b[0], b[1].n])).map(([f, e]) => `<optgroup label="${esc(f)}">${
+  $('#f-scope').innerHTML = opt(null, null, t('scope_all'), rated.length) + [...tree].sort((a, b) => byCount([a[0], a[1].n], [b[0], b[1].n])).map(([f, e]) => `<optgroup label="${esc(f)}">${
     e.decks.size > 1 ? opt(f, null, t('scope_all_format', { format: f }), e.n) : ''}${
     [...e.decks].sort(byCount).map(([d, n]) => opt(f, d, t('scope_deck', { deck: d, format: f }), n)).join('')}</optgroup>`).join('');
 }
@@ -531,7 +535,7 @@ function render() {
   const vs = versionsOf(s);
   const v = activeVersion(vs);
   const stats = scoped(v);
-  const list = listed(stats);
+  const list = listed(scoped(v, true));
   const cur = vs.list.find((x) => x.key === v);
   const prev = cur && vs.list[cur.n - 2];
   const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
@@ -859,7 +863,7 @@ function row(m) {
   const a = archetype(m);
   return `<button class="match-row" aria-expanded="${open}" aria-controls="d-${esc(m.id)}">
     ${resultBadge(m)}
-    <span class="opp"><span class="opp-name">${esc(oppLabel(m))}</span>${pips(colorsOf(m))}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span>
+    <span class="opp"><span class="opp-name">${esc(oppLabel(m))}</span>${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span>
     <span class="score">${scoreText(m)}</span>
     <span class="chips">${m.games.map((g) => chip(m, g)).join('')}</span>
     <span class="cell deck">${esc(deckName(m))}</span>

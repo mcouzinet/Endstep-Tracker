@@ -30,6 +30,12 @@
   }
 
   const opps = (m) => m.players.filter((p) => p && p.seat !== m.mySeat);
+  // A match against the site's AI (Forge AI, Auto-Pilot…): kept in the history, left out of every record. The site flags
+  // bots in the match's participants; a record without them is judged by the opponent's name.
+  const AI_NAME = /^(Forge AI|Bot \(.+\))$/i;
+  const vsAI = (m) => (Array.isArray(m.participants) && m.participants.length
+    ? m.participants.some((p) => p && p.isBot)
+    : opps(m).some((p) => AI_NAME.test(p.name)));
   const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
   const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
   const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
@@ -107,6 +113,7 @@
   function lastSession(list) {
     const out = [];
     for (const m of list) {
+      if (vsAI(m)) continue;
       if (out.length && out[out.length - 1].startedAt - endOf(m) > SESSION_GAP) break;
       out.push(m);
     }
@@ -118,7 +125,7 @@
   function records(list, now = Date.now()) {
     const r = { m: tally(), g: tally(), s: halves(), play: tally(), draw: tally() };
     for (const m of list) {
-      if (isLive(m, now)) continue;
+      if (isLive(m, now) || vsAI(m)) continue;
       if (m.result) r.m[m.result]++;
       for (const gm of m.games) {
         const x = gRes(m, gm);
@@ -168,7 +175,7 @@
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
-    opps, colorsOf, gRes, onPlay, tally, half, halves, pct, wl, isLive,
+    opps, vsAI, colorsOf, gRes, onPlay, tally, half, halves, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, planKey, recognize, lastSession, sessionOpen, records,
     loadI18n, browserI18n, translator, loadStore,
   };

@@ -40,7 +40,7 @@ function render(d) {
     const format = S.formatOf(live, C);
     const deck = S.deckName(live, C);
     const key = keyOf(live);
-    const vs = d.matches.filter((m) => m !== live && S.formatOf(m, C) === format && S.deckName(m, C) === deck && keyOf(m) === key);
+    const vs = d.matches.filter((m) => m !== live && !S.vsAI(m) && S.formatOf(m, C) === format && S.deckName(m, C) === deck && keyOf(m) === key);
     const r = S.records(vs);
     const plan = key !== '?' && d.plans[S.planKey(format, deck, key, t)];
     const opp = S.opps(live).map((p) => p.name).join(', ') || '?';
