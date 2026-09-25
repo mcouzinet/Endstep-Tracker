@@ -38,6 +38,8 @@ if [ "$target" = safari ]; then
     m.content_scripts = m.content_scripts.filter((c) => c.world !== "MAIN");
     fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
   ' "$stage/manifest.json"
+  # The App Store reads the app's version from the Xcode project: keep it on the manifest's.
+  sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $v;/" "safari/Endstep Tracker/Endstep Tracker.xcodeproj/project.pbxproj"
 fi
 (cd "$stage" && zip -qr "$out" . -x '*/.DS_Store')
 [ "$target" = safari ] || rm -rf "$stage"

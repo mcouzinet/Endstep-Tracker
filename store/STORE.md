@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store); bump `version` in `manifest.json` first, the stores refuse a version they already have.
+Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
 
 ## Listing
 
@@ -115,10 +115,20 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: Data Not Collected. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
 - The first time, Safari asks the user to allow the extension on endstep.cc; until then nothing is recorded.
 
+## Versions
+
+`manifest.json` reads **`X.Y` for a release, `X.Y.Z` for a dev build**, as in Deck Compare:
+
+- **Release** `X.Y`: what the stores publish, tagged `vX.Y`. `Y` moves up by one at each release, `X` for a major one.
+- **Dev** `X.Y.Z` between two releases: `X.Y.1`, `X.Y.2`… `Z` goes up at **every batch of changes tested in the browser**, so the number shown in `chrome://extensions` tells which build is loaded. The next release drops back to two numbers, `X.(Y+1)`.
+- Browsers compare component by component, a missing one counts as 0: `0.9` < `0.9.2` < `0.10`. A release must stay above the previous published one.
+- **The four stores ship together** (Chrome Web Store, Edge Add-ons, AMO, Mac App Store), once `CHANGELOG.md` "Non publié" holds enough. `release.sh safari` copies the manifest version into the Xcode project (`MARKETING_VERSION`); raise `CURRENT_PROJECT_VERSION` only to upload the same version to Apple again.
+
 ## Submission checklist
 
 1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js`
-2. Bump `version` in `manifest.json`, commit, tag `v<version>`.
+2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`. Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
 3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.
+6. After the release, the next dev build is `X.Y.1`.
