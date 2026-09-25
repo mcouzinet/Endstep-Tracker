@@ -69,14 +69,17 @@
   const box = root.querySelector('.box');
   document.documentElement.appendChild(host);
 
-  // Where it sits: above the hand, left of the phase column by default; dragged elsewhere, it stays there.
+  // Where it sits: above the hand, left of the phase column by default; dragged elsewhere, it stays there. pos is the
+  // place asked for, at: where it shows. Kept inside the window (unfolded between games, a smaller window), it moves
+  // only for as long as it must, then goes back to pos.
   const pos = { right: 168, bottom: 172 };
+  const at = { right: 168, bottom: 172 };
   const place = () => {
     const r = box.getBoundingClientRect();
-    pos.right = Math.max(8, Math.min(pos.right, innerWidth - r.width - 8));
-    pos.bottom = Math.max(8, Math.min(pos.bottom, innerHeight - r.height - 8));
-    host.style.right = pos.right + 'px';
-    host.style.bottom = pos.bottom + 'px';
+    at.right = Math.max(8, Math.min(pos.right, innerWidth - r.width - 8));
+    at.bottom = Math.max(8, Math.min(pos.bottom, innerHeight - r.height - 8));
+    host.style.right = at.right + 'px';
+    host.style.bottom = at.bottom + 'px';
   };
   addEventListener('resize', place);
 
@@ -162,12 +165,13 @@
     const bar = e.target.closest('.bar');
     if (!bar || e.target.closest('button') || e.button !== 0) return;
     e.preventDefault();
-    const start = { x: e.clientX, y: e.clientY, right: pos.right, bottom: pos.bottom };
+    const start = { x: e.clientX, y: e.clientY, right: at.right, bottom: at.bottom };
     bar.setPointerCapture(e.pointerId);
     const move = (ev) => { pos.right = start.right - (ev.clientX - start.x); pos.bottom = start.bottom - (ev.clientY - start.y); place(); };
     const up = () => {
       bar.removeEventListener('pointermove', move);
       bar.removeEventListener('pointerup', up);
+      Object.assign(pos, at); // where it was dropped, as shown
       if (!orphaned()) chrome.storage.local.set({ settings: { ...data.settings, overlayPos: { right: pos.right, bottom: pos.bottom } } });
     };
     bar.addEventListener('pointermove', move);

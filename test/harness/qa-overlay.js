@@ -104,6 +104,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const stored = (await get('settings')).overlayPos;
     assert.ok(stored && stored.right > 168 && stored.bottom > 172, JSON.stringify(stored));
 
+    // Put high while folded, it has to come down to unfold; folded again (the next game), it is back where it was put.
+    const bottom = () => p.evaluate(() => getComputedStyle(document.getElementById('endstep-tracker-panel')).bottom);
+    const grip = (await cdp.send('DOM.getBoxModel', { nodeId: (await cdp.send('DOM.querySelector', { nodeId: (await shadow()).nodeId, selector: '.grip' })).nodeId })).model.content;
+    await p.mouse.move(grip[0] + 2, grip[1] + 2);
+    await p.mouse.down();
+    await p.mouse.move(grip[0] + 2, 60, { steps: 5 });
+    await p.mouse.up();
+    await sleep(200);
+    const put = await bottom();
+    await clickIn('[data-toggle]');
+    assert.ok(parseFloat(await bottom()) < parseFloat(put), 'unfolded, it comes down to fit');
+    await clickIn('[data-toggle]');
+    assert.equal(await bottom(), put, 'folded again, back where it was put');
+    assert.equal((await get('settings')).overlayPos.bottom + 'px', put);
+
     // After the match: the result, then gone once closed.
     Object.assign(live.games[2], { outcome: true, winnerSeat: 0 });
     Object.assign(live, { status: 'complete', result: 'W', score: [2, 1], endedAt: Date.now(), updatedAt: Date.now() });
