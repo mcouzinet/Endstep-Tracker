@@ -2,10 +2,22 @@
 // when one is open, otherwise open it.
 async function openDashboard() {
   const url = chrome.runtime.getURL('dashboard.html');
-  const open = (await chrome.runtime.getContexts({ contextTypes: ['TAB'] })).find((c) => (c.documentUrl || '').startsWith(url));
+  // Safari has no runtime.getContexts: search the tabs instead (a URL it keeps hidden only means a second tab).
+  const tabs = chrome.runtime.getContexts
+    ? (await chrome.runtime.getContexts({ contextTypes: ['TAB'] })).map((c) => ({ id: c.tabId, windowId: c.windowId, url: c.documentUrl }))
+    : await chrome.tabs.query({});
+  const open = tabs.find((t) => (t.url || '').startsWith(url));
   if (!open) return chrome.tabs.create({ url });
-  await chrome.tabs.update(open.tabId, { active: true });
+  await chrome.tabs.update(open.id, { active: true });
   await chrome.windows.update(open.windowId, { focused: true });
+}
+
+// Apple's packager says Safari ignores "world" in manifest content_scripts: release.sh leaves hook.js out of the
+// Safari manifest and it is registered here instead, in the same page world at the same document_start.
+if (!chrome.runtime.getManifest().content_scripts.some((c) => c.js.includes('hook.js'))) {
+  chrome.scripting.getRegisteredContentScripts({ ids: ['hook'] }).then((r) => r.length || chrome.scripting.registerContentScripts([
+    { id: 'hook', matches: ['https://endstep.cc/*'], js: ['hook.js'], runAt: 'document_start', world: 'MAIN' },
+  ]));
 }
 
 // Reloading or updating the extension kills its content scripts in open Endstep tabs (Chrome only injects them on

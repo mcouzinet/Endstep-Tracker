@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons) or `./release.sh firefox` (AMO); bump `version` in `manifest.json` first, the stores refuse a version they already have.
+Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store); bump `version` in `manifest.json` first, the stores refuse a version they already have.
 
 ## Listing
 
@@ -98,7 +98,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 ## Firefox (addons.mozilla.org)
 
-`./release.sh firefox` builds `dist/endstep-tracker-<version>-firefox.zip`: same files, manifest rewritten for Firefox (`background.scripts` instead of the service worker, a `browser_specific_settings.gecko` block with the add-on id `endstep-tracker@mcouzinet.github.io`, `strict_min_version` 140 and the mandatory `data_collection_permissions: none`). No code differs: Firefox's `chrome.*` returns promises, and `runtime.getContexts` and `scripting.executeScript` in the MAIN world are available (checked on Firefox 134).
+`./release.sh firefox` builds `dist/endstep-tracker-<version>-firefox.zip`: same files, manifest rewritten for Firefox (`background.scripts` instead of the service worker, a `browser_specific_settings.gecko` block with the add-on id `endstep-tracker@mcouzinet.github.io`, `strict_min_version` 143 for `storage.getKeys` and the mandatory `data_collection_permissions: none`). No code differs: Firefox's `chrome.*` returns promises, and `runtime.getContexts` and `scripting.executeScript` in the MAIN world are available (checked on Firefox 134).
 
 - Upload: https://addons.mozilla.org/developers/ → Submit a New Add-on → "On this site". Listing texts, screenshots and privacy policy: same as above. AMO also asks for a summary (≤ 250 chars, the manifest one fits) and a category (Games & Entertainment or Other).
 - Before uploading: `npx web-ext lint --source-dir <unzipped build>` must show 0 errors (it shows `innerHTML` warnings on dashboard.js, which AMO accepts; the content is escaped with `esc()`).
@@ -106,10 +106,19 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Firefox 127+ grants `host_permissions` at install time, so the tracker runs on endstep.cc right after installing; on older Firefox the user would have to allow the site by hand, hence the minimum version.
 - The Chrome zip also serves Edge Add-ons unchanged.
 
+## Safari (Mac App Store)
+
+`./release.sh safari` builds `dist/safari/` (plus a zip): manifest rewritten with `browser_specific_settings.safari` (`strict_min_version` 18.4, for `storage.getKeys`) instead of `minimum_chrome_version`, a 1024 px icon (Apple's packager builds the App Store icon from the largest one), and `hook.js` out of `content_scripts`: Apple's packager says Safari ignores `world` there, so `background.js` registers it in the MAIN world with `scripting.registerContentScripts`. One code path differs: Safari has no `runtime.getContexts`, so `background.js` looks for the dashboard tab with `tabs.query`. The REC badge shows without its red background (Safari ignores `setBadgeBackgroundColor`).
+
+- Wrapper app: the Xcode project `safari/Endstep Tracker/Endstep Tracker.xcodeproj`. It **references** `dist/safari/` instead of copying it: run `./release.sh safari` before archiving, and add any new extension file to the Extension target. Bundle id `io.github.mcouzinet.endsteptracker` (permanent once published), team `6DTUA72PA3`, macOS 13 minimum, category Entertainment, encryption exempt. Edit this project rather than regenerate it: Apple's converter ignores the requested app id, sets version 1.0, targets the SDK's macOS and leaves out the category.
+- Each release: `MARKETING_VERSION` (the manifest version) and `CURRENT_PROJECT_VERSION` go up in both targets, app and extension.
+- Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: Data Not Collected. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
+- The first time, Safari asks the user to allow the extension on endstep.cc; until then nothing is recorded.
+
 ## Submission checklist
 
 1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js`
 2. Bump `version` in `manifest.json`, commit, tag `v<version>`.
-3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO).
+3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.

@@ -8,3 +8,7 @@ test/harness/legend*.png
 dist/
 test/harness/e2e-export.json
 test/harness/demo-export.json
+
+# Xcode (Safari wrapper app in safari/): per-user state and build products
+xcuserdata/
+DerivedData/
