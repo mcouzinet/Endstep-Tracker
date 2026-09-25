@@ -188,6 +188,12 @@
             const owner = seatOf(c.ownerId) === null ? i : seatOf(c.ownerId);
             if (owner === rec.mySeat) continue;
             see(sg, owner, c.name, c.id);
+            // The opponent's commander: what sits in its command zone when the game starts (two cards for partners).
+            // Later, only if none was seen yet (tracker attached mid-game): an emblem there is not a commander.
+            if (z === 'commandZone' && (Number(st.turnNumber) <= 1 || !(rec.commanders && rec.commanders[owner]))) {
+              const list = ((rec.commanders = rec.commanders || {})[owner] = rec.commanders[owner] || []);
+              if (!list.includes(c.name)) list.push(c.name);
+            }
             // Colours of what the deck casts: a card that is never cast (Sneaky Snacker discarded then returned,
             // a reanimated creature) does not colour the deck. Lands are never cast either.
             if (c.color && rt.cast && rt.cast[owner] && rt.cast[owner].has(c.name)) addColors(rec, owner, c.color);

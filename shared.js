@@ -76,7 +76,11 @@
     const base = m.formatId && m.formatId !== 'casual' ? m.formatId : m.format && m.format !== 'constructed' ? m.format : c.t('casual');
     return base.charAt(0).toUpperCase() + base.slice(1);
   }
-  const archetype = (m, c) => (c.notes[m.id] && c.notes[m.id].archetype) || '';
+  // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners).
+  const commanderOf = (m) => (m.formatId !== 'duel-commander' ? ''
+    : opps(m).map((p) => obj(m.commanders)[p.seat]).filter(Array.isArray).map((l) => l.join(' + ')).filter(Boolean).join(', '));
+  // The opponent's archetype: the one I set by hand, else its commander.
+  const archetype = (m, c) => (c.notes[m.id] && c.notes[m.id].archetype) || commanderOf(m);
   // The opponent's deck: the archetype I confirmed, else the recognized one, else its colours.
   function oppKey(m, c, guessName) {
     const a = archetype(m, c) || guessName;
@@ -165,7 +169,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     opps, colorsOf, gRes, onPlay, tally, half, halves, pct, wl, isLive,
-    myDeck, deckName, formatOf, archetype, oppKey, planKey, recognize, lastSession, sessionOpen, records,
+    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, planKey, recognize, lastSession, sessionOpen, records,
     loadI18n, browserI18n, translator, loadStore,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

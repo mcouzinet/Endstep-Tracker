@@ -108,7 +108,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 ## Submission checklist
 
-1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js`
+1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js`
 2. Bump `version` in `manifest.json`, commit, tag `v<version>`.
 3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.

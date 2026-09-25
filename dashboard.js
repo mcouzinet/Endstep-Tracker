@@ -870,7 +870,7 @@ function detail(m) {
     <div class="detail-grid">
       <div class="side">
         ${seen}
-        <label class="field">${esc(t('opp_archetype'))}<input data-note="archetype" list="archetypes" value="${esc(n.archetype || '')}" placeholder="${esc(t('archetype_placeholder'))}"></label>
+        <label class="field">${esc(t('opp_archetype'))}<input data-note="archetype" list="archetypes" value="${esc(n.archetype || '')}" placeholder="${esc(S.commanderOf(m) || t('archetype_placeholder'))}"></label>
         ${guessLine(m)}
         <label class="field">${esc(t('notes'))}<textarea data-note="notes" placeholder="${esc(t('notes_placeholder'))}">${esc(n.notes || '')}</textarea></label>
         ${deckPicker}

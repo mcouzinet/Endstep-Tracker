@@ -45,6 +45,8 @@ Seules les informations publiques (visibles en jeu) sont enregistrées. Tout res
 
 Le tableau de bord reconnaît le deck adverse à partir des cartes vues, grâce au métagame public d'endstep.cc (`/api/metagame/v1`) : pour chaque archétype, le site publie la liste des cartes et leur taux de présence. Le score est un classement bayésien naïf (part de métagame × taux de présence de chaque carte vue) ; en dessous de 60 % de certitude, ou avec moins de 2 cartes non-terrain, rien n'est proposé. Le nom reconnu s'affiche en pointillés dans la liste (le survol donne la certitude et les cartes décisives) et dans le détail, avec un bouton « Utiliser » pour le confirmer ; un archétype saisi à la main a toujours priorité. Les matchs d'un format suivi par le site (Modern, Pauper, Legacy, Premodern, Vintage, Duel Commander…) sont comparés aux archétypes de ce format, les autres (casual, freeplay) à tous. Les données sont chargées au besoin (environ une requête par archétype), mises en cache 7 jours dans `chrome.storage.local` (clé `meta`) ; les archétypes trop rares, dont le site ne publie pas la liste, ne peuvent pas être reconnus.
 
+En Duel Commander, l'archétype adverse est le nom de son commandant (« A + B » pour des partenaires), lu dans sa zone de commandement au début de la partie : il vaut comme un archétype confirmé, sans passer par le métagame. Un archétype saisi à la main reste prioritaire, et mon deck garde son nom.
+
 ## Coach (bêta)
 
 Pendant une partie, l'extension enregistre aussi chacune de mes décisions (invite du moteur, options proposées, choix, plateau). Le détail d'une game affiche « Mes décisions » et un bloc **Coach** : pour chaque décision, la probabilité de victoire avant et après (le plateau à la décision suivante, réponse adverse comprise), et les chutes nettes signalées comme erreurs probables (≤ −15 points) ou grosses erreurs (≤ −30).
@@ -72,10 +74,10 @@ Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rec
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js
+node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js
 ```
 
-Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS. Le harnais Puppeteer est dans `test/harness/`.
+Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS ; le dernier vérifie que le commandant adverse nomme l'archétype en Duel Commander. Le harnais Puppeteer est dans `test/harness/`.
 
 ## Publication (Chrome Web Store)
 
