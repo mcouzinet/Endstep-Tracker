@@ -214,7 +214,7 @@ const obj = S.obj;
 const normalizeMatch = S.normalizeMatch;
 
 async function load() {
-  const all = await chrome.storage.local.get(null);
+  const all = await S.loadStore();
   matches = [];
   notes = {};
   plans = {};

@@ -186,7 +186,7 @@
       if (p && Number.isFinite(p.right) && Number.isFinite(p.bottom)) Object.assign(pos, { right: p.right, bottom: p.bottom });
     }
   }
-  chrome.storage.local.get(null).then((all) => {
+  S.loadStore().then((all) => {
     for (const [k, v] of Object.entries(all)) apply(k, v);
     render();
   });

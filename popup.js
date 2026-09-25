@@ -15,7 +15,7 @@ async function openDashboard() {
 }
 
 async function load() {
-  const all = await chrome.storage.local.get(null);
+  const all = await S.loadStore();
   const d = { matches: [], notes: {}, plans: {}, decks: S.obj(all.decks), settings: S.obj(all.settings) };
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) { const m = S.normalizeMatch(v); if (m) d.matches.push(m); }

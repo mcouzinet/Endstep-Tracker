@@ -155,12 +155,18 @@
     return translator(LANGS.includes(ui) ? ui : 'en', (k) => chrome.i18n.getMessage(k));
   }
 
+  // All of chrome.storage but the decision logs (dec:*), the bulk of it: those load one match at a time.
+  async function loadStore() {
+    const keys = (await chrome.storage.local.getKeys()).filter((k) => !k.startsWith('dec:'));
+    return chrome.storage.local.get(keys);
+  }
+
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     opps, colorsOf, gRes, onPlay, tally, half, halves, pct, wl, isLive,
     myDeck, deckName, formatOf, archetype, oppKey, planKey, recognize, lastSession, sessionOpen, records,
-    loadI18n, browserI18n, translator,
+    loadI18n, browserI18n, translator, loadStore,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;
