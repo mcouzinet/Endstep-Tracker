@@ -228,8 +228,33 @@ async function load() {
     else if (k.startsWith('plan:')) plans[k] = String(v || '');
     else if (k === 'decks') decks = obj(v);
   }
+  showPromo(all.promoClosed);
   refresh();
 }
+
+// Deck Compare promo, where Deck Compare is listed (Chrome Web Store, Edge Add-ons) and not installed. Closed, it stays
+// hidden until the next release (X.Y, not a dev build), then comes back, with promo_news if that line changed.
+const RELEASE = chrome.runtime.getManifest().version.split('.').slice(0, 2).join('.');
+const DECK_COMPARE = location.protocol !== 'chrome-extension:' ? null // Firefox, Safari: not listed there yet
+  : / Edg\//.test(navigator.userAgent)
+    ? { id: 'akklkakfdidemfbbnjmhiofkhkcnhfbc', cta: 'promo_cta_edge', url: 'https://microsoftedge.microsoft.com/addons/detail/deck-compare-%E2%80%93-mtg/akklkakfdidemfbbnjmhiofkhkcnhfbc' }
+    : { id: 'miijiappldgijnnokopjfiponelkdhcg', cta: 'promo_cta_chrome', url: 'https://chromewebstore.google.com/detail/deck-compare-%E2%80%93-mtg/miijiappldgijnnokopjfiponelkdhcg' };
+async function showPromo(closed) {
+  closed = obj(closed);
+  if (!DECK_COMPARE || closed.at === RELEASE) return;
+  // An installed Deck Compare answers this ping (its background.js); otherwise sendMessage rejects.
+  if (await chrome.runtime.sendMessage(DECK_COMPARE.id, { ping: 'endstep-tracker' }).catch(() => null)) return;
+  $('#promo-link').href = DECK_COMPARE.url;
+  const cta = $('#promo-cta');
+  cta.dataset.i18n = DECK_COMPARE.cta; // re-translated on a language switch
+  cta.textContent = t(DECK_COMPARE.cta);
+  $('#promo-news').hidden = !closed.at || closed.news === t('promo_news');
+  $('#promo').hidden = false;
+}
+$('#promo-close').addEventListener('click', () => {
+  $('#promo').hidden = true;
+  chrome.storage.local.set({ promoClosed: { at: RELEASE, news: t('promo_news') } });
+});
 
 // Apply a chrome.storage change set in place: no full reload while a match is being written every second.
 function applyChanges(changes) {

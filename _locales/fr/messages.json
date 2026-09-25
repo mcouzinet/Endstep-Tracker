@@ -829,5 +829,29 @@
   },
   "ov_move": {
     "message": "Glisser pour déplacer"
+  },
+  "promo_by": {
+    "message": "Du même auteur, sans compte ni collecte"
+  },
+  "promo_close": {
+    "message": "Masquer jusqu’à la prochaine version"
+  },
+  "promo_news": {
+    "message": "Nouveau : les pages d’archétype MTGGoldfish sont reconnues."
+  },
+  "promo_lead": {
+    "message": "Compare deux decklists sur la page du deck (Moxfield, Archidekt, MTGGoldfish…) : cartes communes, exclusives et écarts de quantités."
+  },
+  "promo_cta_chrome": {
+    "message": "Voir sur le Chrome Web Store"
+  },
+  "promo_cta_edge": {
+    "message": "Voir sur Edge Add-ons"
+  },
+  "new_tab": {
+    "message": " (nouvel onglet)"
+  },
+  "promo_shot_alt": {
+    "message": "Aperçu de Deck Compare : deux listes comparées, 82 % similaires"
   }
 }

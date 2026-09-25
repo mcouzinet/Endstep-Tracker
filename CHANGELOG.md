@@ -14,6 +14,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - G1 et G2-G3 séparés sur chaque bilan ; versions de liste d'un deck, avec comparaison.
 - Filtre des formats en puces (plusieurs à la fois, le plus joué par défaut) ; « Sans banlist » pour le constructed sans format.
 - **Duel Commander** : l'archétype adverse est le nom de son commandant.
+- **Deck Compare** en encart dans le tableau de bord, après les matchups : sur Chrome et Edge (là où il est publié), et seulement s'il n'est pas déjà installé. Fermé, il revient à la release suivante avec une nouveauté de Deck Compare.
 
 ### Modifié
 
