@@ -9,8 +9,7 @@
     body.loading main { visibility: hidden; }
     header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
     header img { width: 24px; height: 24px; }
-    header b { font-weight: 650; margin-right: auto; }
-    header .btn { padding: 5px 10px; font-size: 13px; }
+    header b { font-weight: 650; }
     main { display: grid; gap: 14px; padding: 14px; }
     h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 650; }
     h2 .muted { font-weight: 400; font-size: 13px; }
@@ -27,7 +26,8 @@
     .recent .who { min-width: 0; display: grid; }
     .recent .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .recent .score { font-weight: 600; font-variant-numeric: tabular-nums; }
-    footer { padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+    footer { display: grid; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
+    footer .btn { justify-content: center; }
     .switch { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
     .switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--gold); }
   </style>
@@ -36,10 +36,10 @@
   <header>
     <img src="icons/icon-32.png" alt="">
     <b>Endstep Tracker</b>
-    <button id="open" class="btn primary" data-i18n="open_dashboard"></button>
   </header>
   <main id="main" aria-live="polite"></main>
   <footer>
+    <button id="open" class="btn primary" data-i18n="open_dashboard"></button>
     <label class="switch"><input type="checkbox" id="overlay"><span data-i18n="overlay_toggle"></span></label>
   </footer>
   <script src="tracker.js"></script>
