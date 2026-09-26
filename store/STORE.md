@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboards. The store builds have no Coach: `release.sh` leaves out `coach.js`, `coach-model.json` and `coach-cards.json`. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
+Everything to paste into the developer dashboards. The store builds have no Coach: it lives in the Endstep-coach repository and is only ever copied next to the extension by its install script (git ignores those files here); `release.sh` still refuses a zip that would contain one. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
 
 ## Listing
 
@@ -126,7 +126,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 ## Submission checklist
 
-1. `node test/replay.test.js && node test/meta.test.js && node test/coach.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js`
+1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js`
 2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in both `_locales` (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
 3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.

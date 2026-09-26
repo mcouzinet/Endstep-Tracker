@@ -1,7 +1,6 @@
 // Dashboard: match history, stats, annotations and exports.
 const T = self.EndstepTracker;
 const Meta = self.EndstepMeta;
-const Coach = self.EndstepCoach;
 const $ = (s) => document.querySelector(s);
 const esc = self.EndstepShared.esc;
 
@@ -47,7 +46,7 @@ let drawer = null; // { key } of the matchup open in the side panel
 let curScope = null; // the scope of the last render
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
-let analyses = {}; // matchId -> { model, at, determinizations, games: { gameNumber: [row per decision] } }, imported from Endstep-coach
+let coach = null; // the coach module (Endstep-coach/extension-coach/coach-ui.js) when installed next to this page
 let pending = null; // storage changes held back while the user is editing or selecting inside a match
 let toastTimer;
 
@@ -228,10 +227,10 @@ async function load() {
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
-    else if (k.startsWith('ana:')) analyses[k.slice(4)] = obj(v);
     else if (k.startsWith('plan:')) plans[k] = String(v || '');
     else if (k === 'decks') decks = obj(v);
   }
+  if (coach) coach.load(all);
   showPromo(all.promoClosed);
   refresh();
 }
@@ -278,10 +277,6 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
-    } else if (k.startsWith('ana:')) {
-      const id = k.slice(4);
-      if (c.newValue === undefined) delete analyses[id];
-      else analyses[id] = obj(c.newValue);
     } else if (k.startsWith('plan:')) {
       if (c.newValue === undefined) delete plans[k];
       else plans[k] = String(c.newValue);
@@ -303,156 +298,6 @@ function refresh() {
   $('#archetypes').innerHTML = [...names].sort((a, b) => a.localeCompare(b, locale)).map((a) => `<option value="${esc(a)}">`).join('');
   render();
   ensureMeta();
-}
-
-// --- coach: win probability before/after each recorded decision (see coach.js) ---
-let coachModel = null; // coach-model.json when present and valid, else the heuristic
-let coachCards = null; // coach-cards.json (card vectors) when the model uses the extended features
-async function initCoach() {
-  if (!Coach) return; // the store build ships without coach.js (see release.sh)
-  try {
-    const m = await (await fetch('coach-model.json')).json();
-    const same = (list) => m && Array.isArray(m.features) && m.features.length === list.length && m.features.every((f, i) => f === list[i]);
-    if (same(Coach.FEATURES)) coachModel = m;
-    else if (same(Coach.FEATURES2)) {
-      coachCards = await (await fetch('coach-cards.json')).json();
-      if (coachCards && coachCards.cards && Coach.FEATURES.length + 6 * coachCards.dim === m.features.length) coachModel = m;
-      else coachCards = null;
-    }
-  } catch { /* no model shipped: heuristic */ }
-}
-// Local coach server (Endstep-coach/bot/coach-server.sh): when it answers, a match's decisions can be analysed in place.
-const COACH_SERVER = 'http://127.0.0.1:8765';
-let coachServer = null; // /health answer when the server is up
-async function initCoachServer() {
-  if (!Coach) return;
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 1500);
-  try {
-    const r = await fetch(`${COACH_SERVER}/health`, { signal: ctl.signal });
-    const h = r.ok ? await r.json() : null;
-    if (h && h.ok) coachServer = h;
-  } catch { /* no server: nothing changes */ } finally { clearTimeout(timer); }
-}
-const analysing = new Set(); // match ids being analysed
-async function analyseMatch(m) {
-  const decs = decisions[m.id];
-  if (!decs || analysing.has(m.id)) return;
-  analysing.add(m.id);
-  render();
-  try {
-    const oppSeen = {};
-    for (const p of opps(m)) for (const [c, n] of Object.entries(T.seenCards(m, p.seat))) oppSeen[c] = Math.max(oppSeen[c] || 0, n);
-    const md = myDeck(m);
-    const body = {
-      matchId: m.id, format: String(m.formatId || m.format || '').toLowerCase(), mySeat: m.mySeat,
-      myDeck: md && md.cards ? md.cards.map((c) => ({ name: c.name, quantity: c.quantity || 1 })) : null,
-      oppArchetype: archetype(m) || (guessFor(m) || {}).name || null, oppColours: colorsOf(m).split(''), oppSeen, games: decs,
-      k: coachServer && coachServer.depth ? 3 : 1, depth: coachServer && coachServer.depth ? 1 : 0,
-    };
-    const r = await fetch(`${COACH_SERVER}/analyse`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const a = await r.json().catch(() => null);
-    if (!r.ok || !a || a.error) throw new Error((a && a.error) || `HTTP ${r.status}`);
-    analyses[m.id] = { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: obj(a.games) };
-    await chrome.storage.local.set({ ['ana:' + m.id]: analyses[m.id] });
-    const n = a.summary ? a.summary.replayed : 0;
-    toast(tn('coach_analysed', n));
-  } catch (e) {
-    toast(t('coach_analyse_failed', { error: e.message || String(e) }), true);
-  } finally {
-    analysing.delete(m.id);
-    render();
-  }
-}
-
-const explaining = new Set(); // "matchId|game|index" being explained
-async function explainDecision(m, gn, i) {
-  const key = `${m.id}|${gn}|${i}`;
-  const d = ((decisions[m.id] || {})[gn] || [])[i];
-  const ana = analyses[m.id];
-  const a = ana && ana.games && Array.isArray(ana.games[gn]) ? ana.games[gn][i] : null;
-  if (!d || !a || explaining.has(key)) return;
-  explaining.add(key);
-  render();
-  try {
-    const body = { decision: d, analysis: a, mySeat: m.mySeat, myDeck: myDeck(m) ? deckName(m) : null, oppArchetype: archetype(m) || (guessFor(m) || {}).name || null, lang: locale.startsWith('fr') ? 'fr' : 'en', key };
-    const r = await fetch(`${COACH_SERVER}/explain`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const res = await r.json().catch(() => null);
-    if (!r.ok || !res || res.error || !res.text) throw new Error((res && res.error) || `HTTP ${r.status}`);
-    a.explanation = { text: res.text, model: res.model || null, at: new Date().toISOString() };
-    await chrome.storage.local.set({ ['ana:' + m.id]: ana });
-  } catch (e) {
-    toast(t('coach_explain_failed', { error: e.message || String(e) }), true);
-  } finally {
-    explaining.delete(key);
-    render();
-  }
-}
-
-const BAD = -0.15; // drop in P(win), in probability, flagged as a probable mistake
-const BLUNDER = -0.30;
-
-// The board a decision leads to is the next decision's board in the same game. The last decision of a game has
-// no "after": the outcome would score 0/100 % and flag whatever came last, which is not a judgement of that play.
-function coachRows(m, g) {
-  const ds = (decisions[m.id] || {})[g.n] || [];
-  if (!ds.length || m.mySeat === null) return [];
-  const firstSeat = g.firstSeat;
-  const p = (board) => (board && board.players ? Coach.predict(Coach.featuresFor(coachModel, board, m.mySeat, firstSeat, coachCards), coachModel) : null);
-  return ds.map((d, i) => {
-    const before = p(d.board);
-    const next = ds[i + 1];
-    const after = next ? p(next.board) : null;
-    return { d, before, after, delta: before !== null && after !== null ? after - before : null };
-  });
-}
-
-function coachBlock(m, g) {
-  if (!Coach) return '';
-  const rows = coachRows(m, g);
-  if (!rows.length) return '';
-  const pct = (v) => (v === null ? '—' : `${Math.round(v * 100)} %`);
-  // Imported analysis (best play per decision, from Endstep-coach): two more columns when it exists for this game.
-  const ana = analyses[m.id];
-  const arows = ana && ana.games && Array.isArray(ana.games[g.n]) ? ana.games[g.n] : null;
-  const bestCell = (i) => {
-    const a = arows && arows[i];
-    if (!a) return '<td></td><td class="num"></td>';
-    if (a.skipped) return `<td class="muted" title="${esc(a.skipped)}">—</td><td class="num"></td>`;
-    const gap = typeof a.delta === 'number' ? -a.delta : null; // played minus best, in probability
-    const cls = gap !== null && gap <= BLUNDER ? 'bad' : gap !== null && gap <= BAD ? 'bad' : '';
-    const same = a.played !== null && a.played === a.best;
-    const label = Coach.describeOption(a.best, { pass: t('coach_pass'), noAttack: t('coach_no_attack'), attack: t('coach_attack_prefix') });
-    const sd = typeof a.sd === 'number' && a.sd > 0 ? ` ${t('coach_sd_title', { sd: Math.round(a.sd * 100) })}` : '';
-    return `<td class="${same ? 'muted' : ''}" title="${esc(t('coach_best_title', { p: Math.round((a.bestScore || 0) * 100) }) + sd)}">${same ? esc(t('coach_same')) : esc(label)}</td>`
-      + `<td class="num delta ${cls}">${gap === null ? '—' : gap === 0 ? '0' : `${gap > 0 ? '+' : ''}${Math.round(gap * 100)}`}</td>`;
-  };
-  // Explanation by the local coach server (Claude behind it): a flagged decision with an analysis gets a button, the
-  // text received stays in the analysis row (`explanation`) and is shown under the decision.
-  const cols = arows ? 7 : 5;
-  const explainRow = (i, delta) => {
-    const a = arows && arows[i];
-    if (!a || a.skipped) return '';
-    if (a.explanation && a.explanation.text) return `<tr class="explain"><td colspan="${cols}"><p>${esc(a.explanation.text)}</p><small class="muted">${esc(t('coach_explain_by', { model: a.explanation.model || '?' }))}</small></td></tr>`;
-    const flagged = (typeof a.delta === 'number' && a.delta >= 0.05) || (delta !== null && delta <= BAD);
-    if (!flagged || !coachServer || !coachServer.explain) return '';
-    const busy = explaining.has(`${m.id}|${g.n}|${i}`);
-    return `<tr class="explain"><td colspan="${cols}"><button type="button" class="btn-text" data-explain="${i}" data-game="${esc(g.n)}"${busy ? ' disabled' : ''}>${esc(busy ? t('coach_explain_wait') : t('coach_explain'))}</button></td></tr>`;
-  };
-  const body = rows.map(({ d, before, after, delta }, i) => {
-    const cls = delta !== null && delta <= BLUNDER ? 'blunder bad' : delta !== null && delta <= BAD ? 'bad' : '';
-    const flag = delta !== null && delta <= BLUNDER ? `<span class="flag bad">${esc(t('coach_blunder'))}</span>` : delta !== null && delta <= BAD ? `<span class="flag bad">${esc(t('coach_mistake'))}</span>` : '';
-    const sign = delta === null ? '' : delta > 0 ? '+' : '';
-    return `<tr class="${cls}"><td class="turn">T${esc(d.turn)} ${esc(d.phase || '')}</td><td>${esc(describeAction(d.answer || {}))}${flag}</td>`
-      + `<td class="num">${pct(before)}</td><td class="num">${pct(after)}</td><td class="num delta ${delta > 0.05 ? 'good' : ''}">${delta === null ? '—' : `${sign}${Math.round(delta * 100)}`}</td>`
-      + (arows ? bestCell(i) : '') + '</tr>' + explainRow(i, delta);
-  }).join('');
-  const flagged = rows.filter((r) => r.delta !== null && r.delta <= BAD).length;
-  const source = coachModel ? t('coach_model_note', { n: coachModel.games || '?' }) : t('coach_heuristic_note');
-  const anaNote = arows ? ` · ${esc(t(ana.depth >= 1 ? 'coach_analysis_note_depth' : 'coach_analysis_note', { date: ana.at ? new Date(ana.at).toLocaleDateString(locale) : '?', model: ana.model || '?', k: ana.determinizations || 1 }))}` : '';
-  return `<details class="coach" data-key="coach:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('coach_title', { n: rows.length }))}${flagged ? ` · <b>${esc(tn('coach_flagged', flagged))}</b>` : ''}</summary>
-    <p class="coach-note">${esc(source)} · ${esc(t('coach_after_note'))}${anaNote}</p>
-    <table><thead><tr><th></th><th>${esc(t('coach_decision'))}</th><th>${esc(t('coach_before'))}</th><th>${esc(t('coach_after'))}</th><th>Δ</th>${arows ? `<th>${esc(t('coach_best'))}</th><th title="${esc(t('coach_gap_title'))}">${esc(t('coach_gap'))}</th>` : ''}</tr></thead><tbody>${body}</tbody></table></details>`;
 }
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
@@ -903,7 +748,7 @@ function detail(m) {
         ${guessLine(m)}
         <label class="field">${esc(t('notes'))}<textarea data-note="notes" placeholder="${esc(t('notes_placeholder'))}">${esc(n.notes || '')}</textarea></label>
         ${deckPicker}
-        ${coachServer && decisions[m.id] && Object.values(decisions[m.id]).some((l) => Array.isArray(l) && l.length) ? `<button class="btn-text" data-analyse${analysing.has(m.id) ? ' disabled' : ''}><svg class="i"><use href="#i-spark"/></svg>${esc(analysing.has(m.id) ? t('coach_analysing') : t('coach_analyse'))}</button>` : ''}
+        ${coach ? coach.matchActions(m) : ''}
         ${mine}
         <button class="btn-text" data-delete><svg class="i"><use href="#i-trash"/></svg>${esc(t('delete_match'))}</button>
       </div>
@@ -982,7 +827,7 @@ function gameBlock(m, g) {
   const log = `<details class="log" data-key="log:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('full_log', { n: g.log.length }))}</summary><ol>${g.log
     .map(([tn_, , type, c, msg]) => `<li><span>T${esc(tn_)}</span>${esc(msg || type + (c ? ` ${c}` : ''))}</li>`).join('')}</ol></details>`;
   const res = r ? `<span class="result ${r}"><i></i>${esc(resultLabel(r))}</span>` : `<span class="result ongoing"><i></i>${esc(t('ongoing'))}</span>`;
-  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${coachBlock(m, g)}${decisionsBlock(m, g)}${log}</article>`;
+  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${coach ? coach.gameBlock(m, g) : ''}${decisionsBlock(m, g)}${log}</article>`;
 }
 
 const ACTION_KEY = { PLAY_CARD: 'act_play', PASS_PRIORITY: 'act_pass', KEEP_HAND: 'act_keep', MULLIGAN: 'act_mulligan', DECLARE_ATTACKERS: 'act_attack',
@@ -1083,8 +928,7 @@ const ACTIONS = {
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
-    const anas = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('ana:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, analyses: anas, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))) }), 'application/json');
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(coach ? coach.exportExtra(all) : {}) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -1104,11 +948,11 @@ const ACTIONS = {
     toast(tn('csv_exported', rows.length - 1));
   },
   import: () => $('#import').click(),
-  'import-analysis': () => $('#import-analysis').click(),
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => /^(match|note|dec|ana|plan):/.test(k)));
+    const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(coach ? coach.prefixes : [])];
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => prefixes.some((p) => k.startsWith(p))));
     openId = null;
     toast(t('all_deleted'));
   },
@@ -1136,7 +980,7 @@ $('#import').addEventListener('change', async (e) => {
     for (const m of list) items['match:' + m.id] = m;
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
-    for (const [id, a] of Object.entries(obj(data && data.analyses))) if (items['match:' + id]) items['ana:' + id] = obj(a);
+    if (coach) coach.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
@@ -1146,27 +990,6 @@ $('#import').addEventListener('change', async (e) => {
   }
 });
 
-// An analysis produced by Endstep-coach/bot/coach-replay.js from this dashboard's JSON export: the best play per
-// recorded decision. Kept under its own key, only for matches that are here.
-$('#import-analysis').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  e.target.value = '';
-  if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    const per = obj(data && data.matches);
-    const items = {};
-    for (const [id, games] of Object.entries(per)) {
-      if (!matches.some((m) => m.id === id)) continue;
-      items['ana:' + id] = { model: data.model || '', at: data.at || '', determinizations: data.determinizations || 1, games: obj(games) };
-    }
-    const n = Object.keys(items).length;
-    if (n) await chrome.storage.local.set(items);
-    toast(n ? tn('analysis_imported', n) : t('analysis_none'), !n);
-  } catch {
-    toast(t('import_failed'), true);
-  }
-});
 
 $('#matches').addEventListener('click', (e) => {
   const use = e.target.closest('[data-use-guess]');
@@ -1176,24 +999,12 @@ $('#matches').addEventListener('click', (e) => {
     chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
     return;
   }
-  const ex = e.target.closest('[data-explain]');
-  if (ex) {
-    const id = ex.closest('.match').dataset.id;
-    const m = matches.find((x) => x.id === id);
-    if (m) explainDecision(m, ex.dataset.game, Number(ex.dataset.explain));
-    return;
-  }
-  if (e.target.closest('[data-analyse]')) {
-    const id = e.target.closest('.match').dataset.id;
-    const m = matches.find((x) => x.id === id);
-    if (m) analyseMatch(m);
-    return;
-  }
+  if (coach && coach.onClick(e)) return;
   if (e.target.closest('[data-delete]')) {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
-    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, 'ana:' + id]).then(() => toast(t('match_deleted')));
+    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, ...(coach ? coach.deleteKeys(id) : [])]).then(() => toast(t('match_deleted')));
     return;
   }
   const btn = e.target.closest('.match-row');
@@ -1321,7 +1132,7 @@ document.addEventListener('selectionchange', () => { if (pending) flushPending()
 addEventListener('scroll', hidePreview, { passive: true });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|ana|plan):/.test(k)));
+  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|plan):/.test(k)));
   if (!Object.keys(mine).length) return;
   if (busy() || pending) { pending = Object.assign(pending || {}, mine); flushPending(); return; }
   applyChanges(mine);
@@ -1332,7 +1143,12 @@ setInterval(renderHeader, 60e3); // keep "il y a…" and the live pill fresh
   await initI18n();
   loadPrefs();
   await initMeta();
-  await initCoach();
-  initCoachServer().then(() => { if (coachServer) render(); }); // not awaited: a missing server must not delay the dashboard
+  // The coach (Endstep-coach/extension-coach) is loaded only when its files sit next to this page: the store builds
+  // ship without them and this import simply fails.
+  coach = await import(chrome.runtime.getURL('coach-ui.js')).then((mod) => mod.default({
+    esc, toast, render, obj, myDeck, deckName, archetype, guessFor, colorsOf, opps, describeAction, $,
+    matches: () => matches, decisions: () => decisions, locale: () => locale,
+  })).catch(() => null);
+  if (coach) await coach.init();
   await load();
 })();

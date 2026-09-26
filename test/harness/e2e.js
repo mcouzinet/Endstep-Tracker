@@ -100,12 +100,18 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       dataBtn: document.getElementById('data-btn').textContent.trim(),
     }))));
     console.log('manifest:', JSON.stringify(await dash.evaluate(() => ({ desc: chrome.runtime.getManifest().description, title: chrome.i18n.getMessage('action_title'), ui: chrome.i18n.getUILanguage() }))));
-    await dash.click('.match-row');
-    await sleep(600);
+    // The dashboard opens on my most played deck: show every deck and open the match this run recorded (not whatever row is first).
+    await dash.evaluate(() => { try { localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {} });
+    await dash.reload({ waitUntil: 'load' });
+    await sleep(800);
+    const rowSel = matchId ? `.match[data-id="${matchId}"] .match-row` : '.match-row';
+    await dash.evaluate((sel) => { const r = document.querySelector(sel) || document.querySelector('.match-row'); if (r && !r.closest('.match').classList.contains('open')) r.click(); }, rowSel);
+    for (let i = 0; i < 40 && !(await dash.evaluate(() => !!document.querySelector('.coach'))); i++) await sleep(250); // decisions load lazily, then the coach block renders
+    await sleep(300);
     console.log('coach block:', JSON.stringify(await dash.evaluate(() => { const c = document.querySelector('.coach'); return c && { summary: c.querySelector('summary').textContent.trim(), rows: c.querySelectorAll('tbody tr').length, note: c.querySelector('.coach-note').textContent.slice(0, 60) }; })));
     await sleep(500);
     // Local coach server (Endstep-coach/bot/coach-server.sh start): analyse the match in place when it answers.
-    const served = await dash.evaluate(() => !!coachServer);
+    const served = await dash.evaluate(() => !!document.querySelector('.match [data-analyse]')); // the coach module adds the button when its server answers
     if (served) {
       await dash.evaluate(() => { const b = document.querySelector('.match.open [data-analyse], .match [data-analyse]'); if (b) b.click(); });
       for (let i = 0; i < 120 && !(await dash.evaluate((id) => !!window.__ana_done || false, matchId)); i++) {

@@ -74,16 +74,6 @@ for (const m of matches) data['match:' + m.id] = m;
 for (const [id, d] of Object.entries(decisions)) data['dec:' + id] = d;
 for (const [id, n] of Object.entries(notes)) data['note:' + id] = n;
 data.decks = myDecks;
-// Best plays for m1's decisions, as bot/coach-replay.js (Endstep-coach) produced them from this demo's export.
-try {
-  const a = JSON.parse(fs.readFileSync(__dirname + '/analysis-demo.json', 'utf8'));
-  if (a.matches && a.matches.m1) {
-    data['ana:m1'] = { model: a.model, at: a.at, determinizations: a.determinizations, depth: a.depth, games: JSON.parse(JSON.stringify(a.matches.m1)) };
-    // One explanation already received (what /explain returns), on the "pass with Bolt in hand" decision.
-    const row = data['ana:m1'].games['1'] && data['ana:m1'].games['1'][3];
-    if (row && row.best) row.explanation = { text: "L'adversaire est à 3 points de vie et tu as Lightning Bolt en main avec une Mountain dégagée : le Bolt en face gagne la partie sur-le-champ. Passer laisse un tour entier à l'adversaire pour trouver une réponse ou gagner la course ; l'écart de 8 points mesure ce risque.", model: 'demo', at: a.at };
-  }
-} catch { /* no analysis fixture */ }
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');
 
@@ -100,7 +90,7 @@ for (const name of ['demo', 'empty']) {
     getKeys: async () => Object.keys(window.__DATA),
     set: async (items) => { const ch = {}; for (const [k, v] of Object.entries(items)) { ch[k] = { oldValue: window.__DATA[k], newValue: JSON.parse(JSON.stringify(v)) }; window.__DATA[k] = v; } fire(ch); },
     remove: async (keys) => { const ch = {}; for (const k of [].concat(keys)) { if (k in window.__DATA) { ch[k] = { oldValue: window.__DATA[k] }; delete window.__DATA[k]; } } fire(ch); },
-  }, onChanged: { addListener(fn) { listeners.push(fn); } } }, runtime: { getManifest: () => ({ version: '0.0' }) } };
+  }, onChanged: { addListener(fn) { listeners.push(fn); } } }, runtime: { getManifest: () => ({ version: '0.0' }), getURL: (p) => new URL(p, document.baseURI).href } };
   // The QA scripts clear localStorage and expect every demo match listed: default to all decks, all formats
   // (the real default, my most played deck, is set by writing the filters pref before loading).
   try { if (!localStorage.getItem('endstep-tracker.filters')) localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {}

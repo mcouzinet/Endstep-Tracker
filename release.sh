@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds dist/endstep-tracker-<version>[-firefox|-safari].zip for the stores: runtime files only, without the Coach
-# (coach.js and coach-model.json are personal / experimental; dashboard.js hides the Coach block when coach.js is absent).
+# (the coach lives in Endstep-coach/extension-coach and is never in this repository; the leak check below stays as a guard).
 # Usage: ./release.sh [chrome|firefox|safari]   (chrome by default; the Chrome zip also serves Edge)
 # safari also leaves the package in dist/safari/, which the Xcode project in safari/ references: run it before archiving.
 set -e
@@ -14,7 +14,7 @@ if [ "$target" = safari ]; then stage="$PWD/dist/safari"; rm -rf "$stage"; mkdir
 cp -R manifest.json background.js hook.js tracker.js content.js dashboard.js meta.js shared.js theme.css popup.html popup.js overlay.js _locales "$stage"/
 mkdir "$stage/icons" && cp icons/*.png "$stage/icons/"
 [ "$target" = safari ] || rm "$stage/icons/icon-1024.png"
-grep -v '<script src="coach.js">' dashboard.html > "$stage/dashboard.html"
+cp dashboard.html "$stage/"
 if [ "$target" = firefox ]; then
   # Firefox has no background service worker (event page instead), needs a gecko id, and AMO requires the
   # data-collection declaration for new extensions (nothing leaves the browser: "none").

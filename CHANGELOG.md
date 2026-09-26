@@ -18,6 +18,8 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Modifié
 
+- Le Coach ne fait plus partie du dépôt de l'extension : il vit dans `Endstep-coach` et s'installe à côté du tableau de bord, qui le charge s'il est là.
+
 - Les matchs contre l'IA du site restent dans l'historique (étiquette « IA ») mais ne comptent plus dans aucun bilan.
 - Le tableau de bord part de mon deck : les matchups d'abord, le résultat et la recherche dans l'historique.
 - Les couleurs adverses viennent des sorts lancés, plus de toutes les cartes vues.

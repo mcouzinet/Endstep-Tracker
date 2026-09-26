@@ -12,3 +12,9 @@ test/harness/demo-export.json
 # Xcode (Safari wrapper app in safari/): per-user state and build products
 xcuserdata/
 DerivedData/
+
+# Coach (Endstep-coach/extension-coach, installed by its install.sh): never in this repository
+coach.js
+coach-ui.js
+coach-model.json
+coach-cards.json
