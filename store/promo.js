@@ -1,4 +1,5 @@
-// Store promo images: small tile 440x280, marquee 1400x560, store icon 128 (96 px art on a transparent canvas).
+// Store promo images: small tile 440x280, marquee 1400x560, store icon 128 (full size, like Deck Compare's: the store's
+// advice of 96 px art in 16 px of padding made it look smaller than its neighbours in the store lists).
 const fs = require('fs');
 const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
 const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
@@ -23,7 +24,7 @@ const css = `
   .screen { position: absolute; left: 640px; top: 72px; width: 900px; border-radius: 12px; overflow: hidden; border: 1px solid #43392c; box-shadow: 0 30px 60px -20px rgb(0 0 0 / .8), 0 4px 12px rgb(0 0 0 / .5); }
   .screen img { display: block; width: 100%; }
   .icon { display: grid; place-items: center; height: 100%; background: transparent; }
-  .icon img { width: 96px; height: 96px; }
+  .icon img { width: 128px; height: 128px; }
 `;
 const pages = {
   'promo-440x280.png': { w: 440, h: 280, html: `<div class="bg"></div><div class="tile"><img src="${icon}"><h1>Endstep Tracker</h1><p>Your endstep.cc matches, recorded automatically.</p></div>` },
