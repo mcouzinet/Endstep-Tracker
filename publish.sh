@@ -3,6 +3,7 @@
 #   ./publish.sh --dry-run            checks everything and builds the packages; contacts no store
 #   ./publish.sh [chrome] [edge] [firefox] [safari]   publishes (all four when none is named), after a confirmation
 #   ./publish.sh --keys [store…]     asks for the missing keys of those stores and stores them in the Keychain
+#   ./publish.sh --keys --replace [store…]   asks again for all of them, the ones already set included
 # The packages are built from the tag itself, in a temporary worktree, so later commits never leak into a store.
 # Keys and IDs come from the macOS Keychain
 # (service "endstep-publish", see store/STORE.md "Automated publishing"), never from the repository; nothing here
@@ -11,12 +12,13 @@
 set -eu
 cd "$(dirname "$0")"
 
-dry=0; yes=0; keys=0; stores=()
+dry=0; yes=0; keys=0; replace=0; stores=()
 for a in "$@"; do
   case "$a" in
     --dry-run) dry=1 ;;
     --yes) yes=1 ;;
     --keys) keys=1 ;;
+    --replace) replace=1 ;;
     chrome|edge|firefox|safari) stores+=("$a") ;;
     *) echo "unknown argument: $a"; exit 2 ;;
   esac
@@ -37,7 +39,7 @@ if [ $keys = 1 ]; then
       safari) names="asc-key-id asc-issuer-id" ;;
     esac
     for n in $names; do
-      if security find-generic-password -s "$KEYCHAIN" -a "$n" >/dev/null 2>&1; then echo "✓ $n already set"; continue; fi
+      if [ $replace = 0 ] && security find-generic-password -s "$KEYCHAIN" -a "$n" >/dev/null 2>&1; then echo "✓ $n already set (--replace to change it)"; continue; fi
       echo "$n (store/STORE.md, Automated publishing):"
       security add-generic-password -U -s "$KEYCHAIN" -a "$n" -w || fail "$n not stored"
       [ -n "$(security find-generic-password -s "$KEYCHAIN" -a "$n" -w 2>/dev/null)" ] ||
