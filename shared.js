@@ -75,9 +75,18 @@
     return d ? d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
   }
   // The format alone (the site's formatId, else its game kind; constructed without a banlist is "no banlist").
+  // When the site's match details were missed (no formatId), the deck I played tells it, if its format fits the game (a
+  // Duel Commander deck does not name a constructed game); otherwise the format is unknown, never "no banlist".
   function formatOf(m, c) {
-    const base = m.formatId && m.formatId !== 'casual' ? m.formatId : m.format && m.format !== 'constructed' ? m.format : c.t('casual');
-    return base.charAt(0).toUpperCase() + base.slice(1);
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    if (m.formatId && m.formatId !== 'casual') return cap(m.formatId);
+    if (m.format && m.format !== 'constructed') return cap(m.format);
+    if (m.formatId === 'casual') return c.t('casual');
+    const d = myDeck(m, c);
+    const deckFormat = d && obj(c.decks)[d.id] && obj(c.decks)[d.id].formatId;
+    const commander = (x) => /commander/i.test(x || '');
+    if (deckFormat && commander(deckFormat) === commander(`${m.gameType} ${m.format}`)) return cap(deckFormat);
+    return c.t('format_unknown');
   }
   // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners).
   const commanderOf = (m) => (m.formatId !== 'duel-commander' ? ''

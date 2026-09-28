@@ -12,15 +12,13 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Panneau sur endstep.cc** : entre deux games, le match détecté (adversaire, archétype, mon bilan contre lui) ; après le match, le résultat et l'archétype reconnu à confirmer. Se coupe depuis la popup.
 - **Tableau de bord** : un résumé en tête (taux de victoire, bilans, les 20 derniers résultats avec la fiche de chaque match au survol), guide des matchups avec son panneau.
 - Versions de liste d'un deck, avec comparaison.
-- Filtre des formats en puces (plusieurs à la fois, le plus joué par défaut) ; « Sans banlist » pour le constructed sans format.
+- « Sans banlist » pour le constructed sans format. Quand le site n'a pas donné le format d'un match, il est déduit du deck joué, sinon le match est en « Format inconnu » (plus de faux « Sans banlist »).
 - **Duel Commander** : l'archétype adverse est le nom de son commandant.
 - **Deck Compare** en encart dans le tableau de bord, après les matchups : sur Chrome et Edge (là où il est publié), et seulement s'il n'est pas déjà installé. Fermé, il revient à la release suivante avec une nouveauté de Deck Compare.
 
 ### Modifié
 
 - Tous les bilans se comptent en matchs, jamais en games : le play/draw et le mulligan d'un match sont ceux de sa première game.
-- Le Coach ne fait plus partie du dépôt de l'extension : il vit dans `Endstep-coach` et s'installe à côté du tableau de bord, qui le charge s'il est là.
-
 - Les matchs contre l'IA du site restent dans l'historique (étiquette « IA ») mais ne comptent plus dans aucun bilan.
 - Le tableau de bord part de mon deck : les matchups d'abord, le résultat et la recherche dans l'historique.
 - Les couleurs adverses viennent des sorts lancés, plus de toutes les cartes vues.
@@ -35,4 +33,4 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## [0.8.1] (2026-09-23)
 
-Dernière release taguée avant ce journal.
+Dernière release taguée avant ce journal. Le Chrome Web Store publie encore la 0.6.0 : pour ses utilisateurs, cette release apporte aussi tout ce qui a changé depuis.

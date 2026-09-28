@@ -730,5 +730,8 @@
   },
   "recent_form": {
     "message": "Les {n} derniers matchs"
+  },
+  "format_unknown": {
+    "message": "Format inconnu"
   }
 }

@@ -25,6 +25,7 @@ Everything stays in your browser, in the extension's local storage (`chrome.stor
 
 - **endstep.cc**: the extension only observes the traffic the site already exchanges with your browser. To recognise the opponent's archetype it also reads the site's public metagame API (`/api/metagame/v1`), which involves no personal data. It never sends anything to endstep.cc on your behalf and never plays for you.
 - **Scryfall** (`api.scryfall.com`): when you hover a card name in the dashboard, the card image is fetched from Scryfall. The request contains only the card name.
+- **Deck Compare** (another extension by the same author): the dashboard asks it, inside your browser, whether it is installed, to stop showing its promotion if so. The message says only that; nothing else is exchanged and nothing leaves your browser. The store link in that promotion opens only if you click it.
 
 No analytics, no telemetry, no crash reporting, no third-party scripts.
 
@@ -55,6 +56,7 @@ Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur
 
 - **endstep.cc** : l'extension observe seulement le trafic que le site échange déjà avec ton navigateur. Pour reconnaître l'archétype adverse, elle lit l'API métagame publique du site (`/api/metagame/v1`), sans donnée personnelle. Elle n'envoie jamais rien à endstep.cc en ton nom et ne joue jamais à ta place.
 - **Scryfall** : au survol d'un nom de carte dans le tableau de bord, l'image est chargée depuis Scryfall. La requête ne contient que le nom de la carte.
+- **Deck Compare** (une autre extension du même auteur) : le tableau de bord lui demande, dans ton navigateur, si elle est installée, pour ne plus afficher sa promotion le cas échéant. Le message ne dit que ça ; rien d'autre n'est échangé et rien ne sort du navigateur. Le lien vers sa fiche ne s'ouvre que si tu cliques dessus.
 
 Pas d'analytique, pas de télémétrie, pas de script tiers.
 

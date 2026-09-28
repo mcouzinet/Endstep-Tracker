@@ -24,6 +24,7 @@ Par game :
 
 Dans le tableau de bord (clic sur l'icône) :
 - en tête, le deck analysé : par défaut mon deck le plus joué sur 30 jours, sinon un autre deck, tous les decks d'un format ou tous mes decks (menu groupé par format) ; la période et un archétype adverse s'y ajoutent, et toutes les stats portent sur cette portée ;
+- le format d'un match vient du site ; quand le site ne l'a pas donné, il est déduit du deck joué (s'il correspond au type de partie : un deck Duel Commander ne nomme pas une partie constructed), sinon le match est en « Format inconnu », jamais en faux « Sans banlist » ;
 - tous les bilans se comptent en matchs, jamais en games : le play/draw et le mulligan d'un match sont ceux de sa première game ; matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et au-delà de 20 archétypes, les suivants se regroupent en « Autres » ; le match en cours ne compte pas ;
 - en haut, un résumé : le taux de victoire en grand (en matchs, pas de pourcentage sous 5 matchs), le bilan sur le play, sur la draw, les mulligans et la durée par match, et les 20 derniers résultats (un carré vert par victoire, rouge par défaite ; au survol, la fiche du match : résultat, adversaire, archétype, mon deck, format, date ; un clic l'ouvre) ;
 - le guide des matchups : bilan en matchs, sur le play et sur la draw, tri par fréquence, pire ou meilleur d'abord (un taux sur moins de 5 matchs ne passe jamais en tête) ; un clic ouvre le panneau du matchup : ses bilans par version, les cartes vues chez lui avec leur fréquence, ses matchs, et un bouton pour filtrer la page sur lui ; `j` / `k` parcourent les lignes, Échap ferme le panneau ;
@@ -70,10 +71,10 @@ Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rec
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js
+node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js
 ```
 
-Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; les suivants vérifient que le commandant adverse nomme l'archétype en Duel Commander, que les matchs contre l'IA ne comptent dans aucun bilan, et que les bilans se comptent en matchs, au play ou à la draw selon la première game. Le harnais Puppeteer est dans `test/harness/`.
+Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; les suivants vérifient que le commandant adverse nomme l'archétype en Duel Commander, que les matchs contre l'IA ne comptent dans aucun bilan, que les bilans se comptent en matchs, sur le play ou sur la draw selon la première game, et que le format d'un match reste juste quand le site ne l'a pas donné. Le harnais Puppeteer est dans `test/harness/`.
 
 ## Publication (Chrome, Edge, Firefox, Safari)
 
