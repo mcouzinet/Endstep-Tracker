@@ -124,11 +124,36 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Browsers compare component by component, a missing one counts as 0: `0.9` < `0.9.2` < `0.10`. A release must stay above the previous published one.
 - **The four stores ship together** (Chrome Web Store, Edge Add-ons, AMO, Mac App Store), once `CHANGELOG.md` "Non publié" holds enough. `release.sh safari` copies the manifest version into the Xcode project (`MARKETING_VERSION`); raise `CURRENT_PROJECT_VERSION` only to upload the same version to Apple again.
 
+## Automated publishing (`publish.sh`)
+
+`./publish.sh --dry-run`, then `./publish.sh` (all four stores) or `./publish.sh chrome edge …`. It publishes the highest `vX.Y` tag, which must be pushed, and builds the packages from the tag itself in a temporary worktree (its own tests, `release.sh` and Xcode project), so later commits never reach a store. The dry run checks the tag, the tests, the packages and the keys, and contacts no store (Chrome excepted: it checks the refresh token). A real run asks for confirmation (`--yes` skips it).
+
+Keys and IDs live in the macOS Keychain, service `endstep-publish`, never in the repository; the script never prints them nor puts them on a command line. Add each one with the command below: the value is typed at the prompt, so it stays out of the shell history.
+
+```
+security add-generic-password -U -s endstep-publish -a <name> -w
+```
+
+| Name | Where it comes from |
+|---|---|
+| `chrome-publisher-id` | Chrome Web Store Developer Dashboard > Publisher > Settings |
+| `chrome-item-id` | the extension's ID (its dashboard page, or its store URL) |
+| `chrome-client-id`, `chrome-client-secret` | Google Cloud: enable the "Chrome Web Store API"; OAuth consent screen External and **In production** (while in Testing, refresh tokens expire after 7 days); Credentials > OAuth client ID, type Web application, redirect URI `https://developers.google.com/oauthplayground` |
+| `chrome-refresh-token` | OAuth Playground > settings > use your own OAuth credentials; scope `https://www.googleapis.com/auth/chromewebstore`; Authorize APIs with the Google account that owns the item; Exchange authorization code for tokens |
+| `edge-client-id`, `edge-api-key` | Partner Center > Microsoft Edge > Publish API > Create API credentials (the key has an expiry date: renew it there) |
+| `edge-product-id` | Partner Center > Microsoft Edge > Overview > the extension > Extension identity (also the GUID in its URL) |
+| `amo-jwt-issuer`, `amo-jwt-secret` | https://addons.mozilla.org/developers/addon/api/key/ |
+| `asc-key-id`, `asc-issuer-id` | App Store Connect > Users and Access > Integrations > App Store Connect API > Team Keys (Admin role; the Account Holder requests access once) |
+
+The App Store Connect key file itself goes to `~/.appstoreconnect/private_keys/AuthKey_<asc-key-id>.p8` (it can be downloaded only once).
+
+What each store gets: Chrome, through API v2 (v1.1 stops on 2026-10-15), the zip then a publish that goes live after review; Edge, the zip then a submission with certification notes (their format is not settled in Microsoft's docs: check the first run); Firefox, `web-ext sign` on the listed channel, published after AMO's review; Safari, the app archived and uploaded to App Store Connect. What stays in the dashboards: listing texts and screenshots, the first submission of a store, and for Safari the last step (once the build is processed, select it on the version, fill in "What's new" after the first version, Submit for Review).
+
 ## Submission checklist
 
 1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js`
 2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in both `_locales` (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
-3. `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
+3. `./publish.sh --dry-run` then `./publish.sh` (see Automated publishing), or by hand: `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.
 6. After the release, the next dev build is `X.Y.1`.
