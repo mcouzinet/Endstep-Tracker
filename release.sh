@@ -15,6 +15,10 @@ cp -R manifest.json background.js hook.js tracker.js content.js dashboard.js met
 mkdir "$stage/icons" && cp icons/*.png "$stage/icons/"
 [ "$target" = safari ] || rm "$stage/icons/icon-1024.png"
 cp dashboard.html "$stage/"
+# Development-only code (the Coach loader, the decision journal) sits between "// dev-only {" and "// } dev-only":
+# left out of every store build. After that no file may mention the coach, and every script must still parse.
+for f in "$stage"/*.js; do sed -i '' '/\/\/ dev-only {/,/\/\/ } dev-only/d' "$f"; node --check "$f"; done
+if grep -ril coach "$stage" >/dev/null; then echo "coach mentioned in: $(grep -ril coach "$stage" | tr '\n' ' ')"; exit 1; fi
 if [ "$target" = firefox ]; then
   # Firefox has no background service worker (event page instead), needs a gecko id, and AMO requires the
   # data-collection declaration for new extensions (nothing leaves the browser: "none").

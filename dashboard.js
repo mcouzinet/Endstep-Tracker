@@ -41,12 +41,11 @@ const state = { q: '', scope: null, version: null, compare: false, period: 'all'
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
-let plans = {}; // side plans: shared.js planKey (deck + archetype) -> text
 let drawer = null; // { key } of the matchup open in the side panel
 let curScope = null; // the scope of the last render
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
-let coach = null; // the coach module (Endstep-coach/extension-coach/coach-ui.js) when installed next to this page
+let addon = null; // an optional module installed next to this page in development, never in the store builds
 let pending = null; // storage changes held back while the user is editing or selecting inside a match
 let toastTimer;
 
@@ -157,11 +156,11 @@ function versionsOf(s) {
   out.list.forEach((v, i) => { v.n = i + 1; });
   return out;
 }
-// Version in view: 'all', '?' or a list key; the current list by default, every match when the deck has one list.
+// Version in view: 'all', '?' or a list key; every version by default, a single one when picked in the menu.
 function activeVersion(vs) {
   if (vs.list.length < 2) return 'all';
   const v = state.version;
-  return v === 'all' || (v === '?' && vs.unknown) || vs.list.some((x) => x.key === v) ? v : vs.current;
+  return (v === '?' && vs.unknown) || vs.list.some((x) => x.key === v) ? v : 'all';
 }
 // Cards added (+) and cut (−) from one list key to another, additions first.
 function listDiff(from, to) {
@@ -220,17 +219,15 @@ async function load() {
   const all = await S.loadStore();
   matches = [];
   notes = {};
-  plans = {};
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) {
       const m = normalizeMatch(v);
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
-    else if (k.startsWith('plan:')) plans[k] = String(v || '');
     else if (k === 'decks') decks = obj(v);
   }
-  if (coach) coach.load(all);
+  if (addon) addon.load(all);
   showPromo(all.promoClosed);
   refresh();
 }
@@ -277,9 +274,6 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
-    } else if (k.startsWith('plan:')) {
-      if (c.newValue === undefined) delete plans[k];
-      else plans[k] = String(c.newValue);
     } else if (k === 'decks') decks = obj(c.newValue);
   }
   refresh();
@@ -380,15 +374,16 @@ function render() {
   const vs = versionsOf(s);
   const v = activeVersion(vs);
   const stats = scoped(v);
-  const list = listed(scoped(v, true));
+  const shown = scoped(v, true); // the history also lists the matches against the AI
+  const list = listed(shown);
   const cur = vs.list.find((x) => x.key === v);
   const prev = cur && vs.list[cur.n - 2];
   const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
   curScope = s;
-  renderFilters(s, stats, list, vs, v);
-  renderSession(s, stats);
+  renderFilters(s, shown, list, vs, v);
+  renderGlance(stats, cmp);
   renderVersions(cur, prev);
-  renderOverview(stats, cmp);
+  renderOverview(stats);
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
   if (s.deck === null) {
@@ -411,7 +406,7 @@ function renderHeader() {
   }
 }
 
-function renderFilters(s, stats, list, vs, v) {
+function renderFilters(s, shown, list, vs, v) {
   $('#f-scope').value = JSON.stringify([s.format, s.deck]);
   const sel = $('#f-version'); // options carry version numbers; the state keeps the list itself, which survives renumbering
   sel.hidden = vs.list.length < 2;
@@ -422,7 +417,7 @@ function renderFilters(s, stats, list, vs, v) {
       + (vs.unknown ? `<option value="?">${esc(t('version_unknown'))} (${vs.unknown})</option>` : '');
     sel.value = v === 'all' || v === '?' ? v : String(vs.list.find((x) => x.key === v).n);
   }
-  $('#count').textContent = tn('n_matches', list.length) + (list.length !== stats.length ? t('of_total', { total: stats.length }) : '');
+  $('#count').textContent = tn('n_matches', list.length) + (list.length !== shown.length ? t('of_total', { total: shown.length }) : '');
   $('#reset').classList.toggle('off', !scopeActive());
   $('#facet').hidden = !state.opp;
   if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: state.opp.label });
@@ -434,10 +429,9 @@ function renderFilters(s, stats, list, vs, v) {
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
 // Below MIN_SAMPLE results a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
 const MIN_SAMPLE = 5;
-const { wl, half, halves } = S; // G1 = main deck, G2-G3 = after sideboarding
+const { wl } = S;
 // Secondary record cells: [{ key, title, r, cls }], each W–L plus the rate once the sample allows it.
 // Their key is read by screen readers and shown in narrow windows, where the column captions are hidden.
-const halfCells = (s) => [{ key: t('g1'), title: t('g1_title'), r: s.g1 }, { key: t('g23'), title: t('g23_title'), r: s.g23 }];
 const sideCells = (r) => [{ key: t('col_play'), title: t('on_play'), r: r.play }, { key: t('col_draw'), title: t('on_draw'), r: r.draw }];
 const cmpCell = (label, r) => ({ key: label, title: t('cmp_title', { v: label }), r, cls: ' cmp' });
 function subCell({ key, title, r, cls = '' }) {
@@ -445,7 +439,7 @@ function subCell({ key, title, r, cls = '' }) {
   return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>${n >= MIN_SAMPLE ? `<b>${pct(r)}</b> ` : ''}${n ? wl(r) : '—'}</span>`;
 }
 // Column captions above records that carry cells; `opens` rows end with an arrow (they open the matchup panel).
-const recHead = (first, main, cells, opens = false) => `<div class="rec cells head${opens ? ' opens' : ''}" style="--cells:${cells.length}" aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
+const recHead = (first, main, cells, opens = false) => `<div class="rec${cells.length ? ' cells' : ''} head${opens ? ' opens' : ''}"${cells.length ? ` style="--cells:${cells.length}"` : ''} aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
   + `${cells.map((c) => `<span title="${esc(c.title)}">${esc(c.key)}</span>`).join('')}${opens ? '<span></span>' : ''}</div>`;
 function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false } = {}) {
   const n = r.W + r.L + r.D;
@@ -465,43 +459,71 @@ function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false 
   </${tag}>`;
 }
 
-function renderOverview(list, cmp) {
-  const m = tally(); const g = tally(); const gs = halves();
-  const ctx = { play: [tally(), halves()], draw: [tally(), halves()], keep: [tally(), halves()], mull: [tally(), halves()] };
-  const add = (k, gm, r) => { ctx[k][0][r]++; ctx[k][1][half(gm)][r]++; };
-  let turns = 0; let nTurns = 0; let myMulls = 0; let nGames = 0; let time = 0; let nTimed = 0;
+function renderOverview(list) {
+  // Everything in matches: play/draw and the kept 7 or mulligan are those of game 1.
+  const ctx = { play: tally(), draw: tally(), keep: tally(), mull: tally() };
   for (const x of list) {
-    if (isLive(x)) continue; // a match in progress has no record yet, nor do its games count
-    if (x.result) m[x.result]++;
-    for (const gm of x.games) {
-      const r = gRes(x, gm);
-      if (!r) continue;
-      g[r]++;
-      gs[half(gm)][r]++;
-      const p = onPlay(x, gm);
-      if (p !== null) add(p ? 'play' : 'draw', gm, r);
-      const k = gm.mulligans[x.mySeat] || 0;
-      add(k ? 'mull' : 'keep', gm, r);
-      myMulls += k;
-      nGames++;
-      if (gm.turns) { turns += gm.turns; nTurns++; }
-      if (gm.startedAt && gm.endedAt) { time += gm.endedAt - gm.startedAt; nTimed++; }
-    }
+    if (isLive(x) || !x.result) continue; // a match in progress has no record yet
+    const p = S.matchOnPlay(x);
+    if (p !== null) ctx[p ? 'play' : 'draw'][x.result]++;
+    const g1 = S.firstGame(x);
+    if (g1) ctx[g1.mulligans[x.mySeat] ? 'mull' : 'keep'][x.result]++;
   }
-  const num = (v, d = 1) => v.toLocaleString(locale, { maximumFractionDigits: d, minimumFractionDigits: d });
-  const facts = [
-    nGames ? `<span><b>${num(myMulls / nGames, 2)}</b> ${esc(t('per_game_mulligans'))}</span>` : '',
-    nTurns ? `<span><b>${num(turns / nTurns)}</b> ${esc(t('avg_turns'))}</span>` : '',
-    nTimed ? `<span><b>${Math.max(1, Math.round(time / nTimed / 60000))} ${esc(t('min'))}</b> ${esc(t('per_game'))}</span>` : '',
-  ].join('');
-  const line = (label, r, cls = '') => `<span${cls ? ` class="${cls}"` : ''}>${esc(label)} <b>${r.W}–${r.L}${r.D ? `–${r.D}` : ''}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</span>`;
-  let cm = null;
-  if (cmp) { cm = tally(); for (const x of cmp.list) if (x.result) cm[x.result]++; }
-  $('#scope-sum').innerHTML = line(t('matches'), m) + (cm ? line(`${cmp.label} · ${t('matches')}`, cm, 'cmp') : '')
-    + line(t('games'), g) + line(t('g1'), gs.g1) + line(t('g23'), gs.g23) + facts;
-  const row = (label, k) => rec(esc(label), ctx[k][0], { cells: halfCells(ctx[k][1]) });
-  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2>${recHead('', t('games'), halfCells(halves()))}
+  const row = (label, k) => rec(esc(label), ctx[k]);
+  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2><p class="muted context-hint">${esc(t('context_hint'))}</p>
     ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}`;
+}
+
+// --- at a glance: the win rate in matches and the latest FORM matches, each one detailed on hover ---
+const FORM = 20;
+function renderGlance(list, cmp) {
+  const el = $('#glance');
+  const done = list.filter((x) => x.result && !isLive(x)).sort((a, b) => a.startedAt - b.startedAt);
+  el.hidden = !done.length;
+  if (!done.length) return;
+  const n = done.length;
+  const r = S.records(done);
+  let mulls = 0; let time = 0; let timed = 0;
+  for (const x of done) {
+    for (const gm of x.games) mulls += gm.mulligans[x.mySeat] || 0;
+    if (x.endedAt) { time += x.endedAt - x.startedAt; timed++; }
+  }
+  const enough = (x) => x.W + x.L + x.D >= MIN_SAMPLE;
+  const record = (x) => `${wl(x)}${enough(x) ? ` <span class="muted">· ${pct(x)}</span>` : ''}`;
+  const fact = (label, value, cls = '') => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
+  const facts = [
+    fact(t('matches'), record(r.m)),
+    cmp ? fact(`${cmp.label} · ${t('matches')}`, record(S.records(cmp.list).m), 'cmp') : '',
+    fact(t('on_play'), record(r.play)),
+    fact(t('on_draw'), record(r.draw)),
+    fact(t('fact_mulligans'), `${(mulls / n).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`),
+    timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
+  ].join('');
+  const hero = `<b class="hero-n">${enough(r.m) ? pct(r.m) : wl(r.m)}</b><span class="hero-l">${esc(t(enough(r.m) ? 'glance_rate' : 'glance_early'))}<br><span class="muted">${esc(tn('glance_over', n))}</span></span>`;
+  const square = (x) => `<button type="button" class="${x.result}" data-show="${esc(x.id)}" aria-label="${esc([resultLabel(x.result), scoreText(x), oppLabel(x), archetype(x)].filter(Boolean).join(' · '))}"><i></i></button>`;
+  el.innerHTML = `<div class="glance-head"><div class="hero">${hero}</div><dl class="glance-facts">${facts}</dl></div>
+    <div class="glance-form"><h3>${esc(t('recent_form', { n: Math.min(FORM, n) }))}</h3><div class="form-strip">${done.slice(-FORM).map(square).join('')}</div>
+    <div class="form-tip" hidden></div></div>`;
+}
+// A square's card, on hover or keyboard focus: the result, the opponent, their archetype, my deck and the format, when.
+function formCard(e) {
+  const b = e.target.closest && e.target.closest('.form-strip button');
+  const tip = $('#glance .form-tip');
+  if (!tip) return;
+  const m = b && matches.find((x) => x.id === b.dataset.show);
+  if (!m) { tip.hidden = true; return; }
+  const arch = archetype(m) || (guessFor(m) || {}).name;
+  tip.innerHTML = `<p class="form-tip-head">${resultBadge(m)} <b>${esc(scoreText(m))}</b></p>`
+    + `<p><span class="opp-name">${esc(t('ov_against', { opp: oppLabel(m) }))}</span> ${pips(colorsOf(m))}</p>`
+    + (arch ? `<p><span class="tag${archetype(m) ? '' : ' guess'}">${esc(arch)}</span></p>` : '')
+    + `<p class="muted">${esc(deckName(m))} · ${esc(fmt(m))}</p><p class="muted">${esc(ago(m.startedAt))}</p>`;
+  const box = tip.parentElement.getBoundingClientRect();
+  const r = b.getBoundingClientRect();
+  const x = r.left + r.width / 2 - box.left;
+  tip.style.left = x + 'px';
+  tip.style.top = r.top - box.top + 'px';
+  tip.dataset.side = x < 120 ? 'start' : x > box.width - 120 ? 'end' : 'mid';
+  tip.hidden = false;
 }
 
 // A rate needs enough matches to rank: under MIN_SAMPLE a matchup sorts after the ones that have them.
@@ -514,12 +536,6 @@ function sortRows(rows, how) {
     n: (a, b) => b.n - a.n,
   };
   return rows.sort((a, b) => (by[how] || by.n)(a, b) || (b.c.W + b.c.L + b.c.D) - (a.c.W + a.c.L + a.c.D));
-}
-// First line of the side plan written for this matchup, for the deck in view.
-function planPeek(key) {
-  const s = curScope;
-  const text = s && s.deck !== null ? plans[S.planKey(s.format, s.deck, key, t)] : '';
-  return text ? text.split('\n').find((l) => l.trim()) || '' : '';
 }
 
 // kind 'opp': the matchup guide, whose rows open the matchup panel; kind 'deck': my decks, whose rows scope the page.
@@ -538,19 +554,18 @@ function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   const rows = sortRows([...groups.values()].map((e) => Object.assign(e, { r: S.records(e.list), c: S.records(e.cmp).m, n: e.list.length }))
     .filter((e) => finished(e.r.m) || finished(e.c)), kind === 'opp' ? state.sort : 'n');
   const opp = kind === 'opp';
-  const cellsOf = (r, c) => [...halfCells(r.s), ...(opp ? sideCells(r) : []), ...(cmp ? [cmpCell(cmp.label, c)] : [])];
+  const cellsOf = (r, c) => [...(opp ? sideCells(r) : []), ...(cmp ? [cmpCell(cmp.label, c)] : [])];
   const button = (e) => {
     const title = opp ? t('open_matchup', { label: e.text }) : t('only_show', { label: e.text });
     const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" title="${esc(title)}"`
       + (opp ? ` aria-controls="drawer" aria-expanded="${!!drawer && drawer.key === e.key}"` : '');
-    const peek = opp ? planPeek(e.key) : '';
-    return rec(e.label + (peek ? `<span class="plan-peek">${esc(peek)}</span>` : ''), e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp });
+    return rec(e.label, e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp });
   };
-  // Archetypes met fewer than RARE times fold into one "Others" row, as long as some are met more often.
-  const RARE = 3;
-  const rare = opp ? rows.filter((e) => finished(e.r.m) < RARE) : [];
-  const fold = rare.length >= 2 && rare.length < rows.length;
-  let html = (fold ? rows.filter((e) => finished(e.r.m) >= RARE) : rows).map(button).join('');
+  // Up to MAX_ROWS archetypes in the sort order; the ones after fold into one "Others" row (never a fold of one).
+  const MAX_ROWS = 20;
+  const fold = opp && rows.length > MAX_ROWS + 1;
+  const rare = fold ? rows.slice(MAX_ROWS) : [];
+  let html = (fold ? rows.slice(0, MAX_ROWS) : rows).map(button).join('');
   if (fold) {
     const sum = S.records(rare.flatMap((e) => e.list));
     const c = S.records(rare.flatMap((e) => e.cmp)).m;
@@ -561,40 +576,7 @@ function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   $(sel).innerHTML = html || `<p class="muted" style="padding:6px 8px 10px">${esc(t(scopeActive() ? 'no_finished_selection' : 'no_finished_all'))}</p>`;
 }
 
-// --- session: the latest run of matches with the deck in view, and what it changed to each matchup ---
-function renderSession(s, stats) {
-  const el = $('#session');
-  const sess = S.lastSession(matches.filter((m) => inScope(m, s)));
-  el.hidden = !sess.length;
-  if (!sess.length) return;
-  const open = S.sessionOpen(sess);
-  const r = S.records(sess);
-  const first = sess[sess.length - 1];
-  const span = minutes(first.startedAt, sess[0].endedAt || sess[0].updatedAt);
-  const ids = new Set(sess.map((m) => m.id));
-  const touched = new Map();
-  for (const m of stats) if (ids.has(m.id) && m.result) { const [key, label] = oppKey(m); touched.set(key, label); }
-  const effects = [...touched].map(([key, label]) => {
-    const all = stats.filter((m) => oppKey(m)[0] === key);
-    const before = S.records(all.filter((m) => !ids.has(m.id))).m;
-    return `<li><span>${label}</span><span class="muted">${esc(t('session_from_to', { from: wl(before), to: wl(S.records(all).m) }))}</span></li>`;
-  }).join('');
-  const title = open ? t('session_now') : t('session_last', { when: ago(sess[0].startedAt) });
-  el.innerHTML = `<summary><span><b>${esc(title)}</b> · ${wl(r.m)} · ${esc(tn('n_matches', sess.length))}${span ? ` · ${esc(span)}` : ''}</span><svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
-    <div class="session-body"><ol class="session-list">${sess.map(sessionRow).join('')}</ol>
-    ${effects ? `<div class="session-effects"><h3>${esc(t('session_effects'))}</h3><ul>${effects}</ul></div>` : ''}</div>`;
-  if (!el.dataset.touched) el.open = open; // open while the session runs, until the user decides otherwise
-}
-function sessionRow(m) {
-  const a = archetype(m);
-  const g = !a && guessFor(m);
-  const tag = a ? `<span class="tag">${esc(a)}</span>`
-    : g ? `<button class="tag guess" data-confirm="${esc(m.id)}" data-name="${esc(g.name)}" title="${esc(t('confirm_guess_title', { p: Math.round(g.p * 100) }))}">${esc(t('confirm_guess', { name: g.name }))}</button>` : '';
-  return `<li><button class="session-row" data-show="${esc(m.id)}">${resultBadge(m)}<span class="who"><span class="opp-name">${esc(oppLabel(m))}</span>${pips(colorsOf(m))}</span>`
-    + `<span class="chips">${m.games.map((gm) => chip(m, gm)).join('')}</span></button>${tag}</li>`;
-}
-
-// --- matchup panel: one archetype against the deck in view, its side plan, its cards, its matches ---
+// --- matchup panel: one archetype against the deck in view, its cards, its matches ---
 function renderDrawer(s, stats, vs) {
   const el = $('#drawer');
   const list = drawer ? stats.filter((m) => oppKey(m)[0] === drawer.key) : [];
@@ -604,9 +586,6 @@ function renderDrawer(s, stats, vs) {
   if (!drawer) return;
   const r = S.records(list);
   const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
-  const pk = s.deck !== null ? S.planKey(s.format, s.deck, drawer.key, t) : null;
-  const plan = pk ? `<textarea id="plan" data-plan="${esc(pk)}" rows="5" placeholder="${esc(t('side_plan_placeholder'))}">${esc(plans[pk] || '')}</textarea>`
-    : `<p class="muted">${esc(t('side_plan_needs_deck'))}</p>`;
   const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {
     const rr = S.records(scoped(x.key).filter((m) => oppKey(m)[0] === drawer.key)).m;
     return rr.W + rr.L + rr.D ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
@@ -619,8 +598,7 @@ function renderDrawer(s, stats, vs) {
   const ver = vs.list.find((x) => x.key === activeVersion(vs));
   el.innerHTML = `<header><h2 id="drawer-title">${oppKey(list[0])[1]}</h2><button class="icon-btn" data-close-drawer aria-label="${esc(t('drawer_close'))}" title="${esc(t('drawer_close'))}"><svg class="i"><use href="#i-x"/></svg></button></header>
     <p class="muted drawer-scope">${esc(where)}${ver ? ` · ${esc(t('version_n', { n: ver.n }))}` : ''}</p>
-    <dl class="drawer-stats">${stat(t('matches'), r.m)}${stat(t('g1'), r.s.g1)}${stat(t('g23'), r.s.g23)}${stat(t('on_play'), r.play)}${stat(t('on_draw'), r.draw)}</dl>
-    <section><h3><label for="plan">${esc(t('side_plan'))}</label><span id="plan-state" aria-live="polite"></span></h3>${plan}</section>
+    <dl class="drawer-stats">${stat(t('matches'), r.m)}${stat(t('on_play'), r.play)}${stat(t('on_draw'), r.draw)}</dl>
     ${byVersion ? `<section><h3>${esc(t('by_version'))}</h3><ul class="versions-list">${byVersion}</ul></section>` : ''}
     ${cards ? `<section><h3>${esc(t('cards_seen_there'))}</h3><ul class="seen-list">${cards}</ul></section>` : ''}
     <section><h3>${esc(t('matches_vs'))}</h3><ul class="drawer-matches">${list.map((m) => `<li><button class="drawer-match" data-show="${esc(m.id)}">${resultBadge(m)}`
@@ -640,15 +618,6 @@ function closeDrawer() {
   render();
   const row = [...document.querySelectorAll('#by-opp button.rec')].find((b) => b.dataset.key === key);
   if (row) row.focus();
-}
-let planTimer;
-function savePlan(el) {
-  const k = el.dataset.plan;
-  const text = el.value.trim() ? el.value : '';
-  if (text) plans[k] = text; else delete plans[k];
-  clearTimeout(planTimer);
-  planTimer = setTimeout(() => (text ? chrome.storage.local.set({ [k]: text }) : chrome.storage.local.remove(k))
-    .then(() => { const st = $('#plan-state'); if (st) st.textContent = t('plan_saved'); }), 400);
 }
 
 // Open a match in the history, widening the filters when they hide it (its own deck, every list version if need be).
@@ -748,7 +717,7 @@ function detail(m) {
         ${guessLine(m)}
         <label class="field">${esc(t('notes'))}<textarea data-note="notes" placeholder="${esc(t('notes_placeholder'))}">${esc(n.notes || '')}</textarea></label>
         ${deckPicker}
-        ${coach ? coach.matchActions(m) : ''}
+        ${addon ? addon.matchActions(m) : ''}
         ${mine}
         <button class="btn-text" data-delete><svg class="i"><use href="#i-trash"/></svg>${esc(t('delete_match'))}</button>
       </div>
@@ -827,7 +796,7 @@ function gameBlock(m, g) {
   const log = `<details class="log" data-key="log:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('full_log', { n: g.log.length }))}</summary><ol>${g.log
     .map(([tn_, , type, c, msg]) => `<li><span>T${esc(tn_)}</span>${esc(msg || type + (c ? ` ${c}` : ''))}</li>`).join('')}</ol></details>`;
   const res = r ? `<span class="result ${r}"><i></i>${esc(resultLabel(r))}</span>` : `<span class="result ongoing"><i></i>${esc(t('ongoing'))}</span>`;
-  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${coach ? coach.gameBlock(m, g) : ''}${decisionsBlock(m, g)}${log}</article>`;
+  return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${hand}${timeline}${addon ? addon.gameBlock(m, g) : ''}${decisionsBlock(m, g)}${log}</article>`;
 }
 
 const ACTION_KEY = { PLAY_CARD: 'act_play', PASS_PRIORITY: 'act_pass', KEEP_HAND: 'act_keep', MULLIGAN: 'act_mulligan', DECLARE_ATTACKERS: 'act_attack',
@@ -842,6 +811,7 @@ function describeAction(a) {
 }
 
 function decisionsBlock(m, g) {
+  // dev-only { the decision journal: left out of the store builds by release.sh, which then shows nothing here
   const ds = (decisions[m.id] || {})[g.n] || [];
   if (!ds.length) return '';
   const rows = ds.map((d) => {
@@ -851,6 +821,8 @@ function decisionsBlock(m, g) {
     return `<li title="${esc(board)}"><span>T${esc(d.turn)} ${esc(d.phase || '')}</span>${esc(prompt)}${options} → <b>${esc(describeAction(d.answer || {}))}</b></li>`;
   }).join('');
   return `<details class="log" data-key="dec:${esc(m.id)}:${esc(g.n)}"><summary>${esc(t('decisions_title', { n: ds.length }))}</summary><ol>${rows}</ol></details>`;
+  // } dev-only
+  return '';
 }
 
 function onboarding() {
@@ -928,7 +900,7 @@ const ACTIONS = {
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(coach ? coach.exportExtra(all) : {}) }), 'application/json');
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(addon ? addon.exportExtra(all) : {}) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -951,7 +923,7 @@ const ACTIONS = {
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(coach ? coach.prefixes : [])];
+    const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(addon ? addon.prefixes : [])];
     await chrome.storage.local.remove(Object.keys(all).filter((k) => prefixes.some((p) => k.startsWith(p))));
     openId = null;
     toast(t('all_deleted'));
@@ -980,7 +952,7 @@ $('#import').addEventListener('change', async (e) => {
     for (const m of list) items['match:' + m.id] = m;
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
-    if (coach) coach.importItems(data, items);
+    if (addon) addon.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
@@ -999,12 +971,12 @@ $('#matches').addEventListener('click', (e) => {
     chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
     return;
   }
-  if (coach && coach.onClick(e)) return;
+  if (addon && addon.onClick(e)) return;
   if (e.target.closest('[data-delete]')) {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
-    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, ...(coach ? coach.deleteKeys(id) : [])]).then(() => toast(t('match_deleted')));
+    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, ...(addon ? addon.deleteKeys(id) : [])]).then(() => toast(t('match_deleted')));
     return;
   }
   const btn = e.target.closest('.match-row');
@@ -1027,17 +999,11 @@ $('#matches').addEventListener('change', (e) => {
   chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t(saved)));
 });
 
+for (const ev of ['pointerover', 'focusin']) $('#glance').addEventListener(ev, formCard);
+for (const ev of ['pointerleave', 'focusout']) $('#glance').addEventListener(ev, () => { const tip = $('#glance .form-tip'); if (tip) tip.hidden = true; });
 $('#split').addEventListener('click', (e) => {
   const show = e.target.closest('[data-show]');
   if (show) { const m = matches.find((x) => x.id === show.dataset.show); if (m) showMatch(m); return; }
-  const confirmBtn = e.target.closest('[data-confirm]');
-  if (confirmBtn) {
-    const id = confirmBtn.dataset.confirm;
-    notes[id] = Object.assign({}, notes[id], { archetype: confirmBtn.dataset.name });
-    chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
-    return;
-  }
-  if (e.target.closest('#session > summary')) $('#session').dataset.touched = '1';
   const b = e.target.closest('button.rec');
   if (!b) return;
   if (b.dataset.kind === 'deck') { const [format, deck] = JSON.parse(b.dataset.key); setFilter({ scope: scopeFor({ format, deck }), version: null, compare: false, opp: null }); }
@@ -1055,7 +1021,6 @@ $('#drawer').addEventListener('click', (e) => {
     setFilter({ opp: { key, label: row ? row.dataset.label : key.slice(2) } });
   }
 });
-$('#drawer').addEventListener('input', (e) => { if (e.target.matches('[data-plan]')) savePlan(e.target); });
 
 $('#q').addEventListener('input', (e) => setFilter({ q: e.target.value }));
 $('#f-scope').addEventListener('change', (e) => {
@@ -1066,7 +1031,7 @@ $('#f-version').addEventListener('change', (e) => {
   const v = e.target.value;
   const vs = versionsOf(activeScope());
   const x = vs.list.find((y) => String(y.n) === v);
-  setFilter({ version: x ? (x.key === vs.current ? null : x.key) : v, compare: false }); // the current list is the default
+  setFilter({ version: x ? x.key : v, compare: false }); // every version is the default
 });
 for (const seg of document.querySelectorAll('.seg[data-filter]')) {
   seg.addEventListener('click', (e) => {
@@ -1132,7 +1097,7 @@ document.addEventListener('selectionchange', () => { if (pending) flushPending()
 addEventListener('scroll', hidePreview, { passive: true });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec|plan):/.test(k)));
+  const mine = Object.fromEntries(Object.entries(changes).filter(([k]) => /^(match|note|dec):/.test(k)));
   if (!Object.keys(mine).length) return;
   if (busy() || pending) { pending = Object.assign(pending || {}, mine); flushPending(); return; }
   applyChanges(mine);
@@ -1143,12 +1108,12 @@ setInterval(renderHeader, 60e3); // keep "il y a…" and the live pill fresh
   await initI18n();
   loadPrefs();
   await initMeta();
-  // The coach (Endstep-coach/extension-coach) is loaded only when its files sit next to this page: the store builds
-  // ship without them and this import simply fails.
-  coach = await import(chrome.runtime.getURL('coach-ui.js')).then((mod) => mod.default({
+  // dev-only { the Coach (Endstep-coach/extension-coach), loaded when its files sit next to this page; release.sh leaves this out
+  addon = await import(chrome.runtime.getURL('coach-ui.js')).then((mod) => mod.default({
     esc, toast, render, obj, myDeck, deckName, archetype, guessFor, colorsOf, opps, describeAction, $,
     matches: () => matches, decisions: () => decisions, locale: () => locale,
   })).catch(() => null);
-  if (coach) await coach.init();
+  if (addon) await addon.init();
+  // } dev-only
   await load();
 })();

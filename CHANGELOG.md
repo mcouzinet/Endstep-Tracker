@@ -8,16 +8,17 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 ### Ajouté
 
 - **Safari** : paquet (`./release.sh safari`) et app macOS pour le Mac App Store.
-- **Popup** de la barre d'outils : le match en cours avec mon bilan contre cet adversaire et mon plan de side, sinon la session.
-- **Panneau sur endstep.cc** : entre deux games, le matchup et le plan de side ; après le match, le résultat et l'archétype reconnu à confirmer. Se coupe depuis la popup.
-- **Tableau de bord** : bandeau de session, guide des matchups avec son panneau, plans de side par deck et archétype.
-- G1 et G2-G3 séparés sur chaque bilan ; versions de liste d'un deck, avec comparaison.
+- **Popup** de la barre d'outils : le match en cours avec mon bilan contre cet adversaire, sinon la session.
+- **Panneau sur endstep.cc** : entre deux games, le match détecté (adversaire, archétype, mon bilan contre lui) ; après le match, le résultat et l'archétype reconnu à confirmer. Se coupe depuis la popup.
+- **Tableau de bord** : un résumé en tête (taux de victoire, bilans, les 20 derniers résultats avec la fiche de chaque match au survol), guide des matchups avec son panneau.
+- Versions de liste d'un deck, avec comparaison.
 - Filtre des formats en puces (plusieurs à la fois, le plus joué par défaut) ; « Sans banlist » pour le constructed sans format.
 - **Duel Commander** : l'archétype adverse est le nom de son commandant.
 - **Deck Compare** en encart dans le tableau de bord, après les matchups : sur Chrome et Edge (là où il est publié), et seulement s'il n'est pas déjà installé. Fermé, il revient à la release suivante avec une nouveauté de Deck Compare.
 
 ### Modifié
 
+- Tous les bilans se comptent en matchs, jamais en games : le play/draw et le mulligan d'un match sont ceux de sa première game.
 - Le Coach ne fait plus partie du dépôt de l'extension : il vit dans `Endstep-coach` et s'installe à côté du tableau de bord, qui le charge s'il est là.
 
 - Les matchs contre l'IA du site restent dans l'historique (étiquette « IA ») mais ne comptent plus dans aucun bilan.
@@ -29,6 +30,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Retiré
 
+- Le journal « Mes décisions » dans le détail d'une game : l'extension n'enregistre plus tes choix en jeu.
 - Le menu « Tous mes decks » : cliquer sur la ligne d'un deck filtre déjà par deck.
 
 ## [0.8.1] (2026-09-23)

@@ -1,4 +1,4 @@
-// QA of list versions and the G1 / G2-G3 split on the demo dashboard (run `node gen-demo.js` first).
+// QA of list versions on the demo dashboard (run `node gen-demo.js` first).
 // The two Modern Burn matches get different main decks: m6 (older) plays Lava Spike, m1 (latest) Goblin Guide.
 const assert = require('node:assert/strict');
 const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
@@ -30,28 +30,36 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     banner: document.getElementById('versions').hidden ? null : document.getElementById('versions').textContent.replace(/\s+/g, ' ').trim(),
     head: [...document.querySelectorAll('#by-opp .rec.head span')].map((s) => s.textContent),
     rows: [...document.querySelectorAll('#by-opp > button.rec')].map((r) => [...r.querySelectorAll('.rec-label, .rec-count, .rec-sub')].map((c) => c.textContent.trim())),
-    sum: document.getElementById('scope-sum').textContent.replace(/\s+/g, ' '),
+    sum: document.querySelector('#glance .glance-facts').textContent.replace(/\s+/g, ' '),
     list: [...document.querySelectorAll('#matches .match')].map((li) => li.dataset.id),
   }));
 
-  // Default: the current list (v2, m1 only). Dimir Control: match 1–0, G1 lost, games 2 and 3 won.
+  // Default: every version (both matches, no version line); the current list is one pick away.
   let s = await read();
   assert.equal(s.versionHidden, false);
   assert.deepEqual(s.versions, ['v2 · actuelle (1)', 'v1 (1)', 'Toutes versions (2)']);
+  assert.equal(await p.evaluate(() => document.getElementById('f-version').value), 'all');
+  assert.equal(s.banner, null);
+  assert.deepEqual(s.list, ['m1', 'm6']);
+
+  // The current list (v2, m1 only). Dimir Control: one match won, on the play in game 1.
+  await p.select('#f-version', '2');
+  await sleep(200);
+  s = await read();
+  assert.equal(await p.evaluate(() => document.getElementById('f-version').value), '2', 'picking the current list keeps it');
   assert.match(s.banner, /^v2 depuis le .+ : \+4 Goblin Guide, −4 Lava Spike ?Comparer à v1$/);
-  assert.deepEqual(s.head, ['Archétype', 'Matchs', 'G1', 'G2-G3', 'Play', 'Draw', '']);
-  assert.deepEqual(s.rows, [['Dimir Control', '1–0', 'G10–1', 'G2-G32–0', 'Play1–1', 'Draw1–0']]);
+  assert.deepEqual(s.head, ['Archétype', 'Matchs', 'Play', 'Draw', '']);
+  assert.deepEqual(s.rows, [['Dimir Control', '1–0', 'Play1–0', 'Draw—']]);
   assert.deepEqual(s.list, ['m1']);
-  assert.match(s.sum, /G1 0–1/);
-  assert.match(s.sum, /G2-G3 2–0/);
+  assert.doesNotMatch(s.sum, /G1|G2-G3/, 'no G1 / G2-G3 split in 1.0');
 
   // Compare with v1: its matchups join, each row gets the v1 match record.
   await p.click('#versions [data-action="compare"]');
   await sleep(200);
   s = await read();
-  assert.deepEqual(s.head, ['Archétype', 'Matchs', 'G1', 'G2-G3', 'Play', 'Draw', 'v1', '']);
-  assert.deepEqual(s.rows, [['Dimir Control', '1–0', 'G10–1', 'G2-G32–0', 'Play1–1', 'Draw1–0', 'v1—'], ['Temur Nadu', '0–0', 'G1—', 'G2-G3—', 'Play—', 'Draw—', 'v11–0']]);
-  assert.match(s.sum, /v1 · Matchs 1–0/);
+  assert.deepEqual(s.head, ['Archétype', 'Matchs', 'Play', 'Draw', 'v1', '']);
+  assert.deepEqual(s.rows, [['Dimir Control', '1–0', 'Play1–0', 'Draw—', 'v1—'], ['Temur Nadu', '0–0', 'Play—', 'Draw—', 'v11–0']]);
+  assert.match(s.sum, /v1 · Matchs ?1–0/);
   assert.match(s.banner, /Arrêter la comparaison$/);
 
   // All versions: both matches, no version line.

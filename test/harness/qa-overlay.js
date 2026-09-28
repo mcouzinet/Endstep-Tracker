@@ -22,7 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const set = (items) => ext.evaluate((i) => chrome.storage.local.set(i), items);
     const get = (k) => ext.evaluate(async (key) => (await chrome.storage.local.get(key))[key], k);
 
-    // The live demo match, between games 2 and 3 (they took game 2), with a side plan for this matchup.
+    // The live demo match, between games 2 and 3 (they took game 2), with a side plan stored for this matchup.
     const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'demo-data.js'), 'utf8').replace(/^window\.__DATA = /, '').replace(/;\s*$/, ''));
     const live = data['match:m-live'];
     Object.assign(live.games[1], { outcome: true, winnerSeat: 1 });
@@ -68,12 +68,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     };
     const hidden = () => p.evaluate(() => document.getElementById('endstep-tracker-panel').hidden);
 
-    // Between games: unfolded on the matchup and the side plan.
+    // Between games: unfolded on the matchup; the stored side plan and G1 / G2-G3 are not shown (left out of 1.0).
     assert.equal(await hidden(), false);
     let text = await panelText();
     assert.match(text, /REC · session/);
     assert.match(text, /(Against|Contre) Brisbane/);
-    assert.ok(text.includes(plan.replace('\n', ' ')), text);
+    assert.ok(!text.includes('Kor Firewalker') && !/G1|G2-G3/.test(text), text);
 
     // Folding it takes no keyboard focus away from the game.
     await clickIn('[data-toggle]');

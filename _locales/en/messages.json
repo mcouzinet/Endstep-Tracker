@@ -95,11 +95,8 @@
   "matches": {
     "message": "Matches"
   },
-  "games": {
-    "message": "Games"
-  },
   "by_context": {
-    "message": "By context (games)"
+    "message": "By context"
   },
   "on_play": {
     "message": "On the play"
@@ -113,17 +110,8 @@
   "after_mulligan": {
     "message": "After a mulligan"
   },
-  "per_game_mulligans": {
-    "message": "mulligans per game"
-  },
-  "avg_turns": {
-    "message": "turns on average"
-  },
   "min": {
     "message": "min"
-  },
-  "per_game": {
-    "message": "per game"
   },
   "my_decks": {
     "message": "My decks"
@@ -548,18 +536,6 @@
   "others_other": {
     "message": "Others · {n} archetypes"
   },
-  "g1": {
-    "message": "G1"
-  },
-  "g23": {
-    "message": "G2-G3"
-  },
-  "g1_title": {
-    "message": "Game 1, with the main deck"
-  },
-  "g23_title": {
-    "message": "Games 2 and 3, after sideboarding"
-  },
   "col_archetype": {
     "message": "Archetype"
   },
@@ -605,17 +581,8 @@
   "session_last": {
     "message": "Last session · {when}"
   },
-  "session_effects": {
-    "message": "What this session changes"
-  },
-  "session_from_to": {
-    "message": "from {from} to {to}"
-  },
   "confirm_guess": {
     "message": "Confirm {name}"
-  },
-  "confirm_guess_title": {
-    "message": "Recognized at {p} % from the cards seen"
   },
   "col_play": {
     "message": "Play"
@@ -640,18 +607,6 @@
   },
   "drawer_close": {
     "message": "Close"
-  },
-  "side_plan": {
-    "message": "Sideboard plan"
-  },
-  "side_plan_placeholder": {
-    "message": "What comes in, what goes out, what to watch for"
-  },
-  "side_plan_needs_deck": {
-    "message": "Pick one deck at the top of the page to write its sideboard plan."
-  },
-  "plan_saved": {
-    "message": "Saved"
   },
   "by_version": {
     "message": "By list version"
@@ -680,9 +635,6 @@
   "popup_vs_record": {
     "message": "Against them with {deck}"
   },
-  "popup_no_plan": {
-    "message": "No sideboard plan for this matchup yet: write it in the dashboard."
-  },
   "popup_first_time": {
     "message": "First match against them with this deck."
   },
@@ -709,9 +661,6 @@
   },
   "ov_against": {
     "message": "Against {opp}"
-  },
-  "ov_no_plan": {
-    "message": "No sideboard plan against them yet: write it in the dashboard."
   },
   "ov_result_W": {
     "message": "Won {score} against {opp}"
@@ -754,5 +703,32 @@
   },
   "ai_tag_title": {
     "message": "Against the AI: left out of every record"
+  },
+  "context_hint": {
+    "message": "A match’s play/draw and mulligan are those of its first game."
+  },
+  "per_match": {
+    "message": "per match"
+  },
+  "glance_rate": {
+    "message": "win rate"
+  },
+  "glance_early": {
+    "message": "too early for a rate"
+  },
+  "glance_over_one": {
+    "message": "over {n} match"
+  },
+  "glance_over_other": {
+    "message": "over {n} matches"
+  },
+  "fact_mulligans": {
+    "message": "Mulligans"
+  },
+  "fact_duration": {
+    "message": "Length"
+  },
+  "recent_form": {
+    "message": "The last {n} matches"
   }
 }

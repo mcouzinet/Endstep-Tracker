@@ -302,7 +302,7 @@
   }
 
   // One of my actions (hook.js mirrors outgoing GAME_ACTION frames), recorded with the prompt it answered
-  // and the board at that moment: the raw material for the coach. Stored per game in entry.dec[gameNumber].
+  // and the board at that moment: the decision journal. Stored per game in entry.dec[gameNumber].
   function onAction(store, a, now) {
     const entry = a && store.get(a.matchId);
     if (!entry || NOT_DECISIONS.has(a.type)) return null;
@@ -353,7 +353,7 @@
     return typeof v === 'number' || typeof v === 'string' ? name(v) : v;
   }
 
-  // Public board plus my hand, in the shape coach.js reads (same field names as GAME_STATE where it matters).
+  // Public board plus my hand, with the same field names as GAME_STATE where it matters.
   function snapshot(st, mySeat) {
     const card = (c) => {
       const o = { name: c.name, power: c.power, toughness: c.toughness, tapped: !!c.tapped, types: c.types || [], hasSummoningSickness: !!c.hasSummoningSickness };

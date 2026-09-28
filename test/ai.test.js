@@ -18,7 +18,7 @@ assert.equal(S.vsAI(oldForge), true, 'by the name when participants are missing'
 
 const r = S.records([human, bot, oldForge], now);
 assert.deepEqual(r.m, { W: 1, L: 0, D: 0 }, 'only the human match counts');
-assert.deepEqual(r.g, { W: 1, L: 0, D: 0 });
+assert.deepEqual(r.play, { W: 1, L: 0, D: 0 }, 'on the play in game 1');
 assert.deepEqual(S.lastSession([oldForge, bot, human]).map((m) => m.id), ['h'], 'the session skips AI matches');
 
 console.log('ai: ok');

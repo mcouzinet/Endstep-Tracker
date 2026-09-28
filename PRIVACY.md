@@ -13,8 +13,7 @@ Only information that is visible on screen during your own games on endstep.cc:
 - your deck (name and list, as returned by the site to your own browser);
 - opponent cards you saw (battlefield, graveyard, exile, revealed cards), colours;
 - per game: play/draw, mulligans, your opening hand, turns, life totals, duration, cards played, the game log;
-- your in-game decisions (the prompt, the options offered, what you chose, and the board at that moment), shown under "My decisions" in a game's detail;
-- notes, the opponent archetype and the sideboard plans you type in the dashboard.
+- notes and the opponent archetype you type in the dashboard.
 
 Nothing is recorded when you are spectating.
 

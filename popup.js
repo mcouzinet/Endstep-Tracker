@@ -1,4 +1,4 @@
-// Toolbar popup: the match in progress (the opponent's archetype, my record against it, my side plan), otherwise the
+// Toolbar popup: the match in progress (the opponent's archetype, my record against it), otherwise the
 // session; a way into the dashboard and the switch of the in-page panel.
 const S = self.EndstepShared;
 const T = self.EndstepTracker;
@@ -16,11 +16,10 @@ async function openDashboard() {
 
 async function load() {
   const all = await S.loadStore();
-  const d = { matches: [], notes: {}, plans: {}, decks: S.obj(all.decks), settings: S.obj(all.settings) };
+  const d = { matches: [], notes: {}, decks: S.obj(all.decks), settings: S.obj(all.settings) };
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) { const m = S.normalizeMatch(v); if (m) d.matches.push(m); }
     else if (k.startsWith('note:')) d.notes[k.slice(5)] = S.obj(v);
-    else if (k.startsWith('plan:')) d.plans[k] = String(v || '');
   }
   d.matches.sort((a, b) => b.startedAt - a.startedAt);
   d.meta = all.meta ? { formats: all.meta.formats, byFormat: S.obj(all.meta.byFormat) } : null;
@@ -42,7 +41,6 @@ function render(d) {
     const key = keyOf(live);
     const vs = d.matches.filter((m) => m !== live && !S.vsAI(m) && S.formatOf(m, C) === format && S.deckName(m, C) === deck && keyOf(m) === key);
     const r = S.records(vs);
-    const plan = key !== '?' && d.plans[S.planKey(format, deck, key, t)];
     const opp = S.opps(live).map((p) => p.name).join(', ') || '?';
     const game = live.games.length ? ` · ${t('game_n', { n: live.games[live.games.length - 1].n })}` : '';
     html = `<section>
@@ -50,8 +48,7 @@ function render(d) {
       <p class="arch">${a ? `<span class="tag">${esc(a)}</span>` : g ? `<span class="tag guess">${esc(g.name)}</span><span class="muted">${esc(t('recognized_pct', { p: Math.round(g.p * 100) }))}</span>` : `<span class="muted">${esc(t('popup_unknown_opp'))}</span>`}</p>
     </section>
     ${key === '?' ? '' : `<section><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((m) => m.result)
-      ? `<dl class="stats">${stat(t('matches'), r.m)}${stat(t('g1'), r.s.g1)}${stat(t('g23'), r.s.g23)}</dl>` : `<p class="note">${esc(t('popup_first_time'))}</p>`}</section>
-    <section><h3>${esc(t('side_plan'))}</h3>${plan ? `<pre class="plan">${esc(plan)}</pre>` : `<p class="note">${esc(t('popup_no_plan'))}</p>`}</section>`}`;
+      ? `<dl class="stats">${stat(t('matches'), r.m)}</dl>` : `<p class="note">${esc(t('popup_first_time'))}</p>`}</section>`}`;
   } else if (d.matches.length) {
     const sess = S.lastSession(d.matches);
     const title = S.sessionOpen(sess) ? t('session_now') : t('session_last', { when: S.ago(sess[0].startedAt, I18N) });
@@ -79,6 +76,6 @@ function render(d) {
   $('#open').addEventListener('click', openDashboard);
   $('#overlay').addEventListener('change', (e) => chrome.storage.local.set({ settings: { ...d.settings, overlay: e.target.checked } }));
   chrome.storage.onChanged.addListener(async (changes, area) => {
-    if (area === 'local' && Object.keys(changes).some((k) => /^(match|note|plan):|^settings$/.test(k))) { d = await load(); render(d); }
+    if (area === 'local' && Object.keys(changes).some((k) => /^(match|note):|^settings$/.test(k))) { d = await load(); render(d); }
   });
 })();

@@ -7,7 +7,7 @@ Extension Chrome (Manifest V3, sans dépendance) qui enregistre automatiquement 
 1. `chrome://extensions` → activer **Mode développeur**
 2. **Charger l'extension non empaquetée** → sélectionner ce dossier
 3. Recharger les onglets endstep.cc déjà ouverts. Pendant un match, l'icône affiche un badge **REC**.
-4. Clic sur l'icône → popup : le match en cours (archétype adverse, mon bilan contre lui, mon plan de side) ou la session, et le bouton du tableau de bord (historique, stats, exports).
+4. Clic sur l'icône → popup : le match en cours (archétype adverse, mon bilan contre lui) ou la session, et le bouton du tableau de bord (historique, stats, exports).
 
 Après une modification du code : bouton ↻ de l'extension dans `chrome://extensions`. Les onglets endstep.cc ouverts sont rattachés automatiquement (`background.js` réinjecte le traqueur et `hook.js`, qui survit dans la page, lui rejoue ce qu'il a manqué depuis le dernier état complet de la partie).
 
@@ -24,12 +24,11 @@ Par game :
 
 Dans le tableau de bord (clic sur l'icône) :
 - en tête, le deck analysé : par défaut mon deck le plus joué sur 30 jours, sinon un autre deck, tous les decks d'un format ou tous mes decks (menu groupé par format) ; la période et un archétype adverse s'y ajoutent, et toutes les stats portent sur cette portée ;
-- bilan matchs/games, matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et les archétypes croisés moins de 3 fois se regroupent en « Autres » ; le match en cours ne compte pas ;
-- en haut, la session en cours (ou la dernière, repliée) : ses matchs, l'archétype reconnu à confirmer en un clic, et ce qu'elle change à chaque matchup ; une session, ce sont des matchs à moins de 2 h d'écart ;
-- le guide des matchups : bilan en matchs, G1, G2-G3, games au play et à la draw, tri par fréquence, pire ou meilleur d'abord (un taux sur moins de 5 matchs ne passe jamais en tête) ; un clic ouvre le panneau du matchup : son plan de side (une note par deck et par archétype, enregistrée pendant la frappe et rappelée sous la ligne), ses bilans par version, les cartes vues chez lui avec leur fréquence, ses matchs, et un bouton pour filtrer la page sur lui ; `j` / `k` parcourent les lignes, Échap ferme le panneau ;
-- chaque bilan se lit aussi en G1 (main deck) et en G2-G3 (après sideboard), pour les matchups, le contexte et mes decks ;
+- tous les bilans se comptent en matchs, jamais en games : le play/draw et le mulligan d'un match sont ceux de sa première game ; matchups par archétype adverse (un clic sur une ligne filtre), résultats au play / à la draw, avec ou sans mulligan ; sous 5 résultats, pas de pourcentage mais un point par résultat, et au-delà de 20 archétypes, les suivants se regroupent en « Autres » ; le match en cours ne compte pas ;
+- en haut, un résumé : le taux de victoire en grand (en matchs, pas de pourcentage sous 5 matchs), le bilan sur le play, sur la draw, les mulligans et la durée par match, et les 20 derniers résultats (un carré vert par victoire, rouge par défaite ; au survol, la fiche du match : résultat, adversaire, archétype, mon deck, format, date ; un clic l'ouvre) ;
+- le guide des matchups : bilan en matchs, sur le play et sur la draw, tri par fréquence, pire ou meilleur d'abord (un taux sur moins de 5 matchs ne passe jamais en tête) ; un clic ouvre le panneau du matchup : ses bilans par version, les cartes vues chez lui avec leur fréquence, ses matchs, et un bouton pour filtrer la page sur lui ; `j` / `k` parcourent les lignes, Échap ferme le panneau ;
 - les matchs contre l'IA du site (Forge AI, Auto-Pilot), que le site signale dans les participants du match, restent dans l'historique avec une étiquette « IA » mais ne comptent dans aucun bilan : ni matchups, ni session, ni popup, ni panneau, ni portée par défaut ;
-- versions de la liste : quand le main deck enregistré d'un deck change, une nouvelle version commence (les retouches de side ne comptent pas) ; la portée montre la version actuelle par défaut, avec les cartes ajoutées et retirées depuis la précédente, un bouton pour mettre le bilan de la précédente à côté de chaque matchup, et un menu pour les autres versions ou toutes ;
+- versions de la liste : quand le main deck enregistré d'un deck change, une nouvelle version commence (les retouches de side ne comptent pas) ; la portée montre toutes les versions par défaut ; choisir une version dans le menu montre les cartes ajoutées et retirées depuis la précédente, un bouton pour mettre le bilan de la précédente à côté de chaque matchup, et un menu pour les autres versions ou toutes ;
 - historique des matchs, avec sa recherche (adversaire, archétype, carte vue, note — touche `/`) et son filtre victoires/défaites, qui ne changent que la liste ;
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, cartes jouées tour par tour, journal, archétype adverse et notes ;
 - menu « Données » : export JSON (sauvegarde), export CSV (une ligne par game), import, tout effacer.
@@ -38,7 +37,7 @@ Seules les informations publiques (visibles en jeu) sont enregistrées. Tout res
 
 ## Pendant la partie
 
-- **Panneau sur endstep.cc** (`overlay.js`) : pendant une game, une pastille « REC · session 4–2 » ; entre deux games, il se déplie sur l'adversaire, l'archétype reconnu, mon bilan contre lui avec ce deck (matchs, G1, G2-G3) et mon plan de side ; après le match, le résultat et l'archétype à confirmer en un clic. Il se replie d'un clic, se déplace à la souris (la place est gardée), ne prend jamais le focus clavier (Espace reste au jeu) et vit dans un shadow root fermé. Il suit la langue du navigateur. Il se coupe depuis la popup.
+- **Panneau sur endstep.cc** (`overlay.js`) : pendant une game, une pastille « REC · session 4–2 » ; entre deux games, il se déplie sur l'adversaire, l'archétype reconnu, mon bilan contre lui avec ce deck ; après le match, le résultat et l'archétype à confirmer en un clic. Il se replie d'un clic, se déplace à la souris (la place est gardée), ne prend jamais le focus clavier (Espace reste au jeu) et vit dans un shadow root fermé. Il suit la langue du navigateur. Il se coupe depuis la popup.
 - **Popup de l'icône** (`popup.html`) : la même chose pendant un match, la session sinon, et le bouton du tableau de bord.
 - La reconnaissance d'archétype du panneau et de la popup utilise le métagame mis en cache par le tableau de bord : ouvrir le tableau de bord une fois suffit à le charger.
 
@@ -50,9 +49,9 @@ En Duel Commander, l'archétype adverse est le nom de son commandant (« A + B �
 
 ## Coach (bêta)
 
-Pendant une partie, l'extension enregistre aussi chacune de mes décisions (invite du moteur, options proposées, choix, plateau). Le détail d'une game affiche « Mes décisions » et un bloc **Coach** : pour chaque décision, la probabilité de victoire avant et après (le plateau à la décision suivante, réponse adverse comprise), et les chutes nettes signalées comme erreurs probables (≤ −15 points) ou grosses erreurs (≤ −30).
+En développement seulement, l'extension enregistre aussi chacune de mes décisions (invite du moteur, options proposées, choix, plateau). Le détail d'une game affiche alors « Mes décisions » et un bloc **Coach** : pour chaque décision, la probabilité de victoire avant et après (le plateau à la décision suivante, réponse adverse comprise), et les chutes nettes signalées comme erreurs probables (≤ −15 points) ou grosses erreurs (≤ −30).
 
-**Où vit le coach.** Tout le coach est dans le dépôt séparé `Endstep-coach` (dossier `extension-coach/` pour la partie tableau de bord : `coach.js`, `coach-ui.js`, le modèle et la table de cartes ; `bot/` pour Forge, le serveur local, l'entraînement). `Endstep-coach/extension-coach/install.sh` copie ces fichiers à côté de `dashboard.js`, où git les ignore ; le tableau de bord les charge s'ils sont là et fonctionne sans eux. Les builds des stores n'en contiennent jamais. Le mode d'emploi (analyser un match, expliquer une décision, clés, limites) est dans le README de ce dossier.
+**Où vit le coach.** Tout le coach est dans le dépôt séparé `Endstep-coach` (dossier `extension-coach/` pour la partie tableau de bord : `coach.js`, `coach-ui.js`, le modèle et la table de cartes ; `bot/` pour Forge, le serveur local, l'entraînement). `Endstep-coach/extension-coach/install.sh` copie ces fichiers à côté de `dashboard.js`, où git les ignore ; le tableau de bord les charge s'ils sont là et fonctionne sans eux. Les builds des stores n'en contiennent jamais : `release.sh` retire aussi le code marqué `// dev-only {` … `// } dev-only` (le chargement du coach, la capture de mes actions, le journal « Mes décisions ») et refuse un paquet qui mentionne encore le coach. Le mode d'emploi (analyser un match, expliquer une décision, clés, limites) est dans le README de ce dossier.
 
 ## Langues
 
@@ -63,7 +62,7 @@ L'interface existe en français et en anglais : elle suit la langue de Chrome, e
 - `hook.js` s'exécute dans la page avant le code d'Endstep et observe le WebSocket (`GAME_STATE`, `GAME_DELTA`, `GAME_EVENT`, `GAME_OVER`…) ainsi que quelques réponses `fetch` (noms de decks, format du match).
 - `tracker.js` transforme ces messages en fiche de match (logique pure, testée).
 - `content.js` persiste les fiches (et mes décisions sous `dec:<matchId>`) ; `dashboard.html` les affiche ; `meta.js` reconnaît le deck adverse ; `coach.js` évalue les décisions.
-- `shared.js` : ce que le tableau de bord, la popup et le panneau calculent de la même façon (noms de deck et de format, clé d'archétype, sessions, bilans, clés de plan de side, reconnaissance, textes) ; `theme.css` : palette et composants communs au tableau de bord et à la popup ; `popup.js` ; `overlay.js`.
+- `shared.js` : ce que le tableau de bord, la popup et le panneau calculent de la même façon (noms de deck et de format, clé d'archétype, sessions, bilans, reconnaissance, textes) ; `theme.css` : palette et composants communs au tableau de bord et à la popup ; `popup.js` ; `overlay.js`.
 - `icons/` : sources SVG des icônes (`icon.svg` pour 48/128 px, `icon-32.svg`, `icon-16.svg`) et leurs PNG.
 
 Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rechargement de la page en plein match) ne sont pas rattrapés ; la liste adverse est un minimum (uniquement ce qui a été vu) ; un match supprimé du tableau de bord pendant qu'il se joue n'est plus suivi ; le deck attribué à un match est celui du siège de sa table, sinon le dernier deck choisi dans les 6 heures. Un match enregistré sans deck (ou avec le mauvais) se corrige dans son détail avec le sélecteur « Mon deck », qui propose tous les decks vus sur le site ; ce choix est gardé à part (`note:<matchId>`) et prime sur l'attribution automatique.
@@ -71,10 +70,10 @@ Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rec
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js
+node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js
 ```
 
-Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; le troisième vérifie les features du coach et la parité entre le modèle Python et son exécution en JS ; l'avant-dernier vérifie que le commandant adverse nomme l'archétype en Duel Commander, le dernier que les matchs contre l'IA ne comptent dans aucun bilan. Le harnais Puppeteer est dans `test/harness/`.
+Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; les suivants vérifient que le commandant adverse nomme l'archétype en Duel Commander, que les matchs contre l'IA ne comptent dans aucun bilan, et que les bilans se comptent en matchs, au play ou à la draw selon la première game. Le harnais Puppeteer est dans `test/harness/`.
 
 ## Publication (Chrome, Edge, Firefox, Safari)
 

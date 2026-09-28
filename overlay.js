@@ -1,5 +1,5 @@
 // In-page panel on endstep.cc. While a game is played: a small pill (recording, session record). Between games:
-// the matchup, i.e. the opponent's archetype, my record against it with this deck, my side plan. After the match:
+// the matchup, i.e. the opponent's archetype and my record against it with this deck. After the match:
 // the result and the recognized archetype to confirm in one click.
 // Passive by design: it never acts on the game, never takes the keyboard focus (the game's own keys, like Space to
 // pass priority, keep working), and lives in a closed shadow root: the page cannot read what it shows.
@@ -17,7 +17,7 @@
   const prev = document.getElementById(HOST);
   if (prev) prev.remove(); // a copy left behind by an extension reload
 
-  const data = { matches: new Map(), notes: {}, decks: {}, plans: {}, meta: null, settings: {} };
+  const data = { matches: new Map(), notes: {}, decks: {}, meta: null, settings: {} };
   let shown = null; // { id, phase, open } as last rendered
   let choice = null; // { phase key, open }: the user's toggle, kept until the phase changes
   let dismissed = null; // id of the match whose end card the user closed
@@ -58,7 +58,6 @@
     .tag.guess { background: none; border: 1px dashed rgb(212 174 98 / .55); color: var(--ink-2); }
     .stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
     .stats b { color: var(--ink); font-weight: 600; }
-    .plan { margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); white-space: pre-wrap; font: inherit; line-height: 1.45; max-height: 180px; overflow: auto; }
     .W { color: var(--win); } .L { color: var(--loss); }
     .row { display: flex; flex-wrap: wrap; gap: 8px; }
     .btn { padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-size: 12px; }
@@ -131,13 +130,10 @@
       const r = S.records(vs, now);
       const stat = (label, x) => `<span>${esc(label)} <b>${wl(x)}</b>${x.W + x.L + x.D >= 5 ? ` · ${pct(x)}` : ''}</span>`;
       const record = key === '?' ? '' : `<div><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((x) => x.result)
-        ? `<p class="stats">${stat(t('matches'), r.m)}${stat(t('g1'), r.s.g1)}${stat(t('g23'), r.s.g23)}</p>` : `<p class="muted">${esc(t('popup_first_time'))}</p>`}</div>`;
-      const plan = key === '?' ? '' : data.plans[S.planKey(format, deck, key, t)];
-      const planBlock = phase === 'after' || key === '?' ? ''
-        : `<div><h3>${esc(t('side_plan'))}</h3>${plan ? `<pre class="plan">${esc(plan)}</pre>` : `<p class="muted">${esc(t('ov_no_plan'))}</p>`}</div>`;
+        ? `<p class="stats">${stat(t('matches'), r.m)}</p>` : `<p class="muted">${esc(t('popup_first_time'))}</p>`}</div>`;
       const confirm = phase === 'after' && !a && g
         ? `<button class="btn primary" tabindex="-1" data-confirm="${esc(g.name)}">${esc(t('confirm_guess', { name: g.name }))}</button>` : '';
-      body = `<div class="body">${head}<p>${arch}</p>${record}${planBlock}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
+      body = `<div class="body">${head}<p>${arch}</p>${record}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
     }
     box.classList.toggle('open', open);
     box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${toggle}</div>${body}`;
@@ -181,7 +177,6 @@
   function apply(k, v) {
     if (k.startsWith('match:')) { const m = v === undefined ? null : S.normalizeMatch(v); if (m) data.matches.set(m.id, m); else data.matches.delete(k.slice(6)); }
     else if (k.startsWith('note:')) { if (v === undefined) delete data.notes[k.slice(5)]; else data.notes[k.slice(5)] = S.obj(v); }
-    else if (k.startsWith('plan:')) { if (v === undefined) delete data.plans[k]; else data.plans[k] = String(v); }
     else if (k === 'decks') data.decks = S.obj(v);
     else if (k === 'meta') data.meta = v ? { formats: v.formats, byFormat: S.obj(v.byFormat) } : null;
     else if (k === 'settings') {
@@ -197,7 +192,7 @@
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local' || orphaned()) return;
     let touched = false;
-    for (const [k, c] of Object.entries(changes)) if (/^(match|note|plan):|^(decks|meta|settings)$/.test(k)) { apply(k, c.newValue); touched = true; }
+    for (const [k, c] of Object.entries(changes)) if (/^(match|note):|^(decks|meta|settings)$/.test(k)) { apply(k, c.newValue); touched = true; }
     if (touched) render();
   });
   const tick = setInterval(() => { if (orphaned()) { clearInterval(tick); host.remove(); } else if (shown) render(); }, 30e3); // the end card expires

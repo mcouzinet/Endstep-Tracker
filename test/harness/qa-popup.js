@@ -32,14 +32,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     };
     const text = (sel) => p.evaluate((s) => { const el = document.querySelector(s); return el ? el.textContent.replace(/\s+/g, ' ').trim() : null; }, sel);
 
-    // Match in progress, in French then in English: the same side plan.
+    // Match in progress, in French then in English: the record, and a stored side plan is not shown (left out of 1.0).
     await seed('fr');
     assert.match(await text('main h2'), /^En cours contre Brisbane/);
-    assert.equal(await p.evaluate(() => document.querySelector('.plan').textContent), plan);
+    assert.equal(await p.evaluate((pl) => document.body.textContent.includes(pl.split('\n')[0]), plan), false);
     assert.equal(await text('#open'), 'Ouvrir le tableau de bord');
     await seed('en');
     assert.match(await text('main h2'), /^In progress against Brisbane/);
-    assert.equal(await p.evaluate(() => document.querySelector('.plan').textContent), plan);
+    assert.equal(await p.evaluate(() => /G1|G2-G3/.test(document.body.textContent)), false);
 
     // The in-page panel switch: on by default, stored when turned off.
     assert.equal(await p.evaluate(() => document.getElementById('overlay').checked), true);
