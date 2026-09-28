@@ -128,7 +128,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 `./publish.sh --dry-run`, then `./publish.sh` (all four stores) or `./publish.sh chrome edge …`. It publishes the highest `vX.Y` tag, which must be pushed, and builds the packages from the tag itself in a temporary worktree (its own tests, `release.sh` and Xcode project), so later commits never reach a store. The dry run checks the tag, the tests, the packages and the keys, and contacts no store (Chrome excepted: it checks the refresh token). A real run asks for confirmation (`--yes` skips it).
 
-Keys and IDs live in the macOS Keychain, service `endstep-publish`, never in the repository; the script never prints them nor puts them on a command line. Add each one with the command below: the value is typed at the prompt, so it stays out of the shell history.
+Keys and IDs live in the macOS Keychain, service `endstep-publish`, never in the repository; the script never prints them nor puts them on a command line. `./publish.sh --keys chrome edge firefox safari`, run in a terminal, asks for each missing one (typed at a prompt, without echo, and out of the shell history); one at a time works too:
 
 ```
 security add-generic-password -U -s endstep-publish -a <name> -w
