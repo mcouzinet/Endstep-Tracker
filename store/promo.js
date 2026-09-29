@@ -28,7 +28,7 @@ const css = `
 `;
 const pages = {
   'promo-440x280.png': { w: 440, h: 280, html: `<div class="bg"></div><div class="tile"><img src="${icon}"><h1>Endstep Tracker</h1><p>Your endstep.cc matches, recorded automatically.</p></div>` },
-  'marquee-1400x560.png': { w: 1400, h: 560, html: `<div class="bg"></div><div class="marquee"><div class="copy"><img src="${icon}"><h1>Endstep Tracker</h1><p>Every match you play on endstep.cc, recorded automatically and kept on your computer.</p><div class="pills"><span>Play / draw &amp; mulligans</span><span>Opponent cards seen</span><span>Archetype recognition</span><span>Win rates by deck</span></div></div><div class="screen"><img src="${shot}"></div></div>` },
+  'marquee-1400x560.png': { w: 1400, h: 560, html: `<div class="bg"></div><div class="marquee"><div class="copy"><img src="${icon}"><h1>Endstep Tracker</h1><p>Every match you play on endstep.cc, recorded automatically and kept on your computer.</p><div class="pills"><span>Play / draw &amp; mulligans</span><span>Opponent cards seen</span><span>Archetype recognition</span><span>Win rate card by card</span><span>Your sideboarding</span></div></div><div class="screen"><img src="${shot}"></div></div>` },
   'icon-128.png': { w: 128, h: 128, html: `<div class="icon"><img src="${icon}"></div>`, transparent: true },
 };
 (async () => {

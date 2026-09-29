@@ -15,12 +15,14 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 
 Endstep Tracker automatically records the Magic: The Gathering matches you play on endstep.cc and turns them into a personal match history, all stored locally in your browser.
 
-While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype and your record against it. The toolbar popup shows the same during a match, and your session otherwise.
+While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype, your record against it and your usual sideboarding. The toolbar popup shows the same during a match, and your session otherwise.
 
 The dashboard opens on the deck you play most:
 
 • At a glance: your win rate, your records on the play and on the draw, and your latest results.
 • Matchups: record in matches, on the play and on the draw.
+• My cards: for each card of your deck, the win rate of the games where you drew it, next to the games where it stayed in your library and the games where it was in your opening hand.
+• Your sideboarding: what you bring in and take out between games is recorded, shown for each matchup and recalled between two games against the same kind of deck.
 • List versions: when your main deck changes, compare the new list with the previous one, matchup by matchup.
 • Match history: date, format, opponent, your deck, score, result.
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
@@ -37,12 +39,14 @@ Not affiliated with endstep.cc or Wizards of the Coast.
 
 Endstep Tracker enregistre automatiquement les parties de Magic: The Gathering que tu joues sur endstep.cc et en fait un historique personnel, stocké uniquement dans ton navigateur.
 
-Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse et ton bilan contre lui. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
+Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse, ton bilan contre lui et ton side habituel. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
 
 Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • En un coup d'œil : ton taux de victoire, tes bilans sur le play et sur la draw, et tes derniers résultats.
 • Matchups : bilan en matchs, sur le play et sur la draw.
+• Mes cartes : pour chaque carte de ton deck, le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque et de celles où elle était dans ta main de départ.
+• Ton side : ce que tu fais entrer et sortir entre les games est enregistré, montré pour chaque matchup et rappelé entre deux games contre le même type de deck.
 • Versions de liste : quand ton main deck change, compare la nouvelle liste à la précédente, matchup par matchup.
 • Historique des matchs : date, format, adversaire, ton deck, score, résultat.
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
@@ -64,7 +68,7 @@ Non affilié à endstep.cc ni à Wizards of the Coast.
 - `storage` / `unlimitedStorage`: the match history (including full game logs) is stored locally in `chrome.storage.local`; a heavy user exceeds the default 10 MB quota.
 - `scripting`: after the extension is installed or updated, the background worker re-injects the tracker into endstep.cc tabs that are already open, so a match in progress is not lost.
 - Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record, and shows a small panel with the user's own records and notes (in a closed shadow root, never focused, never acting on the game). Nothing is sent.
-- Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only.
+- Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only: it reads the frames the site receives, and of the frames it sends only the user's own sideboarding choice between two games (the main deck submitted for the next game). It never sends or alters anything.
 
 **Remote code**: No. All code is in the package.
 
@@ -76,11 +80,13 @@ Non affilié à endstep.cc ni à Wizards of the Coast.
 
 ## Assets
 
-Screenshots in this folder, 1280×800 PNG without alpha, made by `store/shots.js` from the QA demo data plus 24 synthetic Modern matches (made-up opponents, no real player):
+Screenshots in this folder, 1280×800 PNG without alpha, made by `store/shots.js` from the QA demo data plus 24 synthetic Modern matches (made-up opponents, no real player; each with the cards drawn per game and a sideboarding against five archetypes):
 
-1. `1-dashboard-en.png` — dashboard overview, English
-2. `2-match-detail.png` — expanded match: opponent cards seen, recognized archetype, notes, per-game detail
-3. `3-dashboard-fr.png` — dashboard overview, French
+1. `1-dashboard-en.png`: summary and matchups, English
+2. `2-my-cards-en.png`: the "My cards" tab, card by card
+3. `3-matchup-side-en.png`: the matchup panel with my usual sideboarding and their cards seen
+4. `4-match-detail-en.png`: expanded match: opponent cards seen, archetype, notes, each game with its sideboarding
+5. `5-dashboard-fr.png`: summary and matchups, French
 
 Regenerate after a UI change: `node test/harness/gen-demo.js && node store/shots.js`.
 
@@ -152,7 +158,7 @@ What each store gets: Chrome, through API v2 (v1.1 stops on 2026-10-15), the zip
 
 ## Submission checklist
 
-1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js`
+1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js && node test/cards.test.js`
 2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in both `_locales` (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
 3. `./publish.sh --dry-run` then `./publish.sh` (see Automated publishing), or by hand: `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
