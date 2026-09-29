@@ -20,15 +20,25 @@ While you play, the extension icon shows a REC badge, and a small panel on the g
 The dashboard opens on the deck you play most:
 
 • At a glance: your win rate, your records on the play and on the draw, and your latest results.
+
 • Matchups: record in matches, on the play and on the draw.
+
 • My cards: for each card of your deck, the win rate of the games where you drew it, next to the games where it stayed in your library and the games where it was in your opening hand.
+
 • Your sideboarding: what you bring in and take out between games is recorded, shown for each matchup and recalled between two games against the same kind of deck.
+
 • List versions: when your main deck changes, compare the new list with the previous one, matchup by matchup.
+
 • Match history: date, format, opponent, your deck, score, result.
+
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
+
 • Opponent cards seen, with card preview on hover, and automatic archetype recognition from endstep.cc's public metagame (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
+
 • Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 5 results.
+
 • Search the history: opponent, archetype, card seen, note.
+
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
 Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no server, account, analytics or ads. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
@@ -44,15 +54,25 @@ Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la pa
 Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • En un coup d'œil : ton taux de victoire, tes bilans sur le play et sur la draw, et tes derniers résultats.
+
 • Matchups : bilan en matchs, sur le play et sur la draw.
+
 • Mes cartes : pour chaque carte de ton deck, le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque et de celles où elle était dans ta main de départ.
+
 • Ton side : ce que tu fais entrer et sortir entre les games est enregistré, montré pour chaque matchup et rappelé entre deux games contre le même type de deck.
+
 • Versions de liste : quand ton main deck change, compare la nouvelle liste à la précédente, matchup par matchup.
+
 • Historique des matchs : date, format, adversaire, ton deck, score, résultat.
+
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
+
 • Cartes adverses vues, aperçu au survol, et reconnaissance automatique de l'archétype grâce au métagame public d'endstep.cc (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
+
 • Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 5 résultats.
+
 • Recherche dans l’historique : adversaire, archétype, carte vue, note.
+
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 
 Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni serveur, ni compte, ni analytique, ni publicité. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
