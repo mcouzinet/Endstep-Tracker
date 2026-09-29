@@ -29,7 +29,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     live.score = [1, 1];
     live.updatedAt = Date.now();
     const plan = '+2 Kor Firewalker\nKeep life high';
-    data['plan:' + JSON.stringify(['casual', 'Burn', 'c:BR'])] = plan;
+    data['plan:' + JSON.stringify(['casual', 'Burn', 'c:BR'])] = plan; // a side plan typed by hand before 1.0: never shown
+    // An earlier match against the same kind of deck, whose sideboarding was recorded: the usual side plan.
+    const past = JSON.parse(JSON.stringify(live));
+    Object.assign(past, { id: 'm-past', status: 'complete', result: 'W', score: [2, 0], startedAt: live.startedAt - 3 * 864e5, updatedAt: live.startedAt - 3 * 864e5, endedAt: live.startedAt - 3 * 864e5 + 30 * 60e3,
+      mains: { 1: { 'Lightning Bolt': 4, 'Lava Spike': 4, Mountain: 20 }, 2: { 'Lightning Bolt': 4, 'Lava Spike': 2, 'Kor Firewalker': 2, Mountain: 20 } } });
+    past.games.forEach((g, i) => Object.assign(g, { outcome: true, winnerSeat: 0, n: i + 1 }));
+    data['match:m-past'] = past;
     await ext.evaluate(async (d) => { await chrome.storage.local.clear(); await chrome.storage.local.set(d); }, data);
 
     const p = await b.newPage();
@@ -68,12 +74,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     };
     const hidden = () => p.evaluate(() => document.getElementById('endstep-tracker-panel').hidden);
 
-    // Between games: unfolded on the matchup; the stored side plan and G1 / G2-G3 are not shown (left out of 1.0).
+    // Between games: unfolded on the matchup and my usual sideboarding against it (recorded, not the plan typed by
+    // hand); no G1 / G2-G3.
     assert.equal(await hidden(), false);
     let text = await panelText();
     assert.match(text, /REC · session/);
     assert.match(text, /(Against|Contre) Brisbane/);
-    assert.ok(!text.includes('Kor Firewalker') && !/G1|G2-G3/.test(text), text);
+    assert.match(text, /(My usual sideboarding|Mon side habituel) \+2 Kor Firewalker −2 Lava Spike/, text);
+    assert.ok(!text.includes('Keep life high') && !/G1|G2-G3/.test(text), text);
 
     // Folding it takes no keyboard focus away from the game.
     await clickIn('[data-toggle]');

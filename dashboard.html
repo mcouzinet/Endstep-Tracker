@@ -61,9 +61,17 @@
     .count { color: var(--ink-3); font-size: 13px; margin-left: auto; font-variant-numeric: tabular-nums; }
     #reset.off { visibility: hidden; } /* keeps its width so the count does not move ([hidden] would collapse it) */
 
+    /* ---- tabs: three views of the same scope ---- */
+    .tabs { display: flex; gap: 2px; margin: 4px 0 16px; border-bottom: 1px solid var(--line); }
+    .tabs button { position: relative; padding: 10px 16px; border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: color .15s; }
+    .tabs button:hover { color: var(--ink); }
+    .tabs button[aria-selected="true"] { color: var(--ink); }
+    .tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--gold); }
+    .tabs button:focus-visible { outline-offset: -2px; border-radius: var(--radius-sm); }
+
     /* ---- panels ---- */
     .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
-    .panel-title { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+    .panel-title { font-size: 17px; font-weight: 650; letter-spacing: -.01em; color: var(--ink); } /* section titles: between the page title and the body */
     .split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 16px; align-items: start; }
     .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; align-items: start; }
     .versions { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 8px 10px; font-size: 13px; color: var(--ink-2); }
@@ -73,11 +81,32 @@
     .versions .chg .card { color: var(--ink); }
     .context .rec { padding-left: 8px; padding-right: 8px; } /* aligned with the clickable rows of the other panels */
     .split .panel { padding: 16px 12px 10px; }
-    .split .panel-title { padding: 0 8px 8px; }
-    .context-hint { margin: -4px 8px 8px; font-size: 12px; }
+    .split .panel-title, .cards .panel-title { padding: 0 8px 6px; }
+    .context-hint { margin: 0 8px 12px; font-size: 12.5px; }
+    /* ---- my cards ---- */
+    .panel.cards { padding: 16px 12px 10px; }
+    .cards .rec { padding-left: 8px; padding-right: 8px; }
+    .cards .rec.cells { --bar: 9rem; --cell: 7.2rem; }
+    .cards .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* the gap stays visible */
+    .cards .context-hint { max-width: 90ch; margin-top: 0; }
+    .cards-note { margin: 0 8px 10px; font-size: 12px; }
+    .gap { margin-left: 6px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+    .gap.up { color: var(--win); } .gap.down { color: var(--loss); }
+    .more summary { padding: 7px 8px; font-size: 13px; color: var(--ink-2); }
+    .more > .rec { padding-left: 28px; }
+    /* ---- sideboarding: + in, − out ---- */
+    .chg.add { color: var(--win); } .chg.cut { color: var(--loss); }
+    .chg .card { color: var(--ink); }
+    .side-plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 18px; font-size: 13px; }
+    .side-plan h4 { margin: 0 0 4px; font-size: 12px; font-weight: 500; color: var(--ink-3); }
+    .side-plan li { padding: 2px 0; }
+    .side-plan .chg { display: inline-block; min-width: 1.8em; font-variant-numeric: tabular-nums; }
+    .side-over { margin: 6px 0 0; font-size: 12px; }
+    .side-line { margin: 0 0 12px; font-size: 13px; }
+    .side-line .label { color: var(--ink-3); margin-right: 8px; }
 
     /* ---- record rows: one component for every W/L record on the page ---- */
-    .rec { display: grid; grid-template-columns: minmax(0, 11rem) minmax(80px, 1fr) 3.8rem 4.6rem; align-items: center; gap: 12px; padding: 7px 0; }
+    .rec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 14rem) 3.8rem 4.6rem; align-items: center; gap: 12px; padding: 7px 0; }
     /* records with secondary cells (play, draw, a compared version); --cells = how many */
     /* the name takes the free width, the bar is capped: the numbers stay close to what they describe */
     .rec.cells { gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 3.4rem 3.6rem repeat(var(--cells), var(--cell, 4.8rem)); }
@@ -105,10 +134,10 @@
     .who .opp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     button.tag { font: inherit; font-size: 12px; cursor: pointer; }
     button.tag.guess:hover { border-style: solid; color: var(--ink); }
-    .drawer h3 { display: flex; gap: 10px; align-items: baseline; margin: 6px 0 8px; font-size: 12px; font-weight: 500; color: var(--ink-3); }
+    .drawer h3 { display: flex; gap: 10px; align-items: baseline; margin: 10px 0 8px; font-size: 14px; font-weight: 650; color: var(--ink); }
 
     /* ---- at a glance: win rate and the latest matches ---- */
-    .split .glance { display: grid; gap: 18px; padding: 18px 22px 20px; }
+    .glance { display: grid; gap: 18px; margin-bottom: 16px; padding: 18px 22px 20px; } /* above the tabs: it sums up the scope */
     .glance-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 44px; }
     .hero { display: flex; align-items: center; gap: 12px; }
     .hero-n { font-size: 52px; font-weight: 650; line-height: 1; letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
@@ -297,7 +326,7 @@
 
     /* ---- Deck Compare promo: a dashboard panel; Deck Compare shows in its wordmark and a real crop of its page ---- */
     .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .split .promo { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 44px 14px 16px; }
+    .promo { position: relative; margin-bottom: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 44px 14px 16px; }
     .promo > img { align-self: start; width: 40px; height: 40px; }
     .promo-body { display: grid; gap: 4px; }
     .promo-title { margin: 0; font-size: 15px; font-weight: 650; }
@@ -345,7 +374,16 @@
       .rec.head { display: none; }
       .rec-sub { grid-column: span 2; text-align: left; }
       .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 6px; color: var(--ink-3); }
+      .cards .rec-sub + .rec-sub { justify-self: end; text-align: right; } /* a longer caption: it takes the room left of its cell */
       .count { margin-left: 0; width: 100%; }
+      .tabs button { flex: 1; padding: 10px 4px; font-size: 14px; }
+      .top { gap: 10px; }
+      .brand { flex: 1 1 100%; margin-right: 0; } /* then the live pill, language and data menu share one row */
+      #data-btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      #data-btn { padding: 7px 9px; }
+      .live { flex: 1; min-width: 0; }
+      #live-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .panel-title { font-size: 16px; }
       .promo-lead { display: none; }
       .promo > img { width: 28px; height: 28px; }
     }
@@ -395,6 +433,18 @@
       <input id="import" type="file" accept="application/json,.json" hidden>
     </header>
 
+    <aside id="promo" class="panel promo" aria-labelledby="promo-title" hidden>
+      <img src="icons/deckcompare-128.png" alt="">
+      <div class="promo-body">
+        <h2 id="promo-title" class="promo-title"><b>Deck</b><b>Compare</b></h2>
+        <p id="promo-news" class="promo-news" hidden data-i18n="promo_news"></p>
+        <p class="promo-lead" data-i18n="promo_lead"></p>
+        <p class="promo-foot"><span data-i18n="promo_by"></span> · <a id="promo-link" target="_blank" rel="noopener"><span id="promo-cta"></span><span class="vh" data-i18n="new_tab"></span><svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a></p>
+      </div>
+      <figure class="promo-shot"><img src="icons/deckcompare-preview.png" data-i18n-attr="alt:promo_shot_alt"></figure>
+      <button id="promo-close" class="promo-close" data-i18n-attr="title:promo_close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </aside>
+
     <div id="filters" class="filters">
       <select id="f-scope" data-i18n-attr="aria-label:scope_label,title:scope_label"></select>
       <select id="f-version" hidden data-i18n-attr="aria-label:version_label,title:version_label"></select>
@@ -405,29 +455,24 @@
       <button id="reset" class="link off" data-i18n="reset"></button>
     </div>
 
-    <section id="split" class="split">
-      <section id="glance" class="panel glance" hidden></section>
-      <div class="panel"><div class="panel-head"><h2 class="panel-title" data-i18n="matchups"></h2><div class="seg" role="group" data-i18n-attr="aria-label:sort_label" data-filter="sort"><button data-value="n" data-i18n="sort_n"></button><button data-value="worst" data-i18n="sort_worst"></button><button data-value="best" data-i18n="sort_best"></button></div></div><p id="versions" class="versions" hidden></p><div id="by-opp"></div></div>
-      <aside id="promo" class="panel promo" aria-labelledby="promo-title" hidden>
-        <img src="icons/deckcompare-128.png" alt="">
-        <div class="promo-body">
-          <h2 id="promo-title" class="promo-title"><b>Deck</b><b>Compare</b></h2>
-          <p id="promo-news" class="promo-news" hidden data-i18n="promo_news"></p>
-          <p class="promo-lead" data-i18n="promo_lead"></p>
-          <p class="promo-foot"><span data-i18n="promo_by"></span> · <a id="promo-link" target="_blank" rel="noopener"><span id="promo-cta"></span><span class="vh" data-i18n="new_tab"></span><svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a></p>
-        </div>
-        <figure class="promo-shot"><img src="icons/deckcompare-preview.png" data-i18n-attr="alt:promo_shot_alt"></figure>
-        <button id="promo-close" class="promo-close" data-i18n-attr="title:promo_close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
-      </aside>
+    <section id="glance" class="panel glance" hidden></section>
+
+    <nav id="tabs" class="tabs" role="tablist" data-i18n-attr="aria-label:views" hidden>
+      <button role="tab" id="tab-matchups" data-tab="matchups" aria-controls="split" data-i18n="matchups"></button><button role="tab" id="tab-cards" data-tab="cards" aria-controls="cards-panel" data-i18n="my_cards"></button><button role="tab" id="tab-history" data-tab="history" aria-controls="history" data-i18n="history"></button>
+    </nav>
+
+    <section id="split" class="split" role="tabpanel" aria-labelledby="tab-matchups">
+      <div class="panel"><div class="panel-head"><h2 class="panel-title" data-i18n="by_archetype"></h2><div class="seg" role="group" data-i18n-attr="aria-label:sort_label" data-filter="sort"><button data-value="n" data-i18n="sort_n"></button><button data-value="worst" data-i18n="sort_worst"></button><button data-value="best" data-i18n="sort_best"></button></div></div><p id="versions" class="versions" hidden></p><div id="by-opp"></div></div>
       <div class="side">
         <div id="overview" class="panel context"></div>
         <div id="decks-panel" class="panel" hidden><h2 class="panel-title" data-i18n="my_decks"></h2><div id="by-deck"></div></div>
       </div>
     </section>
 
-    <section id="history" class="panel" data-i18n-attr="aria-label:matches">
+    <section id="cards-panel" class="panel cards" role="tabpanel" aria-labelledby="tab-cards" hidden></section>
+
+    <section id="history" class="panel" role="tabpanel" aria-labelledby="tab-history">
       <div id="list-tools" class="list-tools">
-        <h2 class="panel-title" data-i18n="history"></h2>
         <label class="search">
           <svg class="i"><use href="#i-search"/></svg>
           <input id="q" type="search" data-i18n-attr="placeholder:search_placeholder,aria-label:search" aria-keyshortcuts="/">

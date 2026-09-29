@@ -42,13 +42,18 @@
       ws.addEventListener('message', (e) => {
         if (typeof e.data === 'string' && WANTED.test(e.data.slice(0, 64))) post('ws', e.data);
       });
-      // dev-only { my own game actions (keep, cast, attack, targets…) for the decision journal; release.sh leaves this out
+      // My own game actions: in every build only my answer to the sideboarding prompt (the main deck I submit, or
+      // DECLINE to keep it), for the side plan.
       const send = ws.send;
       ws.send = function (data) {
-        if (typeof data === 'string' && data.startsWith('{"type":"GAME_ACTION"')) post('out', data);
+        if (typeof data === 'string' && data.startsWith('{"type":"GAME_ACTION"')) {
+          if (/"type":"(SIDEBOARD_SUBMIT|DECLINE)"/.test(data)) post('out', data);
+          // dev-only { every other one (keep, cast, attack, targets…) for the decision journal; release.sh leaves this out
+          else post('out', data);
+          // } dev-only
+        }
         return send.apply(this, arguments);
       };
-      // } dev-only
       return ws;
     },
   });

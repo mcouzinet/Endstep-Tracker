@@ -35,8 +35,14 @@
     } else if (kind === 'out') {
       let msg;
       try { msg = JSON.parse(data); } catch { return; }
-      const entry = msg.payload && !ignored.has(msg.payload.matchId) && T.onAction(store, msg.payload, at);
+      const a = msg.payload;
+      if (!a || ignored.has(a.matchId)) return;
+      const side = T.onSideboard(store, a, at);
+      if (side) save(side, true);
+      // dev-only { the decision journal
+      const entry = T.onAction(store, a, at);
       if (entry) save(entry);
+      // } dev-only
     } else if (kind === 'deck') {
       ctx.lastDeck = { id: data, at };
       chrome.storage.local.set({ lastDeck: ctx.lastDeck });

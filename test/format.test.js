@@ -18,4 +18,13 @@ assert.equal(S.formatOf(m({ gameType: 'DuelCommander', myDeck: deck('dc') }), C)
 assert.equal(S.formatOf(m({ gameType: 'Constructed', myDeck: null }), C), 'Format inconnu', 'no deck, no format');
 assert.equal(S.formatOf(m({ gameType: 'Constructed' }), { ...C, notes: { m: { deckId: 'pauper' } } }), 'Pauper', 'a deck picked by hand counts');
 
+// The one metagame format a match is compared with: the match's, else my deck's for a casual game, never all of them.
+const tracked = ['Pauper', 'Modern', 'Legacy', 'duel-commander'];
+assert.equal(S.metaFormat(m({ formatId: 'Modern', myDeck: deck('pauper') }), C, tracked), 'Modern', 'the match format wins');
+assert.equal(S.metaFormat(m({ formatId: 'casual', format: 'freeplay', gameType: 'Constructed', myDeck: deck('pauper') }), C, tracked), 'Pauper', 'casual: my deck format');
+assert.equal(S.metaFormat(m({ gameType: 'Constructed', myDeck: deck('pauper') }), C, tracked), 'Pauper', 'details missed: my deck format');
+assert.equal(S.metaFormat(m({ formatId: 'casual', format: 'freeplay', gameType: 'Constructed', myDeck: null }), C, tracked), null, 'casual without a deck: nothing');
+assert.equal(S.metaFormat(m({ formatId: 'Pauper' }), C, null), null, 'formats not known yet');
+assert.equal(S.metaFormat(m({ formatId: 'casual', format: 'draft' }), C, tracked), null, 'limited: no recognition');
+
 console.log('format: ok');

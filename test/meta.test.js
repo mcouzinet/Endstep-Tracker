@@ -44,5 +44,42 @@ Meta.loadFormat('Modern', fakeFetch).then((snap) => {
   return Meta.listFormats(fakeFetch);
 }).then((formats) => {
   assert.deepEqual(formats, ['Modern', 'Pauper']);
+  // Rate limit: a 429 is retried once the window resets, low remaining pauses, headers are read when present.
+  let calls = 0;
+  const limited = async () => {
+    calls++;
+    const h = { 'retry-after': '0', 'x-ratelimit-reset': '0', 'x-ratelimit-remaining': '3' };
+    return calls === 1 ? { ok: false, status: 429, headers: { get: (k) => h[k] } }
+      : { ok: true, status: 200, headers: { get: (k) => h[k] }, json: async () => ({ formats: [{ formatId: 'Pauper' }] }) };
+  };
+  return Meta.listFormats(limited);
+}).then((formats) => {
+  assert.deepEqual(formats, ['Pauper'], '429 retried');
+  // Archetypes: under 4 players never asked for, one refused (404) skipped, a server error stops every worker.
+  const deckList = (n, extra) => ({ decks: { items: Array.from({ length: n }, (_, k) => ({ name: `D${k}`, slug: `d${k}`, players: 10, share: { registrations: 100 - k } })).concat(extra || []), total: n + (extra ? extra.length : 0) } });
+  const cardsOf = { cards: { items: [{ name: 'Lightning Bolt', playRate: { rate: 1 } }] } };
+  const asked = [];
+  const skipping = async (url) => {
+    if (url.includes('/decks?')) return { ok: true, json: async () => deckList(3, [{ name: 'Tiny', slug: 'tiny', players: 2 }]) };
+    asked.push(url);
+    return url.includes('/d1/') ? { ok: false, status: 404 } : { ok: true, json: async () => cardsOf };
+  };
+  return Meta.loadFormat('Modern', skipping).then((snap) => {
+    assert.deepEqual(snap.decks.map((d) => d.slug), ['d0', 'd2'], '404 skipped, the others kept');
+    assert.ok(!asked.some((u) => u.includes('/tiny/')), 'an archetype under 4 players is not asked for');
+    let cardCalls = 0;
+    const failing = async (url) => {
+      if (url.includes('/decks?')) return { ok: true, json: async () => deckList(40) };
+      cardCalls++;
+      await new Promise((ok) => setTimeout(ok, 5));
+      return url.includes('/d0/') ? { ok: false, status: 500 } : { ok: true, json: async () => cardsOf };
+    };
+    return Meta.loadFormat('Modern', failing).then(() => assert.fail('a 500 fails the load'), async (err) => {
+      assert.equal(err.status, 500);
+      await new Promise((ok) => setTimeout(ok, 100)); // leave the other workers time to go on, if they would
+      assert.ok(cardCalls <= 4, `workers stopped after the first failure (${cardCalls} card requests)`);
+    });
+  });
+}).then(() => {
   console.log('meta test: ok');
 });

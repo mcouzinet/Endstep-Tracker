@@ -26,6 +26,7 @@ function match(id, o) {
   m.players = [{ seat: 0, name: 'guest_rZ8gWdWE' }, { seat: 1, name: o.opp }];
   m.participants = m.players.map((p) => ({ userId: 'u' + p.seat, username: p.name, isBot: p.name === 'Forge AI' })); // m2 is the one match against the AI
   m.games = o.games.map((g, i) => game(i + 1, { ...g, from: o.at + i * 14 * 60e3 }));
+  if (o.deck !== 'Burn') m.games.forEach((g) => delete g.drawn); // the replayed games are a Burn deck's
   if (o.keepBaseLogs) m.games.forEach((g, i) => { g.log = clone(base.games[i % 2].log); g.openingHand = base.games[i % 2].openingHand; });
   return m;
 }
@@ -77,9 +78,56 @@ data.decks = myDecks;
 fs.writeFileSync(__dirname + '/demo-data.js', 'window.__DATA = ' + JSON.stringify(data) + ';');
 fs.writeFileSync(__dirname + '/empty-data.js', 'window.__DATA = {};');
 
+// "cards" data: the demo plus 24 made-up Burn Bo3s against three archetypes, with the cards I drew in each game
+// (g.drawn) and my sideboarding (m.mains), for the "My cards" panel and the side plans (qa-cards.js). Seeded, so the
+// same every run; Goblin Guide drawn wins more, Lava Spike drawn loses more against Boros Energy.
+let seed = 11;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const BURN = { 'Lightning Bolt': 4, 'Goblin Guide': 4, 'Monastery Swiftspear': 4, 'Lava Spike': 4, 'Rift Bolt': 4, 'Skullcrack': 4,
+  'Boros Charm': 4, 'Eidolon of the Great Revel': 4, 'Searing Blaze': 4, 'Sacred Foundry': 4, 'Inspiring Vantage': 4, 'Mountain': 16 };
+const SIDE = { // archetype -> [in, out] after game 1
+  'Boros Energy': [{ 'Kor Firewalker': 3, 'Deflecting Palm': 2 }, { 'Lava Spike': 4, 'Rift Bolt': 1 }],
+  'Dimir Control': [{ 'Roiling Vortex': 2 }, { 'Searing Blaze': 2 }],
+  'Eldrazi Tron': [{ 'Path to Exile': 3 }, { 'Skullcrack': 3 }],
+};
+const sided = (arch, vary) => {
+  const [inn, out] = SIDE[arch];
+  const m = { ...BURN };
+  for (const [c, k] of Object.entries(out)) m[c] -= vary && k > 1 ? k - 1 : k;
+  for (const [c, k] of Object.entries(inn)) m[c] = (m[c] || 0) + (vary && k > 1 ? k - 1 : k);
+  return Object.fromEntries(Object.entries(m).filter(([, k]) => k > 0));
+};
+const cardsData = JSON.parse(JSON.stringify(data));
+const archs = Object.keys(SIDE);
+for (let i = 0; i < 24; i++) {
+  const arch = archs[i % 3];
+  const id = 'c' + i;
+  const games = [];
+  const mains = { 1: BURN };
+  let w = 0; let l = 0;
+  for (let n = 1; n <= 3 && w < 2 && l < 2; n++) {
+    const deck = n === 1 ? BURN : sided(arch, i % 4 === 3);
+    if (n > 1) mains[n] = deck;
+    const drawn = {};
+    for (const [c, k] of Object.entries(deck)) if (!/Mountain|Foundry|Vantage/.test(c) && rnd() < 1 - Math.pow(.86, k)) drawn[c] = [c + '#' + n];
+    drawn.Mountain = ['Mountain#' + n];
+    let p = .5 + (drawn['Goblin Guide'] ? .18 : -.08) + (arch === 'Boros Energy' && drawn['Lava Spike'] ? -.25 : 0);
+    const won = rnd() < p;
+    if (won) w++; else l++;
+    games.push({ first: n === 1 ? (i % 2) : (won ? 1 : 0), win: won ? 0 : 1, drawn });
+  }
+  const m = match(id, { at: now - (1 + i * 0.6) * D, result: w > l ? 'W' : 'L', opp: 'Player' + (i + 1), colors: arch === 'Dimir Control' ? 'UB' : arch === 'Boros Energy' ? 'RW' : 'C',
+    deck: 'Burn', formatId: 'Modern', ranked: true, score: [w, l], games });
+  m.games.forEach((g, k) => { g.drawn = games[k].drawn; g.openingHand = Object.keys(games[k].drawn).slice(0, 5); });
+  m.mains = mains;
+  cardsData['match:' + id] = m;
+  cardsData['note:' + id] = { archetype: arch };
+}
+fs.writeFileSync(__dirname + '/cards-data.js', 'window.__DATA = ' + JSON.stringify(cardsData) + ';');
+
 // Harness pages: the real dashboard with chrome.storage stubbed.
 const html = fs.readFileSync(P + '/dashboard.html', 'utf8');
-for (const name of ['demo', 'empty']) {
+for (const name of ['demo', 'empty', 'cards']) {
   const stub = `<script src="file://${__dirname}/${name}-data.js"></script>
 <script>
   // chrome.storage stub that replays writes/removals to onChanged listeners, like the real API.

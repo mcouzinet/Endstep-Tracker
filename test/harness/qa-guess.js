@@ -16,6 +16,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const out = {};
   out.tags = await p.evaluate(() => [...document.querySelectorAll('.match')].map((li) => [li.dataset.id, (li.querySelector('.tag') || {}).textContent || '', (li.querySelector('.tag.guess') || {}).title || '']));
   out.oppBreakdown = await p.evaluate(() => [...document.querySelectorAll('#by-opp .rec-label')].map((e) => e.textContent.trim()));
+  await p.click('#tab-history');
+  await sleep(150);
   await p.click('.match[data-id="m2"] .match-row');
   await sleep(300);
   out.guessLine = await p.evaluate(() => (document.querySelector('.match[data-id="m2"] .guess-line') || {}).textContent || '');

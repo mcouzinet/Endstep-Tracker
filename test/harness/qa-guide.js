@@ -32,13 +32,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await sleep(100);
   assert.equal(await p.evaluate(() => document.querySelector('#glance .form-tip').hidden), true);
 
-  // A square opens its match in the history; the scope only widens when it hides the match (not here: all decks).
+  // A square opens its match in the history tab; the scope only widens when it hides the match (not here: all decks).
   await click('#glance [data-show="m1"]');
   await sleep(300);
+  assert.equal(await p.evaluate(() => document.getElementById('tab-history').getAttribute('aria-selected')), 'true');
+  assert.equal(await p.evaluate(() => document.getElementById('split').hidden && !document.getElementById('history').hidden), true);
   assert.equal(await p.evaluate(() => document.querySelector('.match[data-id="m1"] .match-row').getAttribute('aria-expanded')), 'true');
   assert.equal(await p.evaluate(() => document.getElementById('f-scope').value), JSON.stringify([null, null]));
 
-  // Matchup panel on Burn · Modern: records, no side plan (left out of 1.0).
+  // Back to the matchups, with the arrow keys from the focused tab.
+  await p.focus('#tab-history');
+  await p.keyboard.press('Home');
+  await sleep(150);
+  assert.equal(await p.evaluate(() => document.activeElement.id + ' ' + !document.getElementById('split').hidden), 'tab-matchups true');
+
+  // Matchup panel on Burn · Modern: records, and no side plan typed by hand (the recorded one has its own section).
   await p.select('#f-scope', JSON.stringify(['Modern', 'Burn']));
   await sleep(200);
   await click('#by-opp button.rec[data-key="a:Dimir Control"]');

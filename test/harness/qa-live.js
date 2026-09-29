@@ -13,6 +13,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await p.evaluate(() => localStorage.clear());
   await p.reload();
   await sleep(400);
+  await p.click('#tab-history');
+  await sleep(150);
   const out = {};
   const snap = (label) => p.evaluate((l) => ({ l, rows: document.querySelectorAll('.match').length, ids: matches.map((m) => m.id).join(','), pending: !!pending, state: JSON.stringify(state), open: openId, detailRows: document.querySelectorAll('.detail').length }), label).then((r) => console.log(JSON.stringify(r)));
   // 1. open the live match + its journal, then simulate the tracker writing the record

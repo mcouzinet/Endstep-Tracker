@@ -733,5 +733,86 @@
   },
   "format_unknown": {
     "message": "Unknown format"
+  },
+  "my_cards": {
+    "message": "My cards"
+  },
+  "cards_hint": {
+    "message": "Win rate of the games where I drew each card (opening hand included), beside the games where it stayed in my library and the games where it was in my opening hand. Counted in games. The gap in points shows a link, not a cause."
+  },
+  "cards_since": {
+    "message": "Drawn cards are recorded from version 1.1 on: the Drawn and Not drawn columns fill up with your next games. Opening hands go back further."
+  },
+  "cards_none": {
+    "message": "No finished game with this deck yet."
+  },
+  "col_card": {
+    "message": "Card"
+  },
+  "col_drawn": {
+    "message": "Drawn"
+  },
+  "col_not_drawn": {
+    "message": "Not drawn"
+  },
+  "not_drawn_title": {
+    "message": "Games where the card stayed in my library"
+  },
+  "col_opening": {
+    "message": "Opening hand"
+  },
+  "opening_title": {
+    "message": "Games where the card was in my opening hand"
+  },
+  "gap_title": {
+    "message": "{d} points of win rate between the games where I drew it and the others"
+  },
+  "more_cards_one": {
+    "message": "{n} more card"
+  },
+  "more_cards_other": {
+    "message": "{n} more cards"
+  },
+  "side_plan": {
+    "message": "My sideboarding after game 1"
+  },
+  "side_in": {
+    "message": "In"
+  },
+  "side_out": {
+    "message": "Out"
+  },
+  "side_none": {
+    "message": "No sideboarding recorded against them yet. It is recorded when you sideboard between two games (from version 1.1 on)."
+  },
+  "side_needs_deck": {
+    "message": "Pick one of your decks to see your sideboarding."
+  },
+  "side_no_change": {
+    "message": "no change"
+  },
+  "side_over_one": {
+    "message": "Over {n} match with a recorded sideboarding"
+  },
+  "side_over_other": {
+    "message": "Over {n} matches with a recorded sideboarding"
+  },
+  "side_label": {
+    "message": "Sideboarding"
+  },
+  "ov_side": {
+    "message": "My usual sideboarding"
+  },
+  "views": {
+    "message": "Views"
+  },
+  "cards_needs_deck": {
+    "message": "Pick one of your decks to see its cards."
+  },
+  "by_archetype": {
+    "message": "By opponent archetype"
+  },
+  "by_card": {
+    "message": "Card by card"
   }
 }

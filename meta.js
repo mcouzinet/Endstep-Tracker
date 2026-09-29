@@ -7,6 +7,8 @@
   const MAX_DECKS = 100; // archetypes per format, by share (the tail is <0.3 % each)
   const PAGE = 50; // API maximum
   const CONCURRENCY = 4;
+  const MIN_PLAYERS = 4; // the site withholds the card list of smaller archetypes (every one seen under 4 came back empty)
+  const RESERVE = 50; // requests per rate-limit window left to endstep.cc itself (the player may be on the site)
   const UNSEEN = 0.01; // play rate assumed for a card missing from an archetype's top-50 list
   const BASICS = /^(snow-covered )?(plains|island|swamp|mountain|forest|wastes)$/;
 
@@ -47,9 +49,20 @@
     return { name: best.deck.name, slug: best.deck.slug, colours: best.deck.colours || [], p, matched: best.matched };
   }
 
-  const json = async (fetchFn, url) => {
+  // endstep.cc allows 300 requests a minute per client: keep RESERVE of them for the site itself, and on a 429
+  // wait for the window to reset instead of failing the whole format.
+  const header = (r, k) => (r.headers && r.headers.get(k)) || null;
+  const waitReset = (r) => {
+    const v = header(r, 'retry-after') || header(r, 'x-ratelimit-reset');
+    const s = v === null ? NaN : Number(v);
+    return new Promise((ok) => setTimeout(ok, 1000 * (s >= 0 && s <= 60 ? s : 60)));
+  };
+  const json = async (fetchFn, url, tries = 3) => {
     const r = await fetchFn(url);
-    if (!r.ok) throw new Error(`${r.status} ${url}`);
+    if (r.status === 429 && tries > 1) { await waitReset(r); return json(fetchFn, url, tries - 1); }
+    if (!r.ok) throw Object.assign(new Error(`${r.status} ${url}`), { status: r.status });
+    const left = header(r, 'x-ratelimit-remaining');
+    if (left !== null && Number(left) < RESERVE) await waitReset(r);
     return r.json();
   };
 
@@ -60,6 +73,8 @@
   }
 
   // One format's archetypes with their top-50 card play rates; ~1 request per archetype, so cache the result.
+  // An archetype the site refuses (4xx) is skipped. A 429 that outlasts the retries, a server or network error stops
+  // every worker at once and fails the load: nothing is fetched for a result that would be thrown away.
   async function loadFormat(formatId, fetchFn = fetch) {
     const f = encodeURIComponent(formatId);
     let items = [];
@@ -69,20 +84,29 @@
       items = items.concat(got);
       if (!got.length || items.length >= (d.decks.total || 0)) break;
     }
-    items = items.slice(0, MAX_DECKS);
+    items = items.slice(0, MAX_DECKS).filter((d) => !(d.players < MIN_PLAYERS)); // player count unknown: ask anyway
     if (!items.length) return { formatId, at: Date.now(), decks: [] };
     const decks = new Array(items.length);
     let i = 0;
+    let stop = null;
     await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
-      while (i < items.length) {
+      while (i < items.length && !stop) {
         const k = i++;
         const d = items[k];
-        const c = await json(fetchFn, `${API}/${f}/decks/${encodeURIComponent(d.slug)}/cards?pageSize=${PAGE}`);
+        let c;
+        try {
+          c = await json(fetchFn, `${API}/${f}/decks/${encodeURIComponent(d.slug)}/cards?pageSize=${PAGE}`);
+        } catch (err) {
+          if (err.status >= 400 && err.status < 500 && err.status !== 429) continue;
+          stop = stop || err;
+          break;
+        }
         const cards = {};
         for (const x of (c.cards && c.cards.items) || []) cards[x.name] = Math.round(x.playRate.rate * 1000) / 1000;
         decks[k] = { name: d.name, slug: d.slug, colours: d.colours || [], registrations: (d.share && d.share.registrations) || 0, cards };
       }
     }));
+    if (stop) throw stop;
     // Small archetypes come back without a card list (the site withholds it): nothing to recognize them by.
     return { formatId, at: Date.now(), decks: decks.filter((d) => d && Object.keys(d.cards).length) };
   }

@@ -3,6 +3,19 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## [Non publié]
+
+### Ajouté
+
+- **Mes cartes** (tableau de bord, un deck en vue) : pour chaque carte, le taux de victoire des games où je l'ai piochée, celui des games où elle est restée dans ma bibliothèque et celui des games où elle était dans ma main de départ, avec l'écart en points. Les cartes piochées s'enregistrent à partir de cette version.
+- **Mon side** : le main deck que je soumets entre deux games est enregistré. Le panneau du matchup montre ce que je fais entrer et sortir contre cet archétype, le détail d'un match montre le side de chaque game, et le panneau sur endstep.cc comme la popup rappellent mon side habituel entre deux games.
+
+### Modifié
+
+- **Tableau de bord en trois onglets** : Matchups, Mes cartes, Historique, sous le résumé (taux de victoire, 20 derniers matchs) et la barre de filtres, communs aux trois ; l'onglet ouvert est gardé d'une visite à l'autre, et un clic sur un match ouvre l'Historique. La présentation de Deck Compare passe tout en haut, sous l’en-tête.
+- **Lisibilité** : titres de section plus grands (« Par archétype adverse » au lieu de répéter l’onglet, « Carte par carte »), onglets plus visibles, barres « Selon le contexte » à la même échelle que les autres, en-tête sur deux lignes en fenêtre étroite.
+- **Reconnaissance des decks** : le chargement du métagame d'endstep.cc respecte la limite du site (300 requêtes par minute) et y laisse une marge : il attend au lieu d'échouer sur « métagame indisponible ». L'adversaire n'est comparé qu'au format de la partie, ou pour une partie libre à celui de mon deck : un seul format chargé (une partie libre en chargeait neuf). Les archétypes dont le site ne donne pas les cartes ne sont plus demandées, une archétype en erreur n'annule plus tout le format, et deux onglets du tableau de bord ne téléchargent plus la même chose.
+
 ## [1.0] (2026-09-28)
 
 Première version sur les quatre stores (Chrome Web Store, Edge Add-ons, addons.mozilla.org, Mac App Store).

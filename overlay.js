@@ -63,6 +63,8 @@
     .btn { padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-size: 12px; }
     .btn:hover { border-color: var(--gold); }
     .btn.primary { background: var(--gold); border-color: var(--gold); color: #0c0a08; font-weight: 600; }
+    .side { display: grid; gap: 2px; }
+    .side .in { color: var(--win); } .side .out { color: var(--loss); }
     @media (prefers-reduced-motion: no-preference) { .box { transition: width .15s cubic-bezier(.16, 1, .3, 1); } }
   </style><div class="box"></div>`;
   const box = root.querySelector('.box');
@@ -103,7 +105,7 @@
     const open = choice ? choice.open : phase !== 'game'; // folded while a game is played, unfolded around it
 
     const C = { notes: data.notes, decks: data.decks, t };
-    const guess = (x) => (S.archetype(x, C) ? null : S.recognize(x, data.meta, Meta, T));
+    const guess = (x) => (S.archetype(x, C) ? null : S.recognize(x, C, data.meta, Meta, T));
     const keyOf = (x) => S.oppKey(x, C, (guess(x) || {}).name);
     const session = S.records(S.lastSession(list), now).m;
     const opp = S.opps(m).map((p) => p.name).join(', ') || '?';
@@ -131,9 +133,14 @@
       const stat = (label, x) => `<span>${esc(label)} <b>${wl(x)}</b>${x.W + x.L + x.D >= 5 ? ` · ${pct(x)}` : ''}</span>`;
       const record = key === '?' ? '' : `<div><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((x) => x.result)
         ? `<p class="stats">${stat(t('matches'), r.m)}</p>` : `<p class="muted">${esc(t('popup_first_time'))}</p>`}</div>`;
+      // Between two games of a Bo3: what I usually bring in and take out against this deck.
+      const plan = phase === 'between' && key !== '?' ? S.sidePlan(vs, C) : null;
+      const side = plan && plan.matches ? `<div><h3>${esc(t('ov_side'))}</h3><p class="side">${plan.in.length || plan.out.length
+        ? `${plan.in.length ? `<span class="in">${esc(S.sideLine(plan.in, 1))}</span>` : ''}${plan.out.length ? `<span class="out">${esc(S.sideLine(plan.out, -1))}</span>` : ''}`
+        : `<span>${esc(t('side_no_change'))}</span>`}<span class="muted">${esc(I.tn('side_over', plan.matches))}</span></p></div>` : '';
       const confirm = phase === 'after' && !a && g
         ? `<button class="btn primary" tabindex="-1" data-confirm="${esc(g.name)}">${esc(t('confirm_guess', { name: g.name }))}</button>` : '';
-      body = `<div class="body">${head}<p>${arch}</p>${record}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
+      body = `<div class="body">${head}<p>${arch}</p>${record}${side}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
     }
     box.classList.toggle('open', open);
     box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${toggle}</div>${body}`;

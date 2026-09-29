@@ -19,7 +19,13 @@
     m.players = m.players.filter((p) => p && typeof p === 'object' && Number.isInteger(p.seat)).map((p) => ({ ...p, name: String(p.name || '?') }));
     m.games = m.games.filter((g) => g && typeof g === 'object' && Number.isFinite(g.n)).map((g) => ({
       ...g, mulligans: obj(g.mulligans), life: obj(g.life), seen: obj(g.seen), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
+      drawn: g.drawn === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.drawn)).filter(([, ids]) => Array.isArray(ids))),
+      openingHand: Array.isArray(g.openingHand) ? g.openingHand.filter((c) => typeof c === 'string') : undefined,
     }));
+    if (m.mains !== undefined) {
+      m.mains = Object.fromEntries(Object.entries(obj(m.mains))
+        .map(([n, c]) => [n, Object.fromEntries(Object.entries(obj(c)).filter(([, k]) => Number.isFinite(k) && k > 0))]));
+    }
     m.mySeat = Number.isInteger(m.mySeat) ? m.mySeat : null;
     m.score = Array.isArray(m.score) ? m.score.map(Number) : [];
     m.colors = obj(m.colors);
@@ -82,11 +88,15 @@
     if (m.formatId && m.formatId !== 'casual') return cap(m.formatId);
     if (m.format && m.format !== 'constructed') return cap(m.format);
     if (m.formatId === 'casual') return c.t('casual');
+    const deckFormat = deckFormatOf(m, c);
+    return deckFormat ? cap(deckFormat) : c.t('format_unknown');
+  }
+  // The format of the deck I played, when it fits the game (a Duel Commander deck does not name a constructed game).
+  function deckFormatOf(m, c) {
     const d = myDeck(m, c);
-    const deckFormat = d && obj(c.decks)[d.id] && obj(c.decks)[d.id].formatId;
+    const f = d && obj(c.decks)[d.id] && obj(c.decks)[d.id].formatId;
     const commander = (x) => /commander/i.test(x || '');
-    if (deckFormat && commander(deckFormat) === commander(`${m.gameType} ${m.format}`)) return cap(deckFormat);
-    return c.t('format_unknown');
+    return f && commander(f) === commander(`${m.gameType} ${m.format}`) ? f : null;
   }
   // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners).
   const commanderOf = (m) => (m.formatId !== 'duel-commander' ? ''
@@ -101,13 +111,23 @@
     return col ? 'c:' + col : '?';
   }
 
+  // The one metagame format (of those the site tracks) a match's opponent is compared with: the match's own, else for a
+  // casual game or missed match details the format of the deck I played; null when neither is tracked. Never all of
+  // them: each format costs endstep.cc about a hundred requests to load.
+  function metaFormat(m, c, formats) {
+    if (!Array.isArray(formats) || NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)) return null;
+    if (formats.includes(m.formatId)) return m.formatId;
+    const f = deckFormatOf(m, c);
+    return formats.includes(f) ? f : null;
+  }
+
   // The archetype endstep.cc's metagame suggests from the cards seen. meta: { formats, byFormat } as cached by the dashboard.
-  function recognize(m, meta, Meta, T) {
-    if (!meta || !Array.isArray(meta.formats) || NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)) return null;
+  function recognize(m, c, meta, Meta, T) {
+    const f = meta && metaFormat(m, c, meta.formats);
+    if (!f) return null;
     const cards = opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)));
     if (cards.filter((x) => !BASIC.test(x)).length < 2) return null;
-    const formats = meta.formats.includes(m.formatId) ? [m.formatId] : meta.formats;
-    const decks = formats.flatMap((f) => (meta.byFormat && meta.byFormat[f] && meta.byFormat[f].decks) || []);
+    const decks = (meta.byFormat && meta.byFormat[f] && meta.byFormat[f].decks) || [];
     return decks.length ? Meta.classify(cards, decks) : null;
   }
 
@@ -172,11 +192,88 @@
     return chrome.storage.local.get(keys);
   }
 
+  // --- my cards: what I drew, and what I sided in and out ---
+  // A decklist as { name: copies }, from the site's [{ name, quantity }] or a list of names.
+  function deckCounts(cards) {
+    if (!Array.isArray(cards)) return null;
+    const c = {};
+    for (const x of cards) {
+      const name = typeof x === 'string' ? x : x && x.name;
+      if (name) c[name] = (c[name] || 0) + (typeof x === 'string' ? 1 : x.quantity || 1);
+    }
+    return Object.keys(c).length ? c : null;
+  }
+  // My main deck in game n: as I submitted it when sideboarding (m.mains), else the list I registered for the match.
+  function mainOf(m, n, c) {
+    const sided = m.mains && m.mains[n];
+    if (sided && Object.keys(sided).length) return sided;
+    const d = myDeck(m, c);
+    return deckCounts((d && d.cards) || (m.limitedDeck && m.limitedDeck.deck));
+  }
+  // What game n's main deck changes from game 1's: [name, +in / -out], additions first. null when not recorded.
+  function sideChanges(m, n, c) {
+    const to = n >= 2 && m.mains && m.mains[n];
+    const from = to && mainOf(m, 1, c);
+    if (!from) return null;
+    return [...new Set([...Object.keys(from), ...Object.keys(to)])].map((name) => [name, (to[name] || 0) - (from[name] || 0)])
+      .filter(([, d]) => d).sort((a, b) => Math.sign(b[1]) - Math.sign(a[1]) || Math.abs(b[1]) - Math.abs(a[1]) || a[0].localeCompare(b[0]));
+  }
+  // My usual sideboarding in these matches: each card that went in (or out) after game 1, in how many of the matches
+  // whose sideboarding was recorded, with its usual number of copies. { matches, in: [...], out: [...] },
+  // entries { name, qty, times }, most frequent first.
+  function sidePlan(list, c) {
+    const moves = new Map(); // name -> { times, qty: Map(copies -> matches) } for additions (> 0) and cuts (< 0) apart
+    let n = 0;
+    for (const m of list) {
+      const games = Object.keys(m.mains || {}).map(Number).filter((g) => g >= 2);
+      const changes = games.map((g) => sideChanges(m, g, c)).filter(Boolean);
+      if (!changes.length) continue;
+      n++;
+      const net = new Map(); // a match counts once per card: its largest move over the games after side
+      for (const ch of changes) for (const [name, d] of ch) if (Math.abs(d) > Math.abs(net.get(name) || 0)) net.set(name, d);
+      for (const [name, d] of net) {
+        const k = (d > 0 ? '+' : '-') + name;
+        const e = moves.get(k) || { name, times: 0, qty: new Map(), dir: Math.sign(d) };
+        e.times++;
+        e.qty.set(Math.abs(d), (e.qty.get(Math.abs(d)) || 0) + 1);
+        moves.set(k, e);
+      }
+    }
+    const usual = (e) => ({ name: e.name, times: e.times, qty: [...e.qty].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0] });
+    const side = (dir) => [...moves.values()].filter((e) => e.dir === dir).map(usual)
+      .sort((a, b) => b.times - a.times || b.qty - a.qty || a.name.localeCompare(b.name));
+    return { matches: n, in: side(1), out: side(-1) };
+  }
+  // My cards' results, counted in games (a card is drawn in a game, not in a match): the games where I drew it (in my
+  // hand from turn 1 on, or played) against the games where it stayed in my library, and the games it was in my opening
+  // hand. Drawn cards are recorded since 1.1 (g.drawn): older games count for the opening hand only.
+  // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
+  function cardStats(list, c) {
+    const by = new Map();
+    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally() }).get(name);
+    for (const m of list) {
+      for (const g of m.games) {
+        const r = gRes(m, g);
+        if (!r) continue;
+        if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand)) row(name).opening[r]++;
+        if (!g.drawn) continue;
+        const drawn = new Set(Object.keys(g.drawn));
+        for (const name of drawn) row(name).drawn[r]++;
+        for (const name of Object.keys(mainOf(m, g.n, c) || {})) if (!drawn.has(name)) row(name).notDrawn[r]++;
+      }
+    }
+    return [...by.values()].filter((x) => !BASIC.test(x.name));
+  }
+
+  // The usual side plan in one line per direction for the in-page panel and the popup: "+2 Pyroblast, +1 Duress".
+  const sideLine = (xs, dir, max = 5) => xs.slice(0, max).map((x) => `${dir > 0 ? '+' : '−'}${x.qty} ${x.name}`).join(', ') + (xs.length > max ? ', …' : '');
+
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     opps, vsAI, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, recognize, lastSession, sessionOpen, records,
+    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
+    deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

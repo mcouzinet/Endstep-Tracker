@@ -53,4 +53,16 @@ assert.equal(sandbox.window.__endstepTrackerHook, true);
 const before = sandbox.window.WebSocket;
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'hook.js'), 'utf8'), sandbox);
 assert.equal(sandbox.window.WebSocket, before, 'the guard keeps the first copy');
+
+// Store build (release.sh strips the dev-only blocks): of my own actions, only the sideboarding answer is mirrored.
+const release = fs.readFileSync(path.join(__dirname, '..', 'hook.js'), 'utf8').replace(/^.*\/\/ dev-only \{[\s\S]*?\/\/ \} dev-only.*$/gm, '');
+const out = [];
+const win2 = { ...window, WebSocket: FakeWS, postMessage: (msg) => out.push(msg), addEventListener: () => {}, __endstepTrackerHook: false };
+win2.window = win2;
+vm.runInNewContext(release, { ...sandbox, window: win2 });
+const ws2 = new win2.WebSocket('wss://endstep.cc/ws');
+ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"PASS_PRIORITY"}}');
+ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"SIDEBOARD_SUBMIT","orderedCards":[0,1]}}');
+ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"DECLINE"}}');
+assert.deepEqual(out.map((m) => JSON.parse(m.data).payload.type), ['SIDEBOARD_SUBMIT', 'DECLINE'], 'store build: sideboarding only');
 console.log('hook test: ok');

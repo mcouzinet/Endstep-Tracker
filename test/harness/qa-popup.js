@@ -25,6 +25,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     data['match:m-live'].updatedAt = Date.now(); // live
     const plan = '+2 Kor Firewalker\nLeur burn : garder les points de vie';
     data['plan:' + JSON.stringify(['casual', 'Burn', 'c:BR'])] = plan; // a no-banlist match: the key holds "casual" in every language
+    // An earlier match against the same kind of deck, whose sideboarding was recorded: the usual side plan.
+    const live = data['match:m-live'];
+    const past = JSON.parse(JSON.stringify(live));
+    Object.assign(past, { id: 'm-past', status: 'complete', result: 'W', score: [2, 0], startedAt: live.startedAt - 3 * 864e5, updatedAt: live.startedAt - 3 * 864e5, endedAt: live.startedAt - 3 * 864e5 + 30 * 60e3,
+      mains: { 1: { 'Lightning Bolt': 4, 'Lava Spike': 4, Mountain: 20 }, 2: { 'Lightning Bolt': 4, 'Lava Spike': 2, 'Kor Firewalker': 2, Mountain: 20 } } });
+    past.games.forEach((g, i) => Object.assign(g, { outcome: true, winnerSeat: 0, n: i + 1 }));
+    data['match:m-past'] = past;
     const seed = async (lang) => {
       await p.evaluate(async (d, l) => { await chrome.storage.local.clear(); await chrome.storage.local.set(d); localStorage.setItem('endstep-tracker.lang', l); }, data, lang);
       await p.reload();
@@ -32,10 +39,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     };
     const text = (sel) => p.evaluate((s) => { const el = document.querySelector(s); return el ? el.textContent.replace(/\s+/g, ' ').trim() : null; }, sel);
 
-    // Match in progress, in French then in English: the record, and a stored side plan is not shown (left out of 1.0).
+    // Match in progress, in French then in English: the record and my usual sideboarding (recorded, never the plan
+    // typed by hand before 1.0).
     await seed('fr');
     assert.match(await text('main h2'), /^En cours contre Brisbane/);
-    assert.equal(await p.evaluate((pl) => document.body.textContent.includes(pl.split('\n')[0]), plan), false);
+    assert.match(await text('.side'), /^\+2 Kor Firewalker−2 Lava SpikeSur 1 match au side enregistré$/);
+    assert.equal(await p.evaluate((pl) => document.body.textContent.includes(pl.split('\n')[1]), plan), false);
     assert.equal(await text('#open'), 'Ouvrir le tableau de bord');
     await seed('en');
     assert.match(await text('main h2'), /^In progress against Brisbane/);

@@ -1,6 +1,6 @@
 # Privacy policy — Endstep Tracker
 
-*Last updated: 2026-09-23. Version française ci-dessous.*
+*Last updated: 2026-09-29. Version française ci-dessous.*
 
 Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no server and no account.
 
@@ -12,7 +12,8 @@ Only information that is visible on screen during your own games on endstep.cc:
 - player names as shown by the site (yours and your opponent's);
 - your deck (name and list, as returned by the site to your own browser);
 - opponent cards you saw (battlefield, graveyard, exile, revealed cards), colours;
-- per game: play/draw, mulligans, your opening hand, turns, life totals, duration, cards played, the game log;
+- per game: play/draw, mulligans, your opening hand, the cards you drew, turns, life totals, duration, cards played, the game log;
+- your sideboarding between games: the main deck you submit for the next game (the only one of your own actions the extension reads);
 - notes and the opponent archetype you type in the dashboard.
 
 Nothing is recorded when you are spectating.
@@ -46,7 +47,7 @@ Endstep Tracker est une extension Chrome qui enregistre les parties de Magic: Th
 
 ## Ce qui est enregistré
 
-Uniquement des informations visibles à l'écran pendant tes propres parties sur endstep.cc : métadonnées du match (date, format, classé ou non, Bo1/Bo3, score, résultat), noms des joueurs tels qu'affichés par le site, ton deck (nom et liste, tels que le site les renvoie à ton navigateur), les cartes adverses vues, et par game : play/draw, mulligans, ta main de départ, tours, points de vie, durée, cartes jouées, journal, ainsi que tes décisions en jeu (affichées sous « Mes décisions ») et les notes, archétypes et plans de side que tu saisis dans le tableau de bord. Rien n'est enregistré en mode spectateur.
+Uniquement des informations visibles à l'écran pendant tes propres parties sur endstep.cc : métadonnées du match (date, format, classé ou non, Bo1/Bo3, score, résultat), noms des joueurs tels qu'affichés par le site, ton deck (nom et liste, tels que le site les renvoie à ton navigateur), les cartes adverses vues, et par game : play/draw, mulligans, ta main de départ, les cartes que tu as piochées, tours, points de vie, durée, cartes jouées, journal, ton side entre les games (le main deck que tu soumets pour la game suivante, la seule de tes actions que l'extension lit), et les notes et archétypes que tu saisis dans le tableau de bord. Rien n'est enregistré en mode spectateur.
 
 ## Où c'est stocké
 

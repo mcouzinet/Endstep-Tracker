@@ -28,7 +28,7 @@ async function load() {
 
 function render(d) {
   const C = { notes: d.notes, decks: d.decks, t };
-  const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, d.meta, Meta, T));
+  const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
   const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= 5 ? ` · ${pct(r)}` : ''}</dd></div>`;
   const live = d.matches.find((m) => S.isLive(m));
@@ -43,12 +43,17 @@ function render(d) {
     const r = S.records(vs);
     const opp = S.opps(live).map((p) => p.name).join(', ') || '?';
     const game = live.games.length ? ` · ${t('game_n', { n: live.games[live.games.length - 1].n })}` : '';
+    // In a Bo3: what I usually bring in and take out against this deck.
+    const plan = key !== '?' && live.gamesPerMatch > 1 ? S.sidePlan(vs, C) : null;
+    const side = plan && plan.matches ? `<section><h3>${esc(t('ov_side'))}</h3><p class="side">${plan.in.length || plan.out.length
+      ? `${plan.in.length ? `<span class="in">${esc(S.sideLine(plan.in, 1))}</span>` : ''}${plan.out.length ? `<span class="out">${esc(S.sideLine(plan.out, -1))}</span>` : ''}`
+      : `<span>${esc(t('side_no_change'))}</span>`}<span class="muted">${esc(I18N.tn('side_over', plan.matches))}</span></p></section>` : '';
     html = `<section>
       <h2>${esc(t('popup_live', { opp }))}${S.pips(S.colorsOf(live), t)}<span class="muted">${esc(S.scoreText(live))}${esc(game)}</span></h2>
       <p class="arch">${a ? `<span class="tag">${esc(a)}</span>` : g ? `<span class="tag guess">${esc(g.name)}</span><span class="muted">${esc(t('recognized_pct', { p: Math.round(g.p * 100) }))}</span>` : `<span class="muted">${esc(t('popup_unknown_opp'))}</span>`}</p>
     </section>
     ${key === '?' ? '' : `<section><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((m) => m.result)
-      ? `<dl class="stats">${stat(t('matches'), r.m)}</dl>` : `<p class="note">${esc(t('popup_first_time'))}</p>`}</section>`}`;
+      ? `<dl class="stats">${stat(t('matches'), r.m)}</dl>` : `<p class="note">${esc(t('popup_first_time'))}</p>`}</section>`}${side}`;
   } else if (d.matches.length) {
     const sess = S.lastSession(d.matches);
     const title = S.sessionOpen(sess) ? t('session_now') : t('session_last', { when: S.ago(sess[0].startedAt, I18N) });

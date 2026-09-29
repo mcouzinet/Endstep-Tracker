@@ -733,5 +733,86 @@
   },
   "format_unknown": {
     "message": "Format inconnu"
+  },
+  "my_cards": {
+    "message": "Mes cartes"
+  },
+  "cards_hint": {
+    "message": "Taux de victoire des games où j’ai pioché chaque carte (main de départ comprise), à côté des games où elle est restée dans ma bibliothèque et de celles où elle était dans ma main de départ. Compté en games. L’écart en points montre un lien, pas une cause."
+  },
+  "cards_since": {
+    "message": "Les cartes piochées sont enregistrées depuis la version 1.1 : les colonnes Piochée et Pas piochée se remplissent avec tes prochaines games. Les mains de départ remontent plus loin."
+  },
+  "cards_none": {
+    "message": "Aucune game terminée avec ce deck pour l’instant."
+  },
+  "col_card": {
+    "message": "Carte"
+  },
+  "col_drawn": {
+    "message": "Piochée"
+  },
+  "col_not_drawn": {
+    "message": "Pas piochée"
+  },
+  "not_drawn_title": {
+    "message": "Games où la carte est restée dans ma bibliothèque"
+  },
+  "col_opening": {
+    "message": "Main de départ"
+  },
+  "opening_title": {
+    "message": "Games où la carte était dans ma main de départ"
+  },
+  "gap_title": {
+    "message": "{d} points de taux de victoire entre les games où je l’ai piochée et les autres"
+  },
+  "more_cards_one": {
+    "message": "{n} autre carte"
+  },
+  "more_cards_other": {
+    "message": "{n} autres cartes"
+  },
+  "side_plan": {
+    "message": "Mon side après la game 1"
+  },
+  "side_in": {
+    "message": "Entrent"
+  },
+  "side_out": {
+    "message": "Sortent"
+  },
+  "side_none": {
+    "message": "Pas encore de side enregistré contre eux. Il s’enregistre quand tu sides entre deux games (depuis la version 1.1)."
+  },
+  "side_needs_deck": {
+    "message": "Choisis un de tes decks pour voir ton side."
+  },
+  "side_no_change": {
+    "message": "aucun changement"
+  },
+  "side_over_one": {
+    "message": "Sur {n} match au side enregistré"
+  },
+  "side_over_other": {
+    "message": "Sur {n} matchs au side enregistré"
+  },
+  "side_label": {
+    "message": "Side"
+  },
+  "ov_side": {
+    "message": "Mon side habituel"
+  },
+  "views": {
+    "message": "Vues"
+  },
+  "cards_needs_deck": {
+    "message": "Choisis un de tes decks pour voir ses cartes."
+  },
+  "by_archetype": {
+    "message": "Par archétype adverse"
+  },
+  "by_card": {
+    "message": "Carte par carte"
   }
 }

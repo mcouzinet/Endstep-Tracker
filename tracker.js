@@ -12,7 +12,9 @@
   const NO_DECK = /draft|sealed|momir|fish/i; // formats where no saved deck of mine is played
   const RECENT_DECK_MS = 6 * 3600e3; // a deck picked longer ago than this is not assumed to be this match's
   // Outgoing actions that are settings or mana bookkeeping, not decisions worth reviewing.
-  const NOT_DECISIONS = new Set(['SET_PHASE_STOPS', 'SET_AUTO_YIELDS', 'TAP_MANA', 'AUTO_PAY', 'USE_FLOATING_MANA', 'UNDO', 'CHEAT', 'CONCEDE_MATCH']);
+  // Sideboarding is recorded apart (onSideboard: its orderedCards are option positions, not card ids).
+  const NOT_DECISIONS = new Set(['SET_PHASE_STOPS', 'SET_AUTO_YIELDS', 'TAP_MANA', 'AUTO_PAY', 'USE_FLOATING_MANA', 'UNDO', 'CHEAT', 'CONCEDE_MATCH',
+    'SIDEBOARD_SUBMIT', 'SIDEBOARD_WITHDRAW']);
   const ID_FIELDS = new Set(['cardId', 'targets', 'orderedCards', 'attackers', 'blockers']);
   const ACTION_META = new Set(['type', 'matchId', 'actionId', 'promptVersion', 'autoPassAfter']);
 
@@ -122,12 +124,31 @@
     return g;
   }
 
-  function see(g, seat, name, id) {
-    const bySeat = (g.seen[seat] = g.seen[seat] || {});
-    const ids = (bySeat[name] = bySeat[name] || []);
+  // name -> distinct card ids: one entry per copy.
+  function addId(bucket, name, id) {
+    const ids = (bucket[name] = bucket[name] || []);
     const key = id === undefined || id === null ? '?' : id;
     if (!ids.includes(key)) ids.push(key);
   }
+  const see = (g, seat, name, id) => addId((g.seen[seat] = g.seen[seat] || {}), name, id);
+  // My cards of a game: in my hand at some point once the hands are kept, or played. What the card stats count as drawn.
+  const drew = (g, name, id) => addId((g.drawn = g.drawn || {}), name, id);
+
+  // Sideboarding between two games: a card choice whose options are my current main deck (its first mainCount
+  // cards) then my sideboard. Commander swaps are not sideboarding.
+  const isSideboarding = (pa) => !!pa && pa.type === 'CHOOSE_CARDS' && pa.contextType === 'sideboard' && Array.isArray(pa.cardOptions)
+    && !(pa.sideboardState && pa.sideboardState.mode === 'COMMANDER_SWAP');
+  const mainCount = (pa) => (pa.sideboardState && Number.isInteger(pa.sideboardState.mainCount) ? pa.sideboardState.mainCount : pa.min) || 0;
+  // The game the sideboarding prepares, as the site numbers it.
+  function nextGame(rec, st) {
+    const ms = st.matchScore;
+    return (ms && Number.isInteger(ms.gamesPlayed) ? ms.gamesPlayed : rec.games.length) + 1; // games recorded: draws included
+  }
+  const counts = (cards) => {
+    const c = {};
+    for (const x of cards) if (x && x.name) c[x.name] = (c[x.name] || 0) + 1;
+    return c;
+  };
 
   function addColors(rec, seat, color) {
     const have = new Set(((rec.colors[seat] || '') + color).split(''));
@@ -200,12 +221,28 @@
           }
         }
       });
+      // Every card of mine in hand from turn 1 on (before, the hands are not kept yet: a mulligan shuffles them away).
+      // Only into the game being played: the score can still name the previous one after the next has begun.
+      if (rec.mySeat !== null && sg === current(rec) && Number(st.turnNumber) >= 1) {
+        for (const c of (st.players[rec.mySeat] || {}).hand || []) {
+          if (c && c.name && c.name !== 'Hidden card' && !c.faceDown && !c.isToken) drew(sg, c.name, c.id);
+        }
+      }
       // Opening hand: first turn-1 snapshot + whatever I already moved out of my hand this turn.
       if (rt.collectHand && sg === current(rec) && Number(st.turnNumber) >= 1) {
         const mine = st.players[rec.mySeat] || {};
         sg.openingHand = (mine.hand || []).map((c) => c.name).concat(rt.handOut);
         rt.collectHand = false;
+        for (const name of sg.openingHand) if (!(sg.drawn && sg.drawn[name])) drew(sg, name, null); // moved out before any snapshot
       }
+    }
+    // The main deck the sideboarding prompt shows is the one of the game just played (game 1's before game 2), as long
+    // as I have not submitted: afterwards it may already list the next game's.
+    const pa = st.pendingAction;
+    if (isSideboarding(pa) && !(pa.sideboardState && pa.sideboardState.self === 'SUBMITTED')) {
+      const n = nextGame(rec, st) - 1;
+      const shown = counts(pa.cardOptions.slice(0, mainCount(pa)));
+      if (n >= 1 && Object.keys(shown).length && !(rec.mains && rec.mains[n])) (rec.mains = rec.mains || {})[n] = shown;
     }
     if (st.status === 'COMPLETE' && (!ms || ms.isMatchOver)) finish(rec, st, now);
   }
@@ -276,6 +313,8 @@
         if (PLAYED.has(ev.type) && ev.cardName && seat !== null && seat !== rec.mySeat) {
           see(g, seat, ev.cardName, ev.cardId);
           if (ev.type === 'SPELL_CAST') ((rt.cast = rt.cast || {})[seat] = rt.cast[seat] || new Set()).add(ev.cardName);
+        } else if ((ev.type === 'SPELL_CAST' || ev.type === 'LAND_PLAYED') && ev.cardName && seat !== null && seat === rec.mySeat) {
+          drew(g, ev.cardName, ev.cardId); // played before any snapshot showed it in my hand
         }
     }
 
@@ -299,6 +338,24 @@
     rec.winnerSeat = w;
     rec.result = w === null ? 'D' : w === rec.mySeat ? 'W' : 'L';
     if (g && !g.endedAt) g.endedAt = now;
+  }
+
+  // My answer to the sideboarding prompt (hook.js mirrors this one action in every build): the main deck of the next
+  // game, kept in rec.mains by game number. orderedCards are the positions of the options I keep in the main deck;
+  // DECLINE keeps it as it was.
+  function onSideboard(store, a, now) {
+    const entry = a && store.get(a.matchId);
+    if (!entry || (a.type !== 'SIDEBOARD_SUBMIT' && a.type !== 'DECLINE')) return null;
+    const { rec, rt } = entry;
+    const pa = rt.state && rt.state.pendingAction;
+    if (!isSideboarding(pa)) return null;
+    const opts = pa.cardOptions;
+    const kept = a.type === 'DECLINE' ? opts.slice(0, mainCount(pa))
+      : Array.isArray(a.orderedCards) ? a.orderedCards.map((i) => opts[i]).filter(Boolean) : null;
+    if (!kept || !kept.length) return null;
+    (rec.mains = rec.mains || {})[nextGame(rec, rt.state)] = counts(kept);
+    rec.updatedAt = now;
+    return entry;
   }
 
   // One of my actions (hook.js mirrors outgoing GAME_ACTION frames), recorded with the prompt it answered
@@ -389,7 +446,7 @@
     return out;
   }
 
-  const Tracker = { frames, matchIdOf, handle, onAction, applyMeta, applyDelta, seenCards };
+  const Tracker = { frames, matchIdOf, handle, onSideboard, onAction, applyMeta, applyDelta, seenCards };
   if (typeof module === 'object' && module.exports) module.exports = Tracker;
   else root.EndstepTracker = Tracker;
 })(typeof self !== 'undefined' ? self : this);
