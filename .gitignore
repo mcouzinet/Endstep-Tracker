@@ -18,3 +18,6 @@ coach.js
 coach-ui.js
 coach-model.json
 coach-cards.json
+
+# Promo video renders (store/reel/render.js)
+store/reel/out/

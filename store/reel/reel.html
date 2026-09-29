@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Endstep Tracker Reel</title>
+<!--
+  15 s promo video of Endstep Tracker, 16:9 (1920x1080), rendered by render.js.
+  Same method as the Whozic reel: render(t) is a PURE function of time (no CSS animation,
+  no clock), so render.js captures it frame by frame and sfx.js lays the sound effects on
+  the same timeline, to the sample. Archetypes and cards come from test/harness/meta-Modern.json
+  (endstep.cc's public metagame); the opponent and the figures are made up, like the store
+  screenshots' demo data.
+-->
+<style>
+:root{--bg:#0c0a08;--surface:#14110d;--surface-2:#1b1712;--surface-3:#251f18;--line:#2c261e;--line-strong:#43392c;--ink:#efe7d7;--ink-2:#bfb29a;--ink-3:#8f846f;--gold:#d4ae62;--gold-hi:#ecca86;--win:#1a9f86;--loss:#e5664b}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+.layer,.scene,.panel{position:absolute;inset:0}
+.scene{display:none}
+.a{position:absolute;left:960px;top:540px;transform:translate(-50%,-50%);white-space:nowrap}
+.caps{font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+svg{display:block;overflow:visible}
+
+/* backgrounds */
+#floorWrap{overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 30%,#000 70%,transparent 100%)}
+#floor{position:absolute;left:-1100px;top:640px;width:4120px;height:1100px;transform-origin:50% 0;transform:perspective(700px) rotateX(72deg);background-size:140px 140px}
+#wall{position:absolute;left:-400px;top:-500px;width:2800px;display:flex;flex-wrap:wrap;gap:20px;transform:rotate(-8deg);filter:blur(5px)}
+#wall i{display:block;width:150px;height:210px;border-radius:12px;border:3px solid rgba(212,174,98,.35)}
+#veil{background:rgba(12,10,8,.86)}
+#wipe{background:radial-gradient(1400px 1000px at 50% 59%,#ecca86 0,#b8883d 38%,#3a2a12 72%,#0c0a08 100%)}
+#flash{background:radial-gradient(circle at 50% 55%,#fff 0,rgba(255,255,255,0) 60%);opacity:0}
+#grain{opacity:.07;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+#vig{background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.6))}
+
+/* S1 */
+.ring{border-radius:50%;border:3px solid var(--gold)}
+.ring.thin{border-width:2px;opacity:.45}
+.ico{width:220px;height:220px}
+.q{font-size:300px;font-weight:900;font-style:italic;line-height:1;color:var(--loss);text-shadow:0 0 60px rgba(229,102,75,.6)}
+.word{font-size:120px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;line-height:1}
+
+/* S2 */
+.title{font-size:170px;font-weight:900;letter-spacing:-.04em;line-height:.9;text-transform:uppercase}
+.title span{display:inline-block}
+.hl{color:var(--gold-hi);text-shadow:0 0 70px rgba(212,174,98,.5)}
+#sq{display:flex;gap:14px;align-items:center;height:60px}
+#sq i{display:block;width:44px;height:44px;border-radius:10px}
+
+/* the in-game panel */
+.card{width:820px;height:260px;border-radius:28px;background:var(--surface);border:2px solid var(--line-strong);display:flex;align-items:center;gap:34px;padding:0 34px;box-shadow:0 40px 90px -40px #000}
+.cover{width:190px;height:190px;flex:none}
+.meta{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+.meta .lab{font-size:24px;color:var(--gold-hi);display:flex;align-items:center;gap:12px}
+.meta .lab i{width:14px;height:14px;border-radius:50%;background:var(--loss);box-shadow:0 0 12px rgba(229,102,75,.8)}
+.meta .tt{font-size:54px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.meta .ar{font-size:30px;color:var(--ink-2)}
+.prog{margin-top:10px;height:10px;border-radius:5px;background:var(--surface-3);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--gold);border-radius:5px;box-shadow:0 0 16px rgba(212,174,98,.6)}
+
+/* S3: right column, beside the panel */
+#col{position:absolute;left:990px;top:0;width:930px;height:1080px;overflow:hidden}
+#col .a{left:410px}
+.qlab{font-size:32px;color:var(--gold-hi)}
+.opt{width:780px;height:116px;border-radius:24px;background:var(--surface);border:3px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px;font-size:38px;font-weight:700;color:var(--ink)}
+.opt .ck{width:60px;height:60px;border-radius:50%;background:var(--gold);color:var(--bg);display:flex;align-items:center;justify-content:center;transform:scale(0)}
+.opt.sel,.chip.sel{border-color:var(--gold);background:#231c12;box-shadow:0 0 50px rgba(212,174,98,.3),inset 0 0 30px rgba(212,174,98,.08)}
+.chip{width:380px;height:116px;border-radius:58px;background:var(--surface);border:3px solid var(--line);display:flex;align-items:center;justify-content:center;gap:14px;padding:0 24px;font-size:31px;font-weight:700}
+.pip{display:block;width:28px;height:28px;border-radius:50%;flex:none}
+.pW{background:#efe6c8}.pR{background:#c9432d}
+.vrow{display:flex;align-items:center;gap:14px;width:780px;font-size:28px;color:var(--ink-2)}
+.vrow .sp{flex:1}
+.vrow i{display:block;width:28px;height:28px;border-radius:50%;background:var(--surface-3)}
+.vrow i.on{background:var(--gold);box-shadow:0 0 16px rgba(212,174,98,.7)}
+#cd{font-size:34px;color:var(--ink)}
+.ripple{width:180px;height:180px;border-radius:50%;border:4px solid var(--gold)}
+
+/* S4 */
+.lab2{font-size:34px;color:var(--gold-hi)}
+.theme{font-size:76px;font-weight:900;letter-spacing:-.03em;line-height:1;text-align:center}
+.badge{display:flex;align-items:center;gap:14px;font-size:30px;padding:12px 26px;border-radius:40px;background:#231c12;border:2px solid rgba(212,174,98,.45);color:var(--gold-hi)}
+.slot{width:1000px;height:200px;border-radius:30px;background:var(--surface);border:3px solid var(--line-strong);overflow:hidden}
+.slot div{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:110px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em}
+.big1{font-size:100px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
+.big2{font-size:180px;font-weight:900;font-style:italic;letter-spacing:-.04em;line-height:.9;color:var(--gold-hi);text-shadow:0 0 90px rgba(212,174,98,.6)}
+.rays{width:2600px;height:2600px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(212,174,98,.2) 0deg 5deg,transparent 5deg 15deg);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 62%)}
+.pill{font-size:32px;padding:14px 34px;border-radius:44px;background:#2a1510;border:2px solid rgba(229,102,75,.5);color:#f08a73;box-shadow:0 0 28px rgba(229,102,75,.3)}
+.plus{font-size:330px;font-weight:900;font-style:italic;letter-spacing:-.05em;line-height:.8;color:var(--loss);text-shadow:0 0 110px rgba(229,102,75,.55)}
+.sent{font-size:56px;font-weight:800;letter-spacing:-.02em}
+.part{position:absolute;left:0;top:0;border-radius:4px}
+
+/* S5 */
+#cubeWrap{width:440px;height:440px;perspective:1300px;z-index:3}
+#cube{position:relative;width:440px;height:440px;transform-style:preserve-3d}
+.face{position:absolute;inset:0;border-radius:16px;background:linear-gradient(160deg,#241d14,#0c0a08 60%);border:3px solid rgba(212,174,98,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;backface-visibility:hidden;color:var(--gold-hi);text-align:center}
+.face .ft{font-size:58px;font-weight:900;letter-spacing:-.02em;line-height:.95;text-transform:uppercase;text-shadow:0 0 40px rgba(212,174,98,.45)}
+.face svg{width:130px;height:130px;filter:drop-shadow(0 0 18px rgba(212,174,98,.5))}
+.face.logoF{background:none;border:none;border-radius:0}
+.face.logoF img{display:block;width:440px;height:440px}
+.face.cap{background:#2e2619;border-color:rgba(212,174,98,.25)}
+#fbot{background:#070605}
+.shadow{width:480px;height:80px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.5),transparent)}
+
+/* S6 */
+#lockup{display:flex;align-items:center;gap:34px}
+#logo{width:150px;height:150px;flex:none}
+#logo img{display:block;width:100%;height:100%}
+#wm{font-size:124px;font-weight:800;letter-spacing:-.03em;line-height:1}
+#wm span{display:inline-block;white-space:pre}
+.slogan{font-size:50px;line-height:1.2;text-align:center;color:var(--ink-2);white-space:normal;width:1500px}
+.slogan em{font-style:italic;font-weight:900;color:var(--ink)}
+.cta{font-size:50px;font-weight:800;letter-spacing:-.01em;padding:20px 56px;border-radius:60px;background:var(--gold);color:var(--bg)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="glow"></div>
+  <div class="layer" id="wallL"><div id="wall"></div><div class="layer" id="veil"></div></div>
+  <div class="layer" id="floorWrap"><div id="floor"></div></div>
+
+  <div class="layer" id="cam">
+    <!-- S1: three beats -->
+    <section class="scene" id="s1">
+      <div class="a ring thin" id="s1r2" style="top:420px;width:600px;height:600px"></div>
+      <div class="a ring" id="s1r1" style="top:420px;width:480px;height:480px"></div>
+      <div class="a ring" id="s1w" style="top:420px;width:480px;height:480px"></div>
+      <div class="a ico" id="s1i0" style="top:420px;color:var(--gold-hi)">
+        <svg viewBox="0 0 24 24" width="220" height="220" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-7 12 12)"><rect x="5.5" y="2.5" width="13" height="19" rx="2.2"/><polyline points="8.3,16.3 10.8,13 13,14.4 16,9.6"/><circle cx="16" cy="9.6" r="1.3" fill="currentColor" stroke="none"/></g></svg>
+      </div>
+      <div class="a ico" id="s1i1" style="top:420px;color:var(--win)">
+        <svg viewBox="0 0 24 24" width="220" height="220" fill="currentColor"><rect x="2.5" y="2.5" width="5.2" height="5.2" rx="1.3"/><rect x="9.4" y="2.5" width="5.2" height="5.2" rx="1.3"/><rect x="16.3" y="2.5" width="5.2" height="5.2" rx="1.3" opacity=".35"/><rect x="2.5" y="9.4" width="5.2" height="5.2" rx="1.3"/><rect x="9.4" y="9.4" width="5.2" height="5.2" rx="1.3" opacity=".35"/><rect x="16.3" y="9.4" width="5.2" height="5.2" rx="1.3"/><rect x="2.5" y="16.3" width="5.2" height="5.2" rx="1.3"/><rect x="9.4" y="16.3" width="5.2" height="5.2" rx="1.3"/><rect x="16.3" y="16.3" width="5.2" height="5.2" rx="1.3"/></svg>
+      </div>
+      <div class="a q" id="s1i2" style="top:420px">?</div>
+      <div class="a word" id="s1t0" style="top:830px"><span style="color:var(--gold-hi)">1</span> deck.</div>
+      <div class="a word" id="s1t1" style="top:830px"><span style="color:var(--win)">40</span> matches.</div>
+      <div class="a word" id="s1t2" style="top:830px"><span style="color:var(--loss)">1</span> question.</div>
+    </section>
+
+    <!-- S2: the question -->
+    <section class="scene" id="s2">
+      <div class="layer" id="s2title">
+        <div class="a title" id="s2l1" style="top:500px"><span id="w1">What</span> <span id="w2">beats</span></div>
+        <div class="a title" id="s2l2" style="top:670px"><span class="hl" id="w3">my deck</span><span id="w4">&nbsp;?</span></div>
+      </div>
+      <div class="a" id="sq" style="top:860px"></div>
+    </section>
+
+    <!-- S3: recorded while you play -->
+    <section class="scene" id="s3">
+      <div id="col">
+        <div class="panel" id="p1">
+          <div class="a caps qlab" id="q1" style="top:300px"></div>
+        </div>
+        <div class="panel" id="p2">
+          <div class="a caps qlab" style="top:300px">02 · Opponent cards seen</div>
+        </div>
+        <div class="a vrow caps" id="vrow" style="top:830px"><span>Seen</span><i></i><i></i><i></i><i></i><i></i><i></i><span class="sp"></span><span id="cd">Turn 1</span></div>
+        <div class="a ripple" id="rip" style="opacity:0"></div>
+      </div>
+    </section>
+
+    <!-- the in-game panel and its REC disc (S2 to S3) -->
+    <div class="a card" id="card" data-d="flex" style="top:560px;display:none">
+      <div class="cover"></div>
+      <div class="meta">
+        <div class="caps lab"><i></i>REC · Modern</div>
+        <div class="tt">vs Kestrel</div>
+        <div class="ar">Burn · Game 1</div>
+        <div class="prog"><i id="progfill"></i></div>
+      </div>
+    </div>
+    <div class="a" id="disc" style="top:230px;width:260px;height:260px;display:none">
+      <svg viewBox="0 0 48 48" width="260" height="260"><circle cx="24" cy="24" r="22" fill="#0c0a08" stroke="rgba(212,174,98,.55)" stroke-width="2"/><circle cx="24" cy="24" r="17.5" fill="none" stroke="#251f18" stroke-width="1.5"/><circle cx="24" cy="24" r="13.5" fill="none" stroke="#251f18" stroke-width="1.5"/><path d="M24 4 A20 20 0 0 1 44 24" fill="none" stroke="rgba(212,174,98,.5)" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="24" r="8" fill="#e5664b"/><circle cx="24" cy="24" r="11" fill="none" stroke="rgba(229,102,75,.35)" stroke-width="2"/></svg>
+    </div>
+
+    <!-- S4: the reveal -->
+    <section class="scene" id="s4">
+      <div class="a rays" id="rays" style="top:640px;opacity:0"></div>
+      <div class="layer" id="parts"></div>
+      <div class="layer" id="thGrp">
+        <div class="a caps lab2" id="thLab" style="top:180px"></div>
+        <div class="a theme" id="thTxt" style="top:280px">On the draw · kept 7 · 6 cards seen</div>
+        <div class="a badge caps" id="thBadge" style="top:390px"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5L19.5 6.5"/></svg>Zero typing</div>
+      </div>
+      <div class="a caps lab2" id="whoLab" style="top:510px">What are they playing?</div>
+      <div class="a slot" id="slot" style="top:670px"><div id="slotA"></div><div id="slotB"></div></div>
+      <div class="layer" id="revGrp">
+        <div class="a big1" id="cetait" style="top:520px">It’s</div>
+        <div class="a big2" id="maxn" style="top:690px">Boros Energy!</div>
+      </div>
+      <div class="a ring" id="s4w" style="top:640px;width:460px;height:460px;opacity:0;border-color:var(--loss)"></div>
+      <div class="a pill caps" id="bluffPill" style="top:440px">On the draw</div>
+      <div class="a plus" id="plus3" style="top:640px">22 %</div>
+      <div class="a sent" id="sent" style="top:880px">2 wins in 9. Time to fix the sideboard.</div>
+    </section>
+
+    <!-- S5: the cube -->
+    <section class="scene" id="s5">
+      <div class="layer" id="wipe"></div>
+      <div class="a shadow" id="cshadow" style="top:830px"></div>
+      <div class="a" id="cubeWrap" style="top:520px">
+        <div id="cube">
+          <div class="face" id="f0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/></svg><div class="ft">Nothing<br>to type</div></div>
+          <div class="face" id="f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg><div class="ft">Stays<br>on your<br>computer</div></div>
+          <div class="face logoF" id="f2"><img src="../../icons/icon.svg" alt=""></div>
+          <div class="face" id="f3"></div>
+          <div class="face cap" id="ftop"></div>
+          <div class="face cap" id="fbot"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S6: the signature -->
+    <section class="scene" id="s6">
+      <div class="a" id="dwipe" style="top:540px;width:100px;height:100px;border-radius:50%;background:var(--bg)"></div>
+      <div class="a" id="lockup" style="top:400px">
+        <div id="logo"><img src="../../icons/icon.svg" alt=""></div>
+        <div id="wm"></div>
+      </div>
+      <div class="a slogan" id="slogan" style="top:570px">Every match you play on endstep.cc, <em>recorded automatically.</em></div>
+      <div class="a cta" id="cta" style="top:720px">Chrome · Edge · Firefox · Safari</div>
+      <div class="a caps" id="ctaSub" style="top:822px;font-size:26px;color:var(--ink-2)">No account · nothing to type · stays on your computer</div>
+      <div class="a" id="legal" style="top:1030px;font-size:20px;color:var(--ink-3)">Not affiliated with endstep.cc or Wizards of the Coast.</div>
+    </section>
+  </div>
+
+  <div class="layer" id="flash"></div>
+  <div class="layer" id="grain"></div>
+  <div class="layer" id="vig"></div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s)
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x)
+const P = (t, a, b) => clamp((t - a) / (b - a))
+const lerp = (a, b, x) => a + (b - a) * x
+const E = {
+  out3: (x) => 1 - (1 - x) ** 3,
+  outExpo: (x) => (x >= 1 ? 1 : 1 - 2 ** (-10 * x)),
+  inOut: (x) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2),
+  in3: (x) => x ** 3,
+  back: (x) => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2 },
+}
+function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
+
+/** Places an element anchored on its centre: x/y relative to its CSS anchor. */
+function T(el, { x = 0, y = 0, s = 1, r = 0, o = 1, b = 0 } = {}) {
+  el.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,0) scale(${s}) rotate(${r}deg)`
+  el.style.opacity = o
+  el.style.filter = b > 0.05 ? `blur(${b}px)` : 'none'
+}
+const vis = (el, on) => { el.style.display = on ? (el.dataset.d || 'block') : 'none' }
+const inR = (t, a, b) => t >= a && t < b
+
+/* ---------------------------------------------------------------- data */
+// the roll lands on NAMES[ROLL % 6]: Boros Energy
+const NAMES = ['Izzet Prowess', 'Eldrazi Tron', 'Boros Energy', 'Dimir Control', 'Living End', 'Jeskai Control']
+const CARDS = [['Guide of Souls', 'W'], ['Ragavan', 'R'], ['Ocelot Pride', 'W'], ['Galvanic Discharge', 'R'], ['Thraben Charm', 'W'], ['Goblin Bombardment', 'R']]
+const CHIP_POS = CARDS.map((_, i) => [i % 2 ? 610 : 210, 440 + Math.floor(i / 2) * 140])
+const ROWS = ['On the draw', 'Kept 7', 'Opponent: mulligan to 6']
+const ROW_Y = [440, 580, 720]
+const CHECKS = [4.35, 4.55, 4.75]
+const SEEN = [5.45, 5.68, 5.91, 6.14, 6.37, 6.6]
+const STEPS = [6.0, 6.25, 6.5, 6.75]
+const S1C = ['#d4ae62', '#1a9f86', '#e5664b']
+const S1G = ['rgba(212,174,98,.55)', 'rgba(26,159,134,.55)', 'rgba(229,102,75,.55)']
+const R_MAX = 8.43, B_LUFF = 9.0, ROLL = 26
+const WORDMARK = 'Endstep Tracker'
+
+/* Impacts: shake and flash, timed on the sound effects. */
+const SHAKES = [[0, 8], [0.6, 8], [1.2, 8], [1.8, 16], [2.15, 10], [7.15, 10], [8.43, 26], [B_LUFF, 18], [10.85, 14], [12.7, 6]]
+const FLASHES = [[1.8, 0.5], [8.43, 0.85], [B_LUFF, 0.3]]
+
+/* ---------------------------------------------------------------- build */
+const p1 = $('#p1'), p2 = $('#p2')
+ROWS.forEach((txt, i) => {
+  const o = document.createElement('div')
+  o.className = 'a opt'
+  o.id = 'o' + i
+  o.style.top = ROW_Y[i] + 'px'
+  o.innerHTML = `<span>${txt}</span><span class="ck"><svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5L19.5 6.5"/></svg></span>`
+  p1.appendChild(o)
+})
+CARDS.forEach(([n, c], i) => {
+  const el = document.createElement('div')
+  el.className = 'a chip'
+  el.id = 'c' + i
+  el.style.left = CHIP_POS[i][0] + 'px'
+  el.style.top = CHIP_POS[i][1] + 'px'
+  el.innerHTML = `<i class="pip p${c}"></i><span>${n}</span>`
+  p2.appendChild(el)
+})
+// the last results of S2: a win or a loss per square
+'WWLWWLWLW'.split('').forEach((r) => { const i = document.createElement('i'); i.style.background = r === 'W' ? 'var(--win)' : 'var(--loss)'; $('#sq').appendChild(i) })
+// wall of abstract cards in the five Magic colours: no card art (no rights)
+{
+  const R = rng(7), wall = $('#wall')
+  const hues = ['#efe6c8', '#2f76c0', '#4b4139', '#c9432d', '#2d8550', '#d4ae62']
+  for (let k = 0; k < 16 * 12; k++) {
+    const i = document.createElement('i')
+    const c1 = hues[Math.floor(R() * hues.length)], c2 = hues[Math.floor(R() * hues.length)]
+    const kind = Math.floor(R() * 4), a = Math.floor(R() * 360)
+    i.style.background = [
+      `radial-gradient(circle at 50% 38%, ${c1} 0 22%, transparent 23%), linear-gradient(${a}deg, #1b1712, ${c2}66)`,
+      `linear-gradient(180deg, ${c1}cc 0 46%, #14110d 46% 54%, ${c2}55 54%)`,
+      `repeating-linear-gradient(${a}deg, ${c1}aa 0 26px, #14110d 26px 64px)`,
+      `conic-gradient(from ${a}deg, ${c1}, ${c2}, ${c1})`,
+    ][kind]
+    wall.appendChild(i)
+  }
+}
+// sparks of the reveal
+const PARTS = []
+{
+  const R = rng(3), host = $('#parts'), cols = ['#e5664b', '#ecca86']
+  for (let k = 0; k < 34; k++) {
+    const d = document.createElement('div')
+    d.className = 'part'
+    const sz = 12 + R() * 22
+    d.style.width = sz + 'px'
+    d.style.height = (R() < 0.5 ? sz : sz * 0.4) + 'px'
+    d.style.background = cols[k % cols.length]
+    d.style.borderRadius = R() < 0.4 ? '50%' : '4px'
+    host.appendChild(d)
+    PARTS.push({ el: d, a: (k / 34) * Math.PI * 2 + R() * 0.3, D: 300 + R() * 420, spin: (R() - 0.5) * 900, sz })
+  }
+}
+// cube faces
+{
+  const tz = 'translateZ(220px)'
+  $('#f0').style.transform = `rotateY(0deg) ${tz}`
+  $('#f1').style.transform = `rotateY(90deg) ${tz}`
+  $('#f2').style.transform = `rotateY(180deg) ${tz}`
+  $('#f3').style.transform = `rotateY(270deg) ${tz}`
+  $('#ftop').style.transform = `rotateX(90deg) ${tz}`
+  $('#fbot').style.transform = `rotateX(-90deg) ${tz}`
+}
+WORDMARK.split('').forEach((ch) => { const s = document.createElement('span'); s.textContent = ch; $('#wm').appendChild(s) })
+
+let LOGO = { x: 0, y: 0 }
+window.__ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode())]).then(() => {
+  // final position of the logo (the cube lands there)
+  const s6 = $('#s6'); s6.style.display = 'block'
+  T($('#lockup'))
+  const r = $('#logo').getBoundingClientRect()
+  LOGO = { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+  s6.style.display = ''
+  return true
+})
+
+/* ---------------------------------------------------------------- render */
+function shake(t) {
+  let x = 0, y = 0
+  for (const [t0, A] of SHAKES) {
+    const u = t - t0
+    if (u < 0 || u > 0.5) continue
+    const k = A * Math.exp(-u * 12)
+    x += k * Math.sin(u * 97)
+    y += k * Math.cos(u * 83)
+  }
+  return [x, y]
+}
+function typed(txt, q) { return txt.slice(0, Math.round(txt.length * q)) }
+
+function render(t) {
+  const [sx, sy] = shake(t)
+  $('#cam').style.transform = `translate(${sx}px,${sy}px)`
+  let fl = 0
+  for (const [t0, A] of FLASHES) if (t >= t0 && t < t0 + 0.25) fl = Math.max(fl, A * Math.exp(-(t - t0) * 28))
+  $('#flash').style.opacity = fl
+
+  // backgrounds
+  $('#floorWrap').style.opacity = t < 1.8 ? 0.35 : t < 10.8 ? 0.14 : t < 12.5 ? 0 : 0.28 * P(t, 12.6, 13.2)
+  const fc = t < 1.8 ? S1C[Math.min(2, Math.floor(t / 0.6))] : '#d4ae62'
+  $('#floor').style.backgroundImage = `linear-gradient(${fc}80 3px,transparent 3px),linear-gradient(90deg,${fc}80 3px,transparent 3px)`
+  $('#floor').style.backgroundPosition = `0 ${(t * 140) % 140}px`
+  $('#wallL').style.opacity = inR(t, 1.8, 7.25) ? P(t, 1.8, 2.2) * (1 - P(t, 7.0, 7.25)) : t >= 12.6 ? 0.8 * P(t, 12.8, 13.6) : 0
+  $('#wall').style.transform = `rotate(-8deg) translateY(${-t * 40}px)`
+  let glowC = 'rgba(212,174,98,.14)'
+  if (t < 1.8) glowC = ['rgba(212,174,98,.2)', 'rgba(26,159,134,.2)', 'rgba(229,102,75,.2)'][Math.min(2, Math.floor(t / 0.6))]
+  else if (inR(t, R_MAX, 10.8)) glowC = t < B_LUFF ? 'rgba(212,174,98,.24)' : 'rgba(229,102,75,.24)'
+  $('#glow').style.background = `radial-gradient(1300px 900px at 50% 45%, ${glowC}, transparent 70%)`
+
+  S1(t); S2(t); S3(t); S4(t); S5(t); S6(t)
+}
+
+function S1(t) {
+  const on = t < 1.8
+  vis($('#s1'), on)
+  if (!on) return
+  const bi = Math.min(2, Math.floor(t / 0.6)), u = t - bi * 0.6, c = S1C[bi]
+  const zoom = 1 + 0.035 * (u / 0.6)
+  const r1 = $('#s1r1'), r2 = $('#s1r2'), w = $('#s1w')
+  r1.style.borderColor = c; r2.style.borderColor = c; w.style.borderColor = c
+  r1.style.boxShadow = `0 0 60px ${S1G[bi]}, inset 0 0 60px ${S1G[bi]}`
+  T(r1, { s: lerp(0.55, 1, E.outExpo(P(u, 0, 0.4))) * zoom, o: P(u, 0, 0.05) })
+  T(r2, { s: lerp(0.7, 1, E.outExpo(P(u, 0.04, 0.45))) * zoom, o: 0.45 * P(u, 0.04, 0.1) })
+  T(w, { s: lerp(0.95, 1.9, E.out3(P(u, 0, 0.5))), o: 0.9 * (1 - P(u, 0, 0.5)) })
+  for (let i = 0; i < 3; i++) {
+    const ic = $('#s1i' + i), wd = $('#s1t' + i)
+    if (i !== bi) { ic.style.opacity = 0; wd.style.opacity = 0; continue }
+    let s = lerp(1.7, 1, E.back(P(u, 0, 0.3))) * zoom, o = P(u, 0, 0.06), b = lerp(18, 0, P(u, 0, 0.16))
+    let ws = zoom, wo = P(u, 0.04, 0.1), wy = lerp(80, 0, E.outExpo(P(u, 0.04, 0.32))), wb = lerp(12, 0, P(u, 0.04, 0.2))
+    if (bi < 2 && u > 0.53) { const k = P(u, 0.53, 0.6); s *= 1 + 0.2 * k; o *= 1 - k; ws *= 1 + 0.08 * k; wo *= 1 - k; b = 10 * k; wb = 8 * k }
+    if (bi === 2 && u > 0.5) { const k = E.in3(P(u, 0.5, 0.6)); s *= 1 + 4 * k; o *= 1 - k; ws *= 1 + 0.5 * k; wo *= 1 - k; b = 20 * k; wb = 12 * k }
+    T(ic, { s, o, b, r: lerp(-8, 0, E.out3(P(u, 0, 0.3))) })
+    ic.style.filter = (b > 0.05 ? `blur(${b}px) ` : '') + `drop-shadow(0 0 40px ${S1G[i]})`
+    T(wd, { y: wy, s: ws, o: wo, b: wb })
+  }
+  if (bi === 2 && u > 0.5) { const k = E.in3(P(u, 0.5, 0.6)); T(r1, { s: 1 + 3 * k, o: 1 - k }); T(r2, { s: 1 + 3 * k, o: 0.45 * (1 - k) }) }
+}
+
+function S2(t) {
+  const on = inR(t, 1.8, 3.9)
+  vis($('#s2'), on)
+  if (!on) return
+  const words = [['#w1', 1.8], ['#w2', 1.95], ['#w3', 2.15], ['#w4', 2.4]]
+  for (const [id, t0] of words) {
+    const el = $(id), k = P(t, t0, t0 + 0.22)
+    const isQ = id === '#w4'
+    el.style.opacity = P(t, t0, t0 + 0.04)
+    el.style.transform = isQ ? `scale(${lerp(2.2, 1, E.back(k))}) rotate(${lerp(-30, 0, E.back(k))}deg)` : `scale(${lerp(1.9, 1, E.outExpo(k))})`
+    el.style.filter = k < 0.6 ? `blur(${lerp(22, 0, P(k, 0, 0.6))}px)` : 'none'
+  }
+  // the title rises when the panel comes in, then fades out
+  const k = E.inOut(P(t, 2.9, 3.15)), ko = P(t, 3.7, 3.85)
+  $('#s2title').style.transformOrigin = '960px 585px'
+  $('#s2title').style.transform = `translateY(${lerp(0, -350, k) - 100 * ko}px) scale(${lerp(1, 0.5, k)})`
+  $('#s2title').style.opacity = 1 - ko
+  ;[...document.querySelectorAll('#sq i')].forEach((q, i) => {
+    q.style.transform = `scale(${0.8 + 0.3 * Math.max(0, Math.sin(t * 7 - i * 0.55))})`
+  })
+  T($('#sq'), { o: P(t, 2.2, 2.35) * (1 - P(t, 2.9, 3.05)), s: lerp(0.6, 1, E.back(P(t, 2.2, 2.45))) })
+}
+
+/** The in-game panel: comes in during S2, moves left for S3, leaves at the reveal. */
+function cardState(t) {
+  const kIn = E.outExpo(P(t, 3.12, 3.5)), kUp = E.inOut(P(t, 3.7, 4.0)), kOut = E.in3(P(t, 6.98, 7.22))
+  return { x: lerp(0, -400, kUp), y: lerp(300, 0, kIn), s: lerp(1, 0.95, kUp) * lerp(1, 0.85, kOut), o: P(t, 3.12, 3.22) * (1 - kOut), b: 10 * kOut }
+}
+function Card(t) {
+  const on = inR(t, 3.1, 7.25)
+  vis($('#card'), on)
+  const dOn = inR(t, 1.8, 7.25)
+  vis($('#disc'), dOn)
+  const c = cardState(t)
+  if (on) {
+    T($('#card'), c)
+    $('#progfill').style.width = 100 * P(t, 3.0, 7.0) * 0.8 + 6 + '%'
+  }
+  if (dOn) {
+    // the REC disc: big above the title, then set into the panel
+    const kv = E.inOut(P(t, 2.92, 3.32))
+    const coverX = c.x - 281 * c.s, coverY = 560 + c.y - 230
+    const s0 = lerp(0, 1, E.back(P(t, 1.8, 2.15)))
+    T($('#disc'), { x: lerp(0, coverX, kv), y: lerp(0, coverY, kv), s: lerp(s0, (190 / 260) * c.s, kv), o: 1 - E.in3(P(t, 6.98, 7.22)), b: c.b, r: t * 160 })
+  }
+}
+
+function S3(t) {
+  Card(t)
+  const on = inR(t, 3.7, 7.25)
+  vis($('#s3'), on)
+  if (!on) return
+  const kOut = E.in3(P(t, 6.98, 7.22)), s3 = $('#s3')
+  s3.style.transformOrigin = '960px 540px'
+  s3.style.transform = `scale(${lerp(1, 0.85, kOut)})`
+  s3.style.opacity = 1 - kOut
+  s3.style.filter = kOut > 0.02 ? `blur(${10 * kOut}px)` : 'none'
+  // panel 1: what the tracker writes down by itself
+  $('#p1').style.transform = `translateX(${-930 * E.inOut(P(t, 5.0, 5.35))}px)`
+  $('#p2').style.transform = `translateX(${930 * (1 - E.inOut(P(t, 5.05, 5.4)))}px)`
+  const q1 = $('#q1')
+  q1.textContent = typed('01 · Recorded for you', P(t, 3.85, 4.2))
+  T(q1, { o: P(t, 3.85, 3.9) })
+  ROWS.forEach((_, i) => {
+    const t0 = 3.95 + i * 0.08, hit = CHECKS[i], el = $('#o' + i)
+    el.classList.toggle('sel', t >= hit)
+    T(el, { y: lerp(70, 0, E.outExpo(P(t, t0, t0 + 0.35))), o: P(t, t0, t0 + 0.12), s: 1 + 0.04 * Math.sin(Math.PI * P(t, hit - 0.03, hit + 0.15)) })
+    el.querySelector('.ck').style.transform = `scale(${E.back(P(t, hit, hit + 0.24))})`
+  })
+  const rp = $('#rip')
+  rp.style.opacity = 0
+  for (let i = 0; i < 3; i++) {
+    const kr = P(t, CHECKS[i], CHECKS[i] + 0.4)
+    if (kr > 0 && kr < 1) T(rp, { x: 326, y: ROW_Y[i] - 540, s: lerp(0.2, 1.4, E.out3(kr)), o: 0.8 * (1 - kr) })
+  }
+  // panel 2: the opponent's cards, as they hit the table
+  CARDS.forEach((_, i) => {
+    const t0 = SEEN[i], el = $('#c' + i)
+    el.classList.toggle('sel', inR(t, t0, t0 + 0.35))
+    T(el, { s: lerp(0.6, 1, E.back(P(t, t0, t0 + 0.3))), o: P(t, t0, t0 + 0.1) })
+  })
+  T($('#vrow'), { o: P(t, 5.3, 5.45), y: lerp(30, 0, E.out3(P(t, 5.3, 5.5))) })
+  const n = SEEN.filter((s) => t >= s).length
+  document.querySelectorAll('#vrow i').forEach((d, j) => d.classList.toggle('on', j < n))
+  const passed = STEPS.filter((s) => t >= s).length, cd = $('#cd')
+  cd.textContent = 'Turn ' + (1 + passed)
+  const last = passed ? STEPS[passed - 1] : -9
+  cd.style.display = 'inline-block'
+  cd.style.transform = `scale(${1 + 0.25 * (1 - P(t, last, last + 0.15))})`
+}
+
+function S4(t) {
+  const on = inR(t, 7.0, 10.8)
+  vis($('#s4'), on)
+  if (!on) return
+  $('#s4').style.transformOrigin = '960px 660px'
+  $('#s4').style.transform = `scale(${1 + 0.06 * E.in3(P(t, 7.5, R_MAX)) * (1 - E.outExpo(P(t, R_MAX, R_MAX + 0.4)))})`
+  // the game so far
+  const kGo = E.inOut(P(t, 8.78, 9.02)), thGrp = $('#thGrp')
+  thGrp.style.transform = `translateY(${-80 * kGo}px)`
+  thGrp.style.opacity = 1 - kGo
+  $('#thLab').textContent = typed('Game 1', P(t, 7.16, 7.28))
+  T($('#thLab'), { o: P(t, 7.16, 7.2) })
+  T($('#thTxt'), { s: lerp(1.6, 1, E.back(P(t, 7.15, 7.32))), r: lerp(-4, -1.5, E.out3(P(t, 7.15, 7.32))), o: P(t, 7.15, 7.18), b: lerp(14, 0, P(t, 7.15, 7.2)) })
+  T($('#thBadge'), { s: E.back(P(t, 7.45, 7.7)), o: P(t, 7.45, 7.5) })
+  // which archetype? the roll
+  T($('#whoLab'), { o: t < R_MAX ? P(t, 7.5, 7.58) : 0 })
+  const slotOn = inR(t, 7.5, R_MAX)
+  vis($('#slot'), slotOn)
+  if (slotOn) {
+    T($('#slot'), { s: lerp(0.8, 1, E.back(P(t, 7.5, 7.7))), o: P(t, 7.5, 7.56) })
+    const q = P(t, 7.55, R_MAX)
+    const idx = ROLL * (1 - (1 - q) ** 2.4)
+    const f = Math.floor(idx), fr = idx - f
+    const speed = (ROLL * 2.4 * (1 - q) ** 1.4) / (R_MAX - 7.55)
+    const A = $('#slotA'), B = $('#slotB')
+    A.textContent = NAMES[f % 6]; B.textContent = NAMES[(f + 1) % 6]
+    const bl = clamp(speed * 0.35, 0, 9)
+    A.style.transform = `translateY(${-fr * 200}px)`; A.style.filter = `blur(${bl}px)`
+    B.style.transform = `translateY(${(1 - fr) * 200}px)`; B.style.filter = `blur(${bl}px)`
+  }
+  // It's Boros Energy!
+  const revOn = t >= R_MAX, revGrp = $('#revGrp')
+  revGrp.style.display = revOn ? '' : 'none'
+  if (revOn) {
+    const kUp = E.inOut(P(t, 8.78, 9.05))
+    revGrp.style.transformOrigin = '960px 605px'
+    revGrp.style.transform = `translateY(${lerp(0, -360, kUp)}px) scale(${lerp(1, 0.55, kUp)})`
+    T($('#cetait'), { y: lerp(40, 0, E.outExpo(P(t, R_MAX, R_MAX + 0.25))), o: P(t, R_MAX, R_MAX + 0.06) })
+    T($('#maxn'), { s: lerp(2.6, 1, E.outExpo(P(t, R_MAX, R_MAX + 0.3))), o: P(t, R_MAX, R_MAX + 0.04), b: lerp(24, 0, P(t, R_MAX, R_MAX + 0.08)), r: lerp(-6, -3, P(t, R_MAX, R_MAX + 0.3)) })
+  }
+  T($('#rays'), { s: lerp(0.4, 1.1, E.outExpo(P(t, R_MAX, R_MAX + 0.5))), o: 0.9 * P(t, R_MAX, R_MAX + 0.1), r: t * 14, y: lerp(0, -40, P(t, 8.78, 9.05)) })
+  // your record against it
+  const uw = t - B_LUFF
+  T($('#s4w'), { s: lerp(0.3, 3, E.out3(P(uw, 0, 0.6))), o: uw >= 0 ? 0.9 * (1 - P(uw, 0, 0.6)) : 0 })
+  T($('#plus3'), { s: lerp(2.4, 1, E.outExpo(P(t, B_LUFF, B_LUFF + 0.32))) * (1 + 0.02 * Math.sin(t * 6)), o: P(t, B_LUFF, B_LUFF + 0.05), b: lerp(26, 0, P(t, B_LUFF, B_LUFF + 0.18)), r: lerp(-14, -4, E.outExpo(P(t, B_LUFF, B_LUFF + 0.4))) })
+  T($('#bluffPill'), { s: E.back(P(t, B_LUFF + 0.12, B_LUFF + 0.4)), o: P(t, B_LUFF + 0.12, B_LUFF + 0.16), r: -3 })
+  T($('#sent'), { y: lerp(40, 0, E.outExpo(P(t, 9.3, 9.55))), o: P(t, 9.3, 9.4) })
+  const up = t - (B_LUFF + 0.03)
+  for (const p of PARTS) {
+    if (up < 0) { p.el.style.opacity = 0; continue }
+    const r = p.D * E.outExpo(P(up, 0, 0.8))
+    const x = 960 + Math.cos(p.a) * r - p.sz / 2, y = 640 + Math.sin(p.a) * r * 0.75 + 220 * up * up - p.sz / 2
+    p.el.style.transform = `translate(${x}px,${y}px) rotate(${p.spin * up}deg)`
+    p.el.style.opacity = 1 - P(up, 0.45, 1.0)
+  }
+}
+
+function S5(t) {
+  const on = inR(t, 10.5, 12.75)
+  vis($('#s5'), on)
+  if (!on) return
+  // the gold wave starts from the figure
+  $('#wipe').style.clipPath = `circle(${lerp(0, 1300, E.inOut(P(t, 10.5, 10.8)))}px at 960px 640px)`
+  // the cube falls, turns twice, then lands as the logo
+  const drop = E.in3(P(t, 10.62, 10.85)), hop = 40 * Math.sin(Math.PI * P(t, 10.85, 11.0))
+  const turns = E.back(P(t, 11.35, 11.61)) + E.inOut(P(t, 12.2, 12.5))
+  const kL = E.inOut(P(t, 12.3, 12.7))
+  const sway = (1 - kL) * 5 * Math.sin(t * 2.4)
+  const rx = lerp(lerp(-40, -14, drop), 0, kL)
+  const ry = -90 * turns - 22 * (1 - kL) + sway
+  $('#cube').style.transform = `translateZ(-220px) rotateX(${rx}deg) rotateY(${ry}deg)`
+  const cx = lerp(0, LOGO.x - 960, kL), cy = lerp(lerp(-1100, 0, drop) - hop, LOGO.y - 520, kL)
+  T($('#cubeWrap'), { x: cx, y: cy, s: lerp(1, 150 / 440, kL), o: P(t, 10.62, 10.66) })
+  T($('#cshadow'), { s: lerp(0.3, 1, drop) * (1 - kL), o: 0.9 * drop * (1 - kL) })
+}
+
+function S6(t) {
+  const on = t >= 12.3
+  vis($('#s6'), on)
+  if (!on) return
+  // the dark background comes back from the logo
+  const kd = E.inOut(P(t, 12.35, 12.65))
+  T($('#dwipe'), { x: LOGO.x - 960, y: LOGO.y - 540, s: lerp(0, 50, kd), o: 1 - P(t, 12.9, 13.4) })
+  $('#s6').style.transformOrigin = '960px 540px'; $('#s6').style.transform = `scale(${lerp(1, 1.04, P(t, 13.0, 15.0))})`
+  $('#logo').style.opacity = t >= 12.7 ? 1 : 0
+  $('#logo').style.filter = `drop-shadow(0 0 28px rgba(212,174,98,${(0.35 * P(t, 12.7, 13.1)).toFixed(3)}))`
+  T($('#lockup'))
+  document.querySelectorAll('#wm span').forEach((sp, i) => {
+    const t0 = 12.62 + i * 0.035, k = P(t, t0, t0 + 0.25)
+    sp.style.opacity = P(t, t0, t0 + 0.06)
+    sp.style.transform = `translateX(${lerp(-60, 0, E.outExpo(k))}px) skewX(${lerp(-18, 0, E.outExpo(k))}deg)`
+    sp.style.filter = k < 0.7 ? `blur(${lerp(14, 0, k / 0.7)}px)` : 'none'
+  })
+  T($('#slogan'), { y: lerp(40, 0, E.outExpo(P(t, 12.8, 13.15))), o: P(t, 12.8, 12.95) })
+  const cta = $('#cta')
+  T(cta, { s: lerp(0.6, 1, E.back(P(t, 13.05, 13.35))), o: P(t, 13.05, 13.1) })
+  T($('#ctaSub'), { y: lerp(20, 0, E.outExpo(P(t, 13.2, 13.45))), o: P(t, 13.2, 13.3) })
+  T($('#legal'), { o: P(t, 13.3, 13.6) })
+  const pulse = 0.35 + 0.2 * (0.5 + 0.5 * Math.sin((t - 13.35) * 4))
+  cta.style.boxShadow = `0 0 ${50 + 30 * pulse}px rgba(212,174,98,${pulse})`
+}
+
+window.__render = render
+</script>
+<script src="sfx.js"></script>
+</body>
+</html>
