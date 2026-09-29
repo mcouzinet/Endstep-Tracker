@@ -33,7 +33,7 @@ The dashboard opens on the deck you play most:
 
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
 
-• Opponent cards seen, with card preview on hover, and automatic archetype recognition from endstep.cc's public metagame (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
+• Opponent cards seen, with card preview on hover, and automatic archetype recognition from endstep.cc's public metagame.
 
 • Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 5 results.
 
@@ -67,7 +67,7 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
 
-• Cartes adverses vues, aperçu au survol, et reconnaissance automatique de l'archétype grâce au métagame public d'endstep.cc (Pauper, Modern, Legacy, Vintage, Premodern, Duel Commander…).
+• Cartes adverses vues, aperçu au survol, et reconnaissance automatique de l'archétype grâce au métagame public d'endstep.cc.
 
 • Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 5 résultats.
 
@@ -78,6 +78,8 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni serveur, ni compte, ni analytique, ni publicité. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
 
 Non affilié à endstep.cc ni à Wizards of the Coast.
+
+Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because of a list of formats in these descriptions: never list formats, archetypes or card names in a description.
 
 ## Privacy tab
 
