@@ -738,10 +738,10 @@
     "message": "My cards"
   },
   "cards_hint": {
-    "message": "Win rate of the games where I drew each card (opening hand included), beside the games where it stayed in my library and the games where it was in my opening hand. Counted in games. The gap in points shows a link, not a cause."
+    "message": "Counted in games. Next to each card: the gap in points between Drawn and Not drawn."
   },
   "cards_since": {
-    "message": "Drawn cards are recorded from version 1.1 on: the Drawn and Not drawn columns fill up with your next games. Opening hands go back further."
+    "message": "Drawn cards are recorded since 1.1: Drawn and Not drawn fill up with your next games."
   },
   "cards_none": {
     "message": "No finished game with this deck yet."
@@ -783,7 +783,7 @@
     "message": "Out"
   },
   "side_none": {
-    "message": "No sideboarding recorded against them yet. It is recorded when you sideboard between two games (from version 1.1 on)."
+    "message": "No sideboarding recorded against them yet. It is recorded each time you sideboard, since 1.1."
   },
   "side_needs_deck": {
     "message": "Pick one of your decks to see your sideboarding."
