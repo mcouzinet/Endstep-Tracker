@@ -1,6 +1,6 @@
 # Privacy policy — Endstep Tracker
 
-*Last updated: 2026-09-29. Version française ci-dessous.*
+*Last updated: 2026-10-01. Version française ci-dessous.*
 
 Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no server and no account.
 
@@ -16,6 +16,8 @@ Only information that is visible on screen during your own games on endstep.cc:
 - your sideboarding between games: the main deck you submit for the next game (the only one of your own actions the extension reads);
 - notes and the opponent archetype you type in the dashboard.
 
+If you choose "Import my past matches" in the dashboard, your match history page on endstep.cc opens, and while you browse it the matches it lists that were not recorded yet are added the same way, with what that page shows: date, opponent's name, format, ranked or not, score, result, your deck's name.
+
 Nothing is recorded when you are spectating.
 
 ## Where it is stored
@@ -24,7 +26,7 @@ Everything stays in your browser, in the extension's local storage (`chrome.stor
 
 ## Network requests the extension makes
 
-- **endstep.cc**: the extension only observes the traffic the site already exchanges with your browser. To recognise the opponent's archetype it also reads the site's public metagame API (`/api/metagame/v1`), which involves no personal data. It never sends anything to endstep.cc on your behalf and never plays for you.
+- **endstep.cc**: the extension only observes the traffic the site already exchanges with your browser. To recognise the opponent's archetype it also reads the site's public metagame API (`/api/metagame/v1`), which involves no personal data. It never plays for you, and sends nothing to endstep.cc on your behalf, with one exception you start yourself: when you import your past matches, it loads the next pages of your match history, one a second, with the same request the site makes for its first page (your sign-in stays in the endstep.cc page; the extension never stores or sends it anywhere else).
 - **Scryfall** (`api.scryfall.com`): when you hover a card name in the dashboard, the card image is fetched from Scryfall. The request contains only the card name.
 - **Deck Compare** (another extension by the same author): the dashboard asks it, inside your browser, whether it is installed, to stop showing its promotion if so. The message says only that; nothing else is exchanged and nothing leaves your browser. The store link in that promotion opens only if you click it.
 
@@ -47,7 +49,7 @@ Endstep Tracker est une extension Chrome qui enregistre les parties de Magic: Th
 
 ## Ce qui est enregistré
 
-Uniquement des informations visibles à l'écran pendant tes propres parties sur endstep.cc : métadonnées du match (date, format, classé ou non, Bo1/Bo3, score, résultat), noms des joueurs tels qu'affichés par le site, ton deck (nom et liste, tels que le site les renvoie à ton navigateur), les cartes adverses vues, et par game : play/draw, mulligans, ta main de départ, les cartes que tu as piochées, tours, points de vie, durée, cartes jouées, journal, ton side entre les games (le main deck que tu soumets pour la game suivante, la seule de tes actions que l'extension lit), et les notes et archétypes que tu saisis dans le tableau de bord. Rien n'est enregistré en mode spectateur.
+Uniquement des informations visibles à l'écran pendant tes propres parties sur endstep.cc : métadonnées du match (date, format, classé ou non, Bo1/Bo3, score, résultat), noms des joueurs tels qu'affichés par le site, ton deck (nom et liste, tels que le site les renvoie à ton navigateur), les cartes adverses vues, et par game : play/draw, mulligans, ta main de départ, les cartes que tu as piochées, tours, points de vie, durée, cartes jouées, journal, ton side entre les games (le main deck que tu soumets pour la game suivante, la seule de tes actions que l'extension lit), et les notes et archétypes que tu saisis dans le tableau de bord. Si tu choisis « Importer mes anciens matchs » dans le tableau de bord, ta page d'historique sur endstep.cc s'ouvre, et pendant que tu la parcours, les matchs qu'elle liste et qui n'étaient pas encore enregistrés s'ajoutent de la même façon, avec ce que cette page affiche : date, nom de l'adversaire, format, classé ou non, score, résultat, nom de ton deck. Rien n'est enregistré en mode spectateur.
 
 ## Où c'est stocké
 
@@ -55,7 +57,7 @@ Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur
 
 ## Requêtes réseau
 
-- **endstep.cc** : l'extension observe seulement le trafic que le site échange déjà avec ton navigateur. Pour reconnaître l'archétype adverse, elle lit l'API métagame publique du site (`/api/metagame/v1`), sans donnée personnelle. Elle n'envoie jamais rien à endstep.cc en ton nom et ne joue jamais à ta place.
+- **endstep.cc** : l'extension observe seulement le trafic que le site échange déjà avec ton navigateur. Pour reconnaître l'archétype adverse, elle lit l'API métagame publique du site (`/api/metagame/v1`), sans donnée personnelle. Elle ne joue jamais à ta place et n'envoie rien à endstep.cc en ton nom, à une exception près, que tu déclenches toi-même : quand tu importes tes anciens matchs, elle charge les pages suivantes de ton historique, une par seconde, avec la même requête que celle du site pour la première page (ta connexion reste dans la page endstep.cc ; l'extension ne la stocke ni ne l'envoie nulle part ailleurs).
 - **Scryfall** : au survol d'un nom de carte dans le tableau de bord, l'image est chargée depuis Scryfall. La requête ne contient que le nom de la carte.
 - **Deck Compare** (une autre extension du même auteur) : le tableau de bord lui demande, dans ton navigateur, si elle est installée, pour ne plus afficher sa promotion le cas échéant. Le message ne dit que ça ; rien d'autre n'est échangé et rien ne sort du navigateur. Le lien vers sa fiche ne s'ouvre que si tu cliques dessus.
 

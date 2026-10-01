@@ -3,6 +3,18 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## Non publié
+
+### Ajouté
+
+- **Importer mes anciens matchs** (menu Données, et page d'accueil du tableau de bord) : ouvre ta page [Historique](https://endstep.cc/history) sur endstep.cc ; pendant que tu la parcours, les matchs que l'extension n'a pas enregistrés s'ajoutent au tableau de bord (date, adversaire, format, classé ou non, score, résultat, deck). Les pages suivantes se chargent toutes seules, une par seconde, jusqu'à la dernière (ou jusqu'à « Terminer ») ; le panneau compte les matchs lus et ajoutés. Sans ce bouton, parcourir l'historique n'importe rien. Un match que l'extension a déjà enregistré n'est pas ajouté une seconde fois : l'historique lui donne un autre identifiant, il est reconnu à son adversaire, son résultat et son heure (moins de deux heures d'écart). Ils comptent dans les bilans par deck et par format, mais sans le détail des games (pas d'archétype reconnu, ni play/draw, ni mulligans) : l'historique du site ne le garde pas.
+- **Corriger l'archétype depuis le panneau sur endstep.cc** : le crayon à côté de l'archétype ouvre un champ avec les mêmes suggestions que le tableau de bord. Entrée enregistre, Échap annule, un champ vide rend le match à la reconnaissance automatique. Pendant la saisie, les touches ne vont pas au jeu (Espace ne passe pas la priorité).
+
+### Corrigé
+
+- **Duel Commander** : l'archétype adverse ne contient plus « + Commander Effect ». Seuls les vrais commandants de la zone de commandement sont retenus, et les matchs déjà enregistrés s'affichent corrigés.
+- **Deck renommé sur endstep.cc** : ses matchs, y compris les anciens, passent sous son nouveau nom au lieu de former un deck à part. L'extension reconnaît le deck à son identifiant sur le site, pas à son nom.
+
 ## [1.1] (2026-09-29)
 
 Mes cartes, le side enregistré entre les games, un tableau de bord en onglets, et un chargement du métagame qui ménage endstep.cc.

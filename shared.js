@@ -4,6 +4,7 @@
 (function (root) {
   'use strict';
 
+  const HISTORY_IMPORT_MS = 30 * 60e3; // "Import my past matches": endstep.cc's history page imports for this long after its last page
   const STALE_MS = 3 * 3600e3; // an "active" match untouched for this long is unfinished, not live
   const SESSION_GAP = 2 * 3600e3; // matches closer than this belong to one session
   const NO_RECOGNITION = /draft|sealed|momir|fish|(?<!-)commander|brawl|oathbreaker/i; // "duel-commander" is tracked by the site
@@ -42,6 +43,31 @@
   const vsAI = (m) => (Array.isArray(m.participants) && m.participants.length
     ? m.participants.some((p) => p && p.isBot)
     : opps(m).some((p) => AI_NAME.test(p.name)));
+  // Matches imported from the site's history that the tracker recorded too: the history gives them other ids. The
+  // twin of an imported match is a recorded one against the same opponents, with the same result, started within
+  // TWIN_MS; each pairs once, the nearest in time first (two matches an hour apart against one player stay two).
+  // The history names players by their account, which the game can show otherwise ("Malpelo96 LPO" played as
+  // "Malpelo96"): a recorded match answers to its in-game names and to its participants' accounts.
+  // Returns the ids of the imported duplicates.
+  const importing = (h, now = Date.now()) => !!h && Number.isFinite(h.until) && now < h.until;
+  const TWIN_MS = 2 * 3600e3;
+  function historyDuplicates(list) {
+    const low = (n) => String(n).toLowerCase();
+    const recorded = list.filter((m) => m.source !== 'history');
+    const names = new Map(recorded.map((m) => [m, new Set([...opps(m).map((p) => p.name),
+      ...(Array.isArray(m.participants) ? m.participants.map((p) => p && p.username) : [])].filter(Boolean).map(low))]));
+    const pairs = [];
+    for (const h of list) {
+      if (h.source !== 'history') continue;
+      const who = opps(h).map((p) => low(p.name));
+      for (const m of recorded) {
+        const dt = Math.abs(m.startedAt - h.startedAt);
+        if (dt <= TWIN_MS && who.every((n) => names.get(m).has(n)) && (!h.result || !m.result || h.result === m.result)) pairs.push({ dt, h: h.id, m: m.id });
+      }
+    }
+    const used = new Set();
+    return pairs.sort((a, b) => a.dt - b.dt).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map((p) => p.h);
+  }
   const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
   const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
   const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
@@ -76,9 +102,10 @@
     const d = c.decks[id] || {};
     return { id, name: d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
   }
+  // The deck's current name on the site, else the one it had during the match: a deck renamed there keeps its matches.
   function deckName(m, c) {
     const d = myDeck(m, c);
-    return d ? d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
+    return d ? (obj(c.decks)[d.id] || {}).name || d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
   }
   // The format alone (the site's formatId, else its game kind; constructed without a banlist is "no banlist").
   // When the site's match details were missed (no formatId), the deck I played tells it, if its format fits the game (a
@@ -98,9 +125,11 @@
     const commander = (x) => /commander/i.test(x || '');
     return f && commander(f) === commander(`${m.gameType} ${m.format}`) ? f : null;
   }
-  // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners).
+  // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners). Matches recorded
+  // before 1.1.3 may also list the site's own command-zone effects.
+  const NOT_COMMANDERS = new Set(['Commander Effect', 'Keyword Effects']);
   const commanderOf = (m) => (m.formatId !== 'duel-commander' ? ''
-    : opps(m).map((p) => obj(m.commanders)[p.seat]).filter(Array.isArray).map((l) => l.join(' + ')).filter(Boolean).join(', '));
+    : opps(m).map((p) => obj(m.commanders)[p.seat]).filter(Array.isArray).map((l) => l.filter((n) => !NOT_COMMANDERS.has(n)).join(' + ')).filter(Boolean).join(', '));
   // The opponent's archetype: the one I set by hand, else its commander.
   const archetype = (m, c) => (c.notes[m.id] && c.notes[m.id].archetype) || commanderOf(m);
   // The opponent's deck: the archetype I confirmed, else the recognized one, else its colours.
@@ -271,7 +300,7 @@
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
-    opps, vsAI, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
+    HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore,

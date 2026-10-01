@@ -29,10 +29,34 @@
     if (buffer.length > MAX_BUFFER) buffer = []; // a game this long is not worth replaying
   }
   window.addEventListener('message', (e) => {
-    if (e.source !== window || !e.data || e.data[TAG] !== 'hello') return;
+    if (e.source !== window || !e.data) return;
+    if (e.data[TAG] === 'history-next') { nextHistory(e.data.cursor); return; }
+    if (e.data[TAG] !== 'hello') return;
     const replay = [sticky.lobby, sticky.deck, ...Object.values(sticky.decks), ...Object.values(sticky.match), ...buffer];
     for (const m of replay) if (m) window.postMessage({ ...m, replay: true }, location.origin);
   });
+
+  // --- my match history (/history): each page goes to content.js, cut down to what a match record needs. During an
+  // import I started from the dashboard, content.js asks for the next page: the site's own request again (same address
+  // and headers, which never leave this page), with the next cursor.
+  let historyRequest = null; // { url, init } of the site's last /api/me/matches request
+  const who = (o) => o && { username: o.username };
+  const historyRow = (r) => ({
+    id: r.id, createdAt: r.createdAt, result: r.result, formatId: r.formatId, stakes: r.stakes, score: r.score,
+    deckId: r.deckId, deckName: r.deckName, opponent: who(r.opponent), opponents: Array.isArray(r.opponents) ? r.opponents.map(who) : undefined,
+  });
+  function readHistory(pending) {
+    pending.then((res) => (res.ok ? res.clone().json() : null)).then((json) => {
+      if (!json || !Array.isArray(json.matches)) throw new Error('no history page');
+      post('history', { rows: json.matches.filter(Boolean).map(historyRow), next: typeof json.nextCursor === 'string' ? json.nextCursor : null });
+    }).catch(() => post('history', { rows: [], next: null, failed: true }));
+  }
+  function nextHistory(cursor) {
+    if (!historyRequest || typeof cursor !== 'string' || !cursor || cursor.length > 200) return;
+    const url = new URL(historyRequest.url);
+    url.searchParams.set('before', cursor);
+    readHistory(nativeFetch.call(window, url.href, { ...historyRequest.init, signal: undefined }));
+  }
 
   // --- WebSocket: every server frame the tracker cares about ---
   const WANTED = /"type":"(GAME_(STATE|DELTA|EVENT|OVER|GONE)|MATCH_STATUS|ATTACH|LOBBY_UPDATE)"/;
@@ -58,7 +82,7 @@
     },
   });
 
-  // --- fetch: deck selection/names and match metadata ---
+  // --- fetch: deck selection/names, match metadata, and my match history ---
   const UUID = '[0-9a-f-]{36}';
   const DECK = new RegExp(`^/api/decks/${UUID}$`);
   const MATCH = new RegExp(`^/api/matches/(${UUID})$`);
@@ -82,6 +106,10 @@
       if (limited) {
         const { deck, sideboard } = JSON.parse(body);
         post('match', { id: limited[1], limitedDeck: { deck, sideboard } });
+      }
+      if (method === 'GET' && path === '/api/me/matches') {
+        historyRequest = { url: url.href, init: init || {} };
+        readHistory(pending);
       }
       if (method === 'GET' && (path === '/api/decks' || DECK.test(path) || MATCH.test(path))) {
         pending.then((res) => res.ok && res.clone().json()).then((json) => {

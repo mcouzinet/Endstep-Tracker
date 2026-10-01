@@ -1,6 +1,7 @@
 // Isolated-world bridge: receives frames from hook.js, runs the tracker, persists match records.
 (() => {
   const T = self.EndstepTracker;
+  const S = self.EndstepShared;
   const TAG = 'endstep-tracker';
   const store = new Map(); // matchId -> { rec, rt, dec }
   const looked = new Set(); // matchIds already looked up in storage
@@ -8,6 +9,8 @@
   const timers = new Map();
   const ctx = { meta: {}, lobby: null, lastDeck: null, decks: {} };
   let live = false;
+  const HISTORY_PAGE_MS = 1000; // between two pages of my history while importing it: far below the site's 300 requests a minute
+  let nextPage = null;
 
   let chain = chrome.storage.local.get(['lastDeck', 'decks']).then((s) => {
     ctx.lastDeck = s.lastDeck || null;
@@ -58,6 +61,31 @@
         if (!mine.name && d.name) { mine.name = d.name; changed = true; }
         if (!mine.cards && d.cards) { mine.cards = d.cards; mine.sideboard = d.sideboard || null; changed = true; }
         if (changed) save(entry);
+      }
+    } else if (kind === 'history') {
+      // A page of the site's match history, only while I asked to import it (the dashboard's "Import my past matches"):
+      // the matches never recorded here (played before the extension, or in another browser) are added. One already
+      // here (under its history id, or recorded by the tracker under another), or deleted from the dashboard while this
+      // page is open, is left. Then the next page, one a second, to the last one or until I stop; the count and how far
+      // it got show in the in-page panel.
+      const { historyImport: on } = await chrome.storage.local.get('historyImport');
+      if (!S.importing(on)) return;
+      const recs = data.rows.map((row) => T.fromHistory(row, ctx.decks)).filter(Boolean);
+      const all = Object.entries(await S.loadStore()).filter(([k]) => k.startsWith('match:')).map(([, v]) => S.normalizeMatch(v)).filter(Boolean);
+      const known = new Set(all.map((m) => m.id));
+      const fresh = recs.filter((r) => !known.has(r.id) && !store.has(r.id) && !ignored.has(r.id));
+      const twins = new Set(S.historyDuplicates([...all, ...fresh]));
+      const add = fresh.filter((r) => !twins.has(r.id));
+      if (orphaned()) return;
+      await chrome.storage.local.set({ ...Object.fromEntries(add.map((r) => ['match:' + r.id, r])),
+        historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: (on.read || 0) + recs.length, added: (on.added || 0) + add.length,
+          done: !data.next, failed: !!data.failed } });
+      clearTimeout(nextPage); // the site's own "Older matches" and this chain make one chain
+      if (data.next) {
+        nextPage = setTimeout(async () => {
+          const { historyImport: still } = await chrome.storage.local.get('historyImport');
+          if (S.importing(still) && !orphaned()) window.postMessage({ [TAG]: 'history-next', cursor: data.next }, location.origin);
+        }, HISTORY_PAGE_MS);
       }
     } else if (kind === 'match') {
       ctx.meta[data.id] = Object.assign(ctx.meta[data.id] || {}, data);

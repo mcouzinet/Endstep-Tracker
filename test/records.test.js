@@ -19,4 +19,10 @@ assert.deepEqual(r.draw, { W: 1, L: 0, D: 0 }, 'game 1 decides the play/draw of 
 assert.deepEqual(r.play, { W: 0, L: 1, D: 0 });
 assert.equal('g' in r, false, 'no game record');
 
+// A deck renamed on the site: its matches take the current name, and group with the newer ones.
+const C = (decks) => ({ notes: {}, decks, t: (k) => k });
+const old = Object.assign(match('d', 'W', []), { myDeck: { id: 'deck-1', name: '[DC] - Yoshi Esper' } });
+assert.equal(S.deckName(old, C({ 'deck-1': { name: '[DC] Yoshi Esper' } })), '[DC] Yoshi Esper');
+assert.equal(S.deckName(old, C({})), '[DC] - Yoshi Esper', 'a deck the site no longer lists keeps the name it had');
+
 console.log('records: ok');

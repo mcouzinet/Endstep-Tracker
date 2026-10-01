@@ -234,6 +234,12 @@ async function load() {
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
     else if (k === 'decks') decks = obj(v);
   }
+  // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays.
+  const twins = new Set(S.historyDuplicates(matches));
+  if (twins.size) {
+    matches = matches.filter((m) => !twins.has(m.id));
+    chrome.storage.local.remove([...twins].map((id) => 'match:' + id));
+  }
   if (addon) addon.load(all);
   showPromo(all.promoClosed);
   refresh();
@@ -542,8 +548,9 @@ function renderGlance(list, cmp) {
   if (!done.length) return;
   const n = done.length;
   const r = S.records(done);
-  let mulls = 0; let time = 0; let timed = 0;
+  let mulls = 0; let played = 0; let time = 0; let timed = 0; // matches imported from the site's history have no games
   for (const x of done) {
+    if (x.games.length) played++;
     for (const gm of x.games) mulls += gm.mulligans[x.mySeat] || 0;
     if (x.endedAt) { time += x.endedAt - x.startedAt; timed++; }
   }
@@ -555,7 +562,7 @@ function renderGlance(list, cmp) {
     cmp ? fact(`${cmp.label} · ${t('matches')}`, record(S.records(cmp.list).m), 'cmp') : '',
     fact(t('on_play'), record(r.play)),
     fact(t('on_draw'), record(r.draw)),
-    fact(t('fact_mulligans'), `${(mulls / n).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`),
+    played ? fact(t('fact_mulligans'), `${(mulls / played).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`) : '',
     timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
   ].join('');
   const hero = `<b class="hero-n">${enough(r.m) ? pct(r.m) : wl(r.m)}</b><span class="hero-l">${esc(t(enough(r.m) ? 'glance_rate' : 'glance_early'))}<br><span class="muted">${esc(tn('glance_over', n))}</span></span>`;
@@ -774,7 +781,7 @@ function detail(m) {
     ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_list', { deck: deckName(m) }) + listVersion(m, md))}</summary>${deckList(md.cards)}</details>`
     : m.limitedDeck ? `<details data-key="deck:${esc(m.id)}"><summary>${esc(t('my_limited_deck'))}</summary>${deckList(m.limitedDeck.deck)}</details>` : '';
   // "My deck" picker: the tracker's own attribution stays the default; any deck seen on the site can replace it.
-  const auto = m.myDeck ? m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown');
+  const auto = m.myDeck ? (decks[m.myDeck.id] || {}).name || m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown');
   const deckOptions = Object.entries(decks)
     .map(([id, d]) => ({ id, label: (d.name || id) + (d.format || d.formatId ? ` · ${d.format || d.formatId}` : '') }))
     .sort((a, b) => a.label.localeCompare(b.label, locale))
@@ -794,7 +801,7 @@ function detail(m) {
         ${mine}
         <button class="btn-text" data-delete><svg class="i"><use href="#i-trash"/></svg>${esc(t('delete_match'))}</button>
       </div>
-      <div class="games">${m.games.map((g) => gameBlock(m, g)).join('') || `<p class="muted">${esc(t('no_games'))}</p>`}</div>
+      <div class="games">${m.games.map((g) => gameBlock(m, g)).join('') || `<p class="muted">${esc(t(m.source === 'history' ? 'imported_no_games' : 'no_games'))}</p>`}</div>
     </div>
   </div>`;
 }
@@ -914,6 +921,7 @@ function onboarding() {
     </ol>
     <div class="row">
       <a class="btn primary" href="https://endstep.cc" target="_blank" rel="noopener">${esc(t('open_endstep'))}<svg class="i"><use href="#i-external"/></svg></a>
+      <button class="btn" data-action="import-history"><svg class="i"><use href="#i-history"/></svg>${esc(t('import_history'))}</button>
       <button class="btn" data-action="import"><svg class="i"><use href="#i-upload"/></svg>${esc(t('import_backup_btn'))}</button>
     </div>
   </li>`;
@@ -985,6 +993,10 @@ const ACTIONS = {
       'my_mulligans', 'opp_mulligans', 'game_result', 'turns', 'end_reason', 'match_result', 'match_score', 'opp_cards_seen', 'opp_deck_recognized',
       'my_cards_drawn', 'side_changes']];
     for (const m of matches) {
+      if (!m.games.length) { // imported from the site's history: the match alone
+        rows.push(Object.assign(Array(rows[0].length).fill(''), [new Date(m.startedAt).toISOString(), m.id, fmt(m), deckName(m), oppLabel(m), archetype(m), colorsOf(m)],
+          { 14: m.result || m.status, 15: (m.score || []).join('-') }));
+      }
       for (const g of m.games) {
         const p = onPlay(m, g);
         rows.push([new Date(m.startedAt).toISOString(), m.id, fmt(m), deckName(m), oppLabel(m), archetype(m), colorsOf(m), g.n,
@@ -1000,6 +1012,12 @@ const ACTIONS = {
     toast(tn('csv_exported', rows.length - 1));
   },
   import: () => $('#import').click(),
+  // My past matches: endstep.cc's history page opens, and imports what it lists for a while (content.js); browsing it
+  // otherwise imports nothing.
+  'import-history': async () => {
+    await chrome.storage.local.set({ historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: 0, added: 0 } });
+    chrome.tabs.create({ url: 'https://endstep.cc/history' });
+  },
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);

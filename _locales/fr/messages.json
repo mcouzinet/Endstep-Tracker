@@ -263,6 +263,9 @@
   "no_games": {
     "message": "Aucune game capturée pour ce match."
   },
+  "imported_no_games": {
+    "message": "Importé depuis ton historique endstep.cc, qui ne garde pas le détail des games."
+  },
   "no_cards_seen": {
     "message": "Aucune carte vue pour l’instant."
   },
@@ -673,6 +676,39 @@
   },
   "ov_move": {
     "message": "Glisser pour déplacer"
+  },
+  "ov_edit_archetype": {
+    "message": "Corriger l'archétype"
+  },
+  "ov_save": {
+    "message": "Enregistrer"
+  },
+  "ov_cancel": {
+    "message": "Annuler"
+  },
+  "import_history": {
+    "message": "Importer mes anciens matchs"
+  },
+  "ov_import_title": {
+    "message": "Import de l'historique"
+  },
+  "ov_import_read": {
+    "message": "Lus"
+  },
+  "ov_import_added": {
+    "message": "Ajoutés"
+  },
+  "ov_import_hint": {
+    "message": "Les pages suivantes se chargent toutes seules, une par seconde."
+  },
+  "ov_import_all": {
+    "message": "Tout ton historique est importé."
+  },
+  "ov_import_failed": {
+    "message": "Interrompu : endstep.cc n'a pas répondu. Recharge la page pour reprendre."
+  },
+  "ov_import_done": {
+    "message": "Terminer"
   },
   "promo_by": {
     "message": "Du même auteur, sans compte ni collecte"

@@ -209,9 +209,9 @@
             const owner = seatOf(c.ownerId) === null ? i : seatOf(c.ownerId);
             if (owner === rec.mySeat) continue;
             see(sg, owner, c.name, c.id);
-            // The opponent's commander: what sits in its command zone when the game starts (two cards for partners).
-            // Later, only if none was seen yet (tracker attached mid-game): an emblem there is not a commander.
-            if (z === 'commandZone' && (Number(st.turnNumber) <= 1 || !(rec.commanders && rec.commanders[owner]))) {
+            // The opponent's commander (two cards for partners), as the site marks it: its command zone also holds
+            // effects ("Commander Effect", emblems) that are not one.
+            if (z === 'commandZone' && c.isCommander) {
               const list = ((rec.commanders = rec.commanders || {})[owner] = rec.commanders[owner] || []);
               if (!list.includes(c.name)) list.push(c.name);
             }
@@ -446,7 +446,28 @@
     return out;
   }
 
-  const Tracker = { frames, matchIdOf, handle, onSideboard, onAction, applyMeta, applyDelta, seenCards };
+  // A match from the site's history page (/api/me/matches), played while nothing was recording it: when, against whom,
+  // the score and result, my deck by its name. No games: what happened in them was never seen.
+  const HISTORY_RESULT = { won: 'W', lost: 'L', draw: 'D' };
+  function fromHistory(row, decks) {
+    const at = Date.parse(row && row.createdAt);
+    if (!row || typeof row.id !== 'string' || !row.id || !Number.isFinite(at)) return null;
+    const opps = Array.isArray(row.opponents) && row.opponents.length ? row.opponents : row.opponent ? [row.opponent] : [];
+    const result = HISTORY_RESULT[row.result];
+    // The deck's id when the site gives it, else the one deck of mine with that name (a renamed deck keeps its matches).
+    const named = row.deckName ? Object.entries(decks || {}).filter(([, d]) => d && d.name === row.deckName) : [];
+    const deckId = typeof row.deckId === 'string' ? row.deckId : named.length === 1 ? named[0][0] : row.deckName ? 'name:' + row.deckName : null;
+    return {
+      v: 1, id: row.id, source: 'history', status: result ? 'complete' : 'abandoned', startedAt: at, updatedAt: at,
+      ...(result && { result }), ...(row.formatId && { formatId: row.formatId }), ranked: row.stakes === 'ranked',
+      mySeat: 0, players: [{ seat: 0, name: '' }, ...opps.map((o, i) => ({ seat: i + 1, name: (o && o.username) || '?' }))],
+      score: row.score ? [Number(row.score.you) || 0, Number(row.score.opponent) || 0] : [],
+      myDeck: deckId ? { id: deckId, name: row.deckName || null, cards: null, sideboard: null, source: 'history' } : null,
+      games: [], colors: {},
+    };
+  }
+
+  const Tracker = { frames, matchIdOf, handle, onSideboard, onAction, applyMeta, applyDelta, seenCards, fromHistory };
   if (typeof module === 'object' && module.exports) module.exports = Tracker;
   else root.EndstepTracker = Tracker;
 })(typeof self !== 'undefined' ? self : this);

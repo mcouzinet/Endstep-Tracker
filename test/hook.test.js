@@ -65,4 +65,37 @@ ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"PASS_PRIORITY"}
 ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"SIDEBOARD_SUBMIT","orderedCards":[0,1]}}');
 ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"DECLINE"}}');
 assert.deepEqual(out.map((m) => JSON.parse(m.data).payload.type), ['SIDEBOARD_SUBMIT', 'DECLINE'], 'store build: sideboarding only');
-console.log('hook test: ok');
+
+// My match history (/history): each page the site loads goes to content.js, cut down to what a match record needs; asked
+// for the next page (an import I started), the hook sends the site's own request again, with the next cursor.
+const page = { nextCursor: 'c1', matches: [{ id: 'h1', createdAt: '2026-09-01T10:00:00Z', result: 'won', formatId: 'pauper', stakes: 'ranked',
+  score: { you: 2, opponent: 1 }, deckName: 'Esper Affinity', ratingBefore: 1500, opponents: [{ id: 'u2', username: 'Bartok', avatarUrl: 'x' }] }] };
+const got = [];
+const calls = [];
+const on3 = [];
+const win3 = { ...window, postMessage: (msg) => got.push(msg), addEventListener: (type, fn) => { if (type === 'message') on3.push(fn); }, __endstepTrackerHook: false,
+  fetch: async (url, init) => { calls.push([String(url), init]); return /before=c1/.test(url) ? { ok: false } : { ok: true, clone: () => ({ json: async () => page }) }; } };
+win3.window = win3;
+vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'hook.js'), 'utf8'), { ...sandbox, window: win3 });
+const tick = () => new Promise((r) => setImmediate(r));
+(async () => {
+  await win3.fetch('/api/me/matches?limit=25', { credentials: 'include', headers: { Authorization: 'Bearer t0k' } });
+  await win3.fetch('/api/me/badges');
+  await tick();
+  assert.deepEqual(got.map((m) => m[TAG]), ['history']);
+  assert.deepEqual(JSON.parse(JSON.stringify(got[0].data)), { next: 'c1', rows: [{ id: 'h1', createdAt: '2026-09-01T10:00:00Z', result: 'won', formatId: 'pauper', stakes: 'ranked',
+    score: { you: 2, opponent: 1 }, deckName: 'Esper Affinity', opponents: [{ username: 'Bartok' }] }] }, 'only what a record needs, and the next cursor');
+  assert.ok(!JSON.stringify(got).includes('t0k'), 'the token never leaves the page');
+
+  on3.forEach((fn) => fn({ source: win3, data: { [TAG]: 'history-next', cursor: 'c1' } }));
+  await tick();
+  const [url, init] = calls[calls.length - 1];
+  assert.equal(url, 'https://endstep.cc/api/me/matches?limit=25&before=c1');
+  assert.equal(init.headers.Authorization, 'Bearer t0k', "the site's own request");
+  assert.deepEqual(JSON.parse(JSON.stringify(got[1].data)), { rows: [], next: null, failed: true }, 'a page that fails ends the import');
+  on3.forEach((fn) => fn({ source: {}, data: { [TAG]: 'history-next', cursor: 'c2' } }));
+  on3.forEach((fn) => fn({ source: win3, data: { [TAG]: 'history-next', cursor: 42 } }));
+  await tick();
+  assert.equal(calls.length, 3, 'another window, or no cursor: nothing sent');
+  console.log('hook test: ok');
+})().catch((e) => { console.error(e); process.exit(1); });

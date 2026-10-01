@@ -83,6 +83,72 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.match(text, /(My usual sideboarding|Mon side habituel) \+2 Kor Firewalker −2 Lava Spike/, text);
     assert.ok(!text.includes('Keep life high') && !/G1|G2-G3/.test(text), text);
 
+    // Corrected by hand: the field takes the keys, and the game (listening on window, in the capture phase, after
+    // the panel as on endstep.cc) gets none of them; Enter saves and gives the keys back, Escape drops the typing,
+    // an empty field goes back to the recognition.
+    await p.evaluate(() => { window.__keys = []; addEventListener('keydown', (e) => window.__keys.push(e.key), true); });
+    const input = async (fn) => {
+      const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: (await shadow()).nodeId, selector: 'input' });
+      if (!nodeId) return null;
+      const { object } = await cdp.send('DOM.resolveNode', { nodeId });
+      return (await cdp.send('Runtime.callFunctionOn', { objectId: object.objectId, functionDeclaration: fn, returnByValue: true })).result.value;
+    };
+    const panelShot = async (name) => {
+      const r = await p.evaluate(() => { const b = document.getElementById('endstep-tracker-panel').getBoundingClientRect(); return { x: b.x, y: b.y, width: b.width, height: b.height }; });
+      await p.screenshot({ path: path.join(__dirname, name), clip: { x: r.x - 12, y: r.y - 12, width: r.width + 24, height: r.height + 24 } });
+    };
+    const onBody = () => p.evaluate(() => document.activeElement === document.body || document.activeElement === document.documentElement);
+    await panelShot('qa-overlay.png');
+    await clickIn('[data-edit]');
+    assert.equal(await input('function () { return this.getRootNode().activeElement === this && this.list.options.length > 0; }'), true);
+    await p.keyboard.type('Mono Red 1 R');
+    assert.equal(await input('function () { return this.value; }'), 'Mono Red 1 R');
+    assert.deepEqual(await p.evaluate(() => window.__keys), []);
+    live.updatedAt = Date.now();
+    await set({ 'match:m-live': live }); // a game event while typing: the field stays as it is
+    await sleep(300);
+    assert.equal(await input('function () { return this.getRootNode().activeElement === this && this.value; }'), 'Mono Red 1 R');
+    await panelShot('qa-overlay-edit.png');
+    await p.keyboard.press('Enter');
+    await sleep(300);
+    assert.equal((await get('note:m-live')).archetype, 'Mono Red 1 R');
+    assert.match(await panelText(), /Mono Red 1 R/);
+    assert.equal(await onBody(), true);
+    await p.keyboard.press('Space');
+    assert.deepEqual(await p.evaluate(() => window.__keys), [' '], 'the game has the keys back');
+    await clickIn('[data-edit]');
+    await p.keyboard.type('Burn');
+    await p.keyboard.press('Escape');
+    await sleep(200);
+    assert.equal((await get('note:m-live')).archetype, 'Mono Red 1 R');
+    assert.equal(await input('function () { return 1; }'), null);
+    await clickIn('[data-edit]');
+    await p.keyboard.press('Backspace');
+    await clickIn('[data-save]');
+    assert.equal((await get('note:m-live')).archetype, undefined);
+    assert.equal(await onBody(), true);
+
+    // A dialog of the site holding the focus, as Radix's FocusScope does on endstep.cc (any focusin outside it, or
+    // focusout towards outside, takes the focus back): the field keeps the focus all the same.
+    await p.evaluate(() => {
+      const d = document.createElement('div');
+      d.innerHTML = '<button>Next game</button>';
+      document.body.append(d);
+      let last = d.firstChild;
+      last.focus();
+      window.__trap = { d, in: (e) => { if (d.contains(e.target)) last = e.target; else last.focus(); }, out: (e) => { if (e.relatedTarget && !d.contains(e.relatedTarget)) last.focus(); } };
+      document.addEventListener('focusin', window.__trap.in);
+      document.addEventListener('focusout', window.__trap.out);
+    });
+    await clickIn('[data-edit]');
+    await p.keyboard.type('Elves');
+    assert.equal(await input('function () { return this.getRootNode().activeElement === this && this.value; }'), 'Elves');
+    await p.keyboard.press('Escape');
+    await sleep(200);
+    assert.equal(await input('function () { return 1; }'), null);
+    await p.evaluate(() => { document.removeEventListener('focusin', window.__trap.in); document.removeEventListener('focusout', window.__trap.out); window.__trap.d.remove(); });
+    assert.equal(await onBody(), true);
+
     // Folding it takes no keyboard focus away from the game.
     await clickIn('[data-toggle]');
     assert.equal(await p.evaluate(() => document.activeElement === document.body || document.activeElement === document.documentElement), true);
