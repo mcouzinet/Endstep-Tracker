@@ -144,6 +144,24 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: Data Not Collected. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
 - The first time, Safari asks the user to allow the extension on endstep.cc; until then nothing is recorded.
 
+## Release notes
+
+What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), Mac App Store ("What's New in This Version"). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
+
+### 1.2 (EN)
+
+- Import your past matches: "Import my past matches" in the Data menu opens your endstep.cc history and adds, page after page, the matches the extension did not record. Nothing is imported unless you ask.
+- Correct the opponent's archetype right from the panel on endstep.cc, with the pencil next to it.
+- A deck renamed on endstep.cc keeps its matches.
+- Duel Commander: the opponent's archetype no longer ends with "+ Commander Effect".
+
+### 1.2 (FR)
+
+- Importe tes anciens matchs : « Importer mes anciens matchs », dans le menu Données, ouvre ton historique endstep.cc et ajoute, page après page, les matchs que l'extension n'a pas enregistrés. Rien n'est importé sans ta demande.
+- Corrige l'archétype adverse directement depuis le panneau sur endstep.cc, avec le crayon à côté.
+- Un deck renommé sur endstep.cc garde ses matchs.
+- Duel Commander : l'archétype adverse ne finit plus par « + Commander Effect ».
+
 ## Versions
 
 `manifest.json` reads **`X.Y` for a release, `X.Y.Z` for a dev build**, as in Deck Compare:
