@@ -162,6 +162,20 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 - Un deck renommé sur endstep.cc garde ses matchs.
 - Duel Commander : l'archétype adverse ne finit plus par « + Commander Effect ».
 
+### 1.1 (EN)
+
+- My cards: for each card of a deck, your win rate in the games where you drew it, where it stayed in your library, and where it was in your opening hand.
+- Your sideboarding is recorded between games: the matchup panel shows what you usually bring in and take out against an archetype, and the panel on endstep.cc reminds you of it between two games.
+- The dashboard in three tabs: Matchups, My cards, History.
+- Deck recognition loads endstep.cc's metagame more gently: it waits instead of failing, and loads only the format of the match.
+
+### 1.1 (FR)
+
+- Mes cartes : pour chaque carte d'un deck, ton taux de victoire dans les games où tu l'as piochée, où elle est restée dans ta bibliothèque, et où elle était dans ta main de départ.
+- Ton side est enregistré entre les games : le panneau du matchup montre ce que tu fais entrer et sortir d'habitude contre un archétype, et le panneau sur endstep.cc te le rappelle entre deux games.
+- Le tableau de bord en trois onglets : Matchups, Mes cartes, Historique.
+- La reconnaissance des decks charge le métagame d'endstep.cc plus en douceur : elle attend au lieu d'échouer, et ne charge que le format de la partie.
+
 ## Versions
 
 `manifest.json` reads **`X.Y` for a release, `X.Y.Z` for a dev build**, as in Deck Compare:
