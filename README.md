@@ -4,6 +4,10 @@ Extension Chrome (Manifest V3, sans dépendance) qui enregistre automatiquement 
 
 ## Installation
 
+Depuis les stores : [Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (aussi pour Brave et Opera), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/), [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp), [Safari sur Mac](https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12).
+
+Depuis ce dossier, pour le développement :
+
 1. `chrome://extensions` → activer **Mode développeur**
 2. **Charger l'extension non empaquetée** → sélectionner ce dossier
 3. Recharger les onglets endstep.cc déjà ouverts. Pendant un match, l'icône affiche un badge **REC**.
