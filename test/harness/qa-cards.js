@@ -22,9 +22,40 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await p.screenshot({ path: `${__dirname}/qa-tabs.png`, clip: { x: 0, y: 0, width: 1280, height: 420 } });
   await p.click('#tab-cards');
   await sleep(200);
-  const panel = await p.$('#cards-panel');
+  let panel = await p.$('#cards-panel');
   out.cardsShown = await panel.evaluate((el) => !el.hidden);
   out.cardRows = await p.evaluate(() => [...document.querySelectorAll('#cards-panel > .rec:not(.head)')].map((r) => r.innerText.replace(/\s+/g, ' ').trim()).slice(0, 6));
+  // Sorting by a column's head: by name (A to Z, then Z to A), by a rate (best first, a rate under 5 games never
+  // first), kept for the next visit, the keyboard left on the head.
+  const assert = require('node:assert/strict');
+  const names = () => p.evaluate(() => [...document.querySelectorAll('#cards-panel .rec:not(.head) .rec-label a')].map((a) => a.textContent));
+  const pressed = () => p.evaluate(() => [...document.querySelectorAll('#cards-panel [data-card-sort][aria-pressed="true"]')].map((b) => b.dataset.cardSort + b.textContent.slice(-1)));
+  assert.deepEqual(await pressed(), ['gap↓']);
+  await p.click('#cards-panel [data-card-sort="name"]');
+  let list = await names();
+  assert.deepEqual(list, [...list].sort((x, y) => x.localeCompare(y, 'fr')), list.join(', '));
+  assert.deepEqual(await pressed(), ['name↑']);
+  assert.equal(await p.evaluate(() => document.activeElement.dataset.cardSort), 'name');
+  await p.click('#cards-panel [data-card-sort="name"]');
+  assert.deepEqual(await names(), [...list].reverse());
+  await p.click('#cards-panel [data-card-sort="opening"]');
+  assert.deepEqual(await pressed(), ['opening↓']);
+  const opening = await p.evaluate(() => [...document.querySelectorAll('#cards-panel .rec:not(.head)')].map((r) => {
+    const c = r.querySelectorAll('.rec-sub')[1];
+    const m = c && c.textContent.match(/(\d+) %/);
+    return m ? Number(m[1]) : null;
+  }));
+  const ranked = opening.filter((x) => x !== null);
+  assert.deepEqual(ranked, [...ranked].sort((x, y) => y - x), opening.join(' '));
+  assert.ok(opening.indexOf(null) === -1 || opening.slice(opening.indexOf(null)).every((x) => x === null), 'too few games: after the rates');
+  out.sortedByOpening = (await names()).slice(0, 4);
+  await p.reload();
+  await sleep(600);
+  await p.click('#tab-cards');
+  await sleep(200);
+  assert.deepEqual(await pressed(), ['opening↓'], 'kept for the next visit');
+  await p.click('#cards-panel [data-card-sort="gap"]'); // back to the default for the captures below
+  panel = await p.$('#cards-panel');
   await panel.evaluate((el) => el.scrollIntoView());
   await sleep(200);
   await panel.screenshot({ path: `${__dirname}/qa-cards.png` });

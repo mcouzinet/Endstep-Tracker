@@ -135,6 +135,29 @@ const older = { nextCursor: null, matches: [
     assert.equal(await get('match:h2'), undefined, 'done: nothing imported');
     assert.deepEqual(api.splice(0).map((x) => x[0]), ['?limit=25'], 'done: no page loaded by the extension');
 
+    // Deleted from the dashboard, a match stays deleted when the history is imported again: an imported one (by its
+    // id) and a recorded one (its history twin does not come in its place). One removed otherwise comes back.
+    d.on('dialog', (x) => x.accept());
+    for (const name of ['Bartok', 'Corvid']) {
+      await d.evaluate((n) => {
+        const li = [...document.querySelectorAll('#matches .match')].find((x) => x.querySelector('.match-row').textContent.includes(n));
+        if (!li.querySelector('.detail')) li.querySelector('.match-row').click();
+      }, name);
+      await sleep(200);
+      await d.evaluate((n) => [...document.querySelectorAll('#matches .match')].find((x) => x.querySelector('.match-row').textContent.includes(n)).querySelector('[data-delete]').click(), name);
+      await sleep(400);
+    }
+    const gone = await get('deletedMatches');
+    assert.ok(gone && gone.h1 && gone['m-rec'], JSON.stringify(gone));
+    assert.equal(await get('match:h1'), undefined);
+    assert.equal(await get('match:m-rec'), undefined);
+    await ext.evaluate(() => chrome.storage.local.set({ historyImport: { until: Date.now() + 60e3, read: 0, added: 0 } }));
+    await p.reload();
+    await sleep(2500);
+    assert.equal(await get('match:h1'), undefined, 'deleted: not imported again');
+    assert.equal(await get('match:h3'), undefined, 'the twin of a deleted recorded match: not imported');
+    assert.ok(await get('match:h2'), 'removed otherwise: imported again');
+
     assert.ok(served.includes('/api/me/matches') && served.every((u) => u.startsWith('/')));
     assert.deepEqual(errors, []);
     console.log('qa-history: ok');

@@ -164,6 +164,12 @@
       const vs = list.filter((x) => x !== m && !S.vsAI(x) && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
       const r = S.records(vs, now);
       const stat = (label, x) => `<span>${esc(label)} <b>${wl(x)}</b>${x.W + x.L + x.D >= 5 ? ` · ${pct(x)}` : ''}</span>`;
+      // The same player met before: my record against them, and what they played last time.
+      const met = S.vsAI(m) ? [] : S.metBefore(m, list);
+      const metRec = S.records(met, now).m;
+      const lastArch = met.length ? S.archetype(met[0], C) || (guess(met[0]) || {}).name : null;
+      const metBlock = met.length ? `<div><h3>${esc(t('ov_met'))}</h3><p class="stats">${metRec.W + metRec.L + metRec.D ? `<span>${esc(t('matches'))} <b>${wl(metRec)}</b></span>` : ''}`
+        + `<span>${esc(t(lastArch ? 'ov_last_arch' : 'ov_last', { arch: lastArch, when: S.ago(met[0].startedAt, I) }))}</span></p></div>` : '';
       const record = key === '?' ? '' : `<div><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((x) => x.result)
         ? `<p class="stats">${stat(t('matches'), r.m)}</p>` : `<p class="muted">${esc(t('popup_first_time'))}</p>`}</div>`;
       // Between two games of a Bo3: what I usually bring in and take out against this deck.
@@ -173,7 +179,7 @@
         : `<span>${esc(t('side_no_change'))}</span>`}<span class="muted">${esc(I.tn('side_over', plan.matches))}</span></p></div>` : '';
       const confirm = phase === 'after' && !a && g && !edit
         ? `<button class="btn primary" tabindex="-1" data-confirm="${esc(g.name)}">${esc(t('confirm_guess', { name: g.name }))}</button>` : '';
-      body = `<div class="body">${head}${arch}${record}${side}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
+      body = `<div class="body">${head}${arch}${metBlock}${record}${side}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
     }
     box.classList.toggle('open', open);
     box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${toggle}</div>${body}`;

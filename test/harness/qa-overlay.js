@@ -82,6 +82,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.match(text, /(Against|Contre) Brisbane/);
     assert.match(text, /(My usual sideboarding|Mon side habituel) \+2 Kor Firewalker −2 Lava Spike/, text);
     assert.ok(!text.includes('Keep life high') && !/G1|G2-G3/.test(text), text);
+    assert.match(text, /(Déjà croisé|Met before) (Matchs|Matches) \d+–\d+ (Dernière fois :|Last time:) /, 'the same player met before');
 
     // Corrected by hand: the field takes the keys, and the game (listening on window, in the capture phase, after
     // the panel as on endstep.cc) gets none of them; Enter saves and gives the keys back, Escape drops the typing,

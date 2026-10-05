@@ -686,6 +686,33 @@
   "ov_cancel": {
     "message": "Cancel"
   },
+  "rename_archetype": {
+    "message": "Rename this archetype"
+  },
+  "rename_save": {
+    "message": "Rename"
+  },
+  "confirm_rename_one": {
+    "message": "Rename “{from}” to “{to}” on {n} match?"
+  },
+  "confirm_rename_other": {
+    "message": "Rename “{from}” to “{to}” on {n} matches, across all decks and formats?"
+  },
+  "archetype_renamed_one": {
+    "message": "“{to}”: {n} match renamed."
+  },
+  "archetype_renamed_other": {
+    "message": "“{to}”: {n} matches renamed."
+  },
+  "ov_met": {
+    "message": "Met before"
+  },
+  "ov_last_arch": {
+    "message": "Last time: {arch}, {when}"
+  },
+  "ov_last": {
+    "message": "Last time: {when}"
+  },
   "import_history": {
     "message": "Import my past matches"
   },
@@ -784,6 +811,21 @@
   },
   "col_card": {
     "message": "Card"
+  },
+  "col_gap": {
+    "message": "Gap"
+  },
+  "gap_sort_title": {
+    "message": "Win rate gap between the games where I drew it and the others"
+  },
+  "sort_by": {
+    "message": "Sort by {col}"
+  },
+  "sort_asc": {
+    "message": "ascending"
+  },
+  "sort_desc": {
+    "message": "descending"
   },
   "col_drawn": {
     "message": "Drawn"

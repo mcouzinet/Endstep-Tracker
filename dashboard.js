@@ -39,11 +39,11 @@ const PREFS = 'endstep-tracker.filters';
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
 // tab: the view shown, one of TABS; kept across visits, never reset with the filters.
 const TABS = ['matchups', 'cards', 'history'];
-const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups' };
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
-let drawer = null; // { key } of the matchup open in the side panel
+let drawer = null; // { key, renaming } of the matchup open in the side panel
 let curScope = null; // the scope of the last render
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
@@ -509,7 +509,9 @@ function renderOverview(list) {
 
 // --- my cards: the results of the games where I drew each card, beside those where it stayed in my library ---
 // Counted in games (a card is drawn in a game). The gap between the two rates, in points, sorts the list once both
-// have MIN_SAMPLE results: a link between drawing the card and winning, not proof that the card wins.
+// have MIN_SAMPLE results: a link between drawing the card and winning, not proof that the card wins. A click on a
+// column's head sorts by it instead (best first, the names from A), again reverses it; a rate under MIN_SAMPLE games
+// never ranks before one that has them.
 const CARD_ROWS = 15;
 function renderCards(s, list) {
   const el = $('#cards-panel');
@@ -521,11 +523,26 @@ function renderCards(s, list) {
   const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
   const gap = (x) => (n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
     ? Math.round(100 * winRate(x.drawn)) - Math.round(100 * winRate(x.notDrawn)) : null);
+  const by = state.cardSort;
+  const dir = state.cardRev ? -1 : 1;
+  const key = (x) => (by === 'gap' ? x.gap : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
   const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: gap(x) }))
     .filter((x) => n(x.drawn) || n(x.opening))
-    .sort((a, b) => (a.gap === null) - (b.gap === null) || (b.gap || 0) - (a.gap || 0) || n(b.drawn) - n(a.drawn)
-      || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
+    .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
+      : (key(a) === null) - (key(b) === null) || dir * ((key(b) || 0) - (key(a) || 0)))
+      || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
   const cells = (x) => [{ key: t('col_not_drawn'), title: t('not_drawn_title'), r: x.notDrawn }, { key: t('col_opening'), title: t('opening_title'), r: x.opening }];
+  // The head: each column sorts the list; the arrow says which and which way (down: best first, or Z to A).
+  const sortBtn = (col, label, title = '') => {
+    const on = by === col;
+    const down = on && (col === 'name' ? state.cardRev : !state.cardRev);
+    const aria = t('sort_by', { col: label }) + (on ? ` (${t(down ? 'sort_desc' : 'sort_asc')})` : '');
+    return `<button type="button" class="sort" data-card-sort="${col}" aria-pressed="${on}" aria-label="${esc(aria)}"${title ? ` title="${esc(title)}"` : ''}>`
+      + `${esc(label)}${on ? `<span class="arrow" aria-hidden="true">${down ? '↓' : '↑'}</span>` : ''}</button>`;
+  };
+  const head = `<div class="rec cells head" style="--cells:2"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
+    + `<span class="main">${sortBtn('drawn', t('col_drawn'))}</span><span>${sortBtn('notDrawn', t('col_not_drawn'), t('not_drawn_title'))}</span>`
+    + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span></div>`;
   const row = (x) => {
     const g = x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
     return rec(cardLink(x.name) + g, x.drawn, { cells: cells(x) });
@@ -533,7 +550,7 @@ function renderCards(s, list) {
   const recorded = list.some((m) => m.games.some((g) => g.drawn));
   const more = rows.slice(CARD_ROWS);
   const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>`
-    : recHead(t('col_card'), t('col_drawn'), cells({ notDrawn: S.tally(), opening: S.tally() })) + rows.slice(0, CARD_ROWS).map(row).join('')
+    : head + rows.slice(0, CARD_ROWS).map(row).join('')
       + (more.length ? `<details class="others more"${(el.querySelector('details.more') || {}).open ? ' open' : ''}><summary><svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('more_cards', more.length))}</summary>${more.map(row).join('')}</details>` : '');
   el.innerHTML = `<h2 class="panel-title">${esc(t('by_card'))}</h2><p class="muted context-hint">${esc(t('cards_hint'))}</p>`
     + (recorded ? '' : `<p class="muted cards-note">${esc(t('cards_since'))}</p>`) + body;
@@ -664,7 +681,14 @@ function renderDrawer(s, stats, vs) {
   const ver = vs.list.find((x) => x.key === activeVersion(vs));
   // My usual sideboarding here, with the deck in view: across decks it would mean nothing.
   const side = s.deck === null ? `<p class="muted">${esc(t('side_needs_deck'))}</p>` : sidePlanBlock(S.sidePlan(list, C));
-  el.innerHTML = `<header><h2 id="drawer-title">${oppKey(list[0])[1]}</h2><button class="icon-btn" data-close-drawer aria-label="${esc(t('drawer_close'))}" title="${esc(t('drawer_close'))}"><svg class="i"><use href="#i-x"/></svg></button></header>
+  // An archetype (not a colour group) can be renamed on every match filed under it: tagged by hand, recognized, or a
+  // commander. A name already used merges the two.
+  const name = drawer.key.startsWith('a:') ? drawer.key.slice(2) : null;
+  const rename = name ? `<button class="icon-btn" data-rename aria-label="${esc(t('rename_archetype'))}" title="${esc(t('rename_archetype'))}"><svg class="i"><use href="#i-pencil"/></svg></button>` : '';
+  const renaming = name && drawer.renaming ? `<form class="rename" data-rename-form><input name="to" list="archetypes" value="${esc(name)}" aria-label="${esc(t('rename_archetype'))}" required>`
+    + `<button class="btn primary">${esc(t('rename_save'))}</button><button type="button" class="btn" data-rename-cancel>${esc(t('ov_cancel'))}</button></form>` : '';
+  el.innerHTML = `<header><h2 id="drawer-title">${oppKey(list[0])[1]}</h2>${rename}<button class="icon-btn" data-close-drawer aria-label="${esc(t('drawer_close'))}" title="${esc(t('drawer_close'))}"><svg class="i"><use href="#i-x"/></svg></button></header>
+    ${renaming}
     <p class="muted drawer-scope">${esc(where)}${ver ? ` · ${esc(t('version_n', { n: ver.n }))}` : ''}</p>
     <dl class="drawer-stats">${stat(t('matches'), r.m)}${stat(t('on_play'), r.play)}${stat(t('on_draw'), r.draw)}</dl>
     <section><h3>${esc(t('side_plan'))}</h3>${side}</section>
@@ -1022,7 +1046,7 @@ const ACTIONS = {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
     const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(addon ? addon.prefixes : [])];
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => prefixes.some((p) => k.startsWith(p))));
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => k === 'deletedMatches' || prefixes.some((p) => k.startsWith(p)))); // all gone: an import brings everything back
     openId = null;
     toast(t('all_deleted'));
   },
@@ -1074,7 +1098,16 @@ $('#matches').addEventListener('click', (e) => {
     const id = e.target.closest('.match').dataset.id;
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
-    chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, ...(addon ? addon.deleteKeys(id) : [])]).then(() => toast(t('match_deleted')));
+    const m = matches.find((x) => x.id === id);
+    (async () => {
+      // Kept in short, so that importing my history never brings it back: by its id, or as the twin of a recorded match.
+      const { deletedMatches } = await chrome.storage.local.get('deletedMatches');
+      const gone = Object.assign({}, obj(deletedMatches));
+      if (m) gone[id] = { startedAt: m.startedAt, result: m.result, mySeat: m.mySeat, players: m.players, participants: m.participants, source: m.source };
+      await chrome.storage.local.set({ deletedMatches: gone });
+      await chrome.storage.local.remove(['match:' + id, 'note:' + id, 'dec:' + id, ...(addon ? addon.deleteKeys(id) : [])]);
+      toast(t('match_deleted'));
+    })();
     return;
   }
   const btn = e.target.closest('.match-row');
@@ -1084,6 +1117,18 @@ $('#matches').addEventListener('click', (e) => {
   const focusRow = () => { const again = document.querySelector(`.match[data-id="${CSS.escape(id)}"] .match-row`); if (again) again.focus({ preventScroll: true }); };
   if (openId) loadDecisions(id).then(() => { render(); focusRow(); });
   else { render(); focusRow(); }
+});
+
+$('#cards-panel').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-card-sort]');
+  if (!b) return;
+  const col = b.dataset.cardSort;
+  state.cardRev = state.cardSort === col ? !state.cardRev : false;
+  state.cardSort = col;
+  savePrefs();
+  render();
+  const again = $(`#cards-panel [data-card-sort="${col}"]`);
+  if (again) again.focus(); // the head was redrawn: the keyboard stays on it
 });
 
 $('#matches').addEventListener('change', (e) => {
@@ -1115,6 +1160,8 @@ $('#split').addEventListener('click', (e) => {
 });
 $('#drawer').addEventListener('click', (e) => {
   if (e.target.closest('[data-close-drawer]')) { closeDrawer(); return; }
+  if (e.target.closest('[data-rename]')) { drawer.renaming = true; render(); const i = $('#drawer [data-rename-form] input'); i.focus(); i.select(); return; }
+  if (e.target.closest('[data-rename-cancel]')) { stopRename(); return; }
   const show = e.target.closest('[data-show]');
   if (show) { const m = matches.find((x) => x.id === show.dataset.show); drawer = null; if (m) showMatch(m); return; }
   if (e.target.closest('[data-filter-matchup]')) {
@@ -1123,6 +1170,30 @@ $('#drawer').addEventListener('click', (e) => {
     drawer = null;
     setFilter({ opp: { key, label: row ? row.dataset.label : key.slice(2) } });
   }
+});
+
+function stopRename() {
+  drawer.renaming = false;
+  render();
+  const b = $('#drawer [data-rename]');
+  if (b) b.focus();
+}
+// Every match filed under this archetype, in any deck or format, takes the new name as a hand-set one.
+$('#drawer').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const from = drawer.key.slice(2);
+  const to = e.target.elements.to.value.trim();
+  if (!to || to === from) { stopRename(); return; }
+  const targets = matches.filter((m) => oppKey(m)[0] === drawer.key);
+  if (!confirm(tn('confirm_rename', targets.length, { from, to }))) return;
+  for (const m of targets) notes[m.id] = Object.assign({}, notes[m.id], { archetype: to });
+  await chrome.storage.local.set(Object.fromEntries(targets.map((m) => ['note:' + m.id, notes[m.id]])));
+  drawer = { key: 'a:' + to };
+  render();
+  toast(tn('archetype_renamed', targets.length, { to }));
+});
+$('#drawer').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && e.target.closest('[data-rename-form]')) { e.stopPropagation(); stopRename(); }
 });
 
 $('#q').addEventListener('input', (e) => setFilter({ q: e.target.value }));

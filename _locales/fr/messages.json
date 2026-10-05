@@ -686,6 +686,33 @@
   "ov_cancel": {
     "message": "Annuler"
   },
+  "rename_archetype": {
+    "message": "Renommer cet archétype"
+  },
+  "rename_save": {
+    "message": "Renommer"
+  },
+  "confirm_rename_one": {
+    "message": "Renommer « {from} » en « {to} » sur {n} match ?"
+  },
+  "confirm_rename_other": {
+    "message": "Renommer « {from} » en « {to} » sur {n} matchs, tous decks et formats confondus ?"
+  },
+  "archetype_renamed_one": {
+    "message": "« {to} » : {n} match renommé."
+  },
+  "archetype_renamed_other": {
+    "message": "« {to} » : {n} matchs renommés."
+  },
+  "ov_met": {
+    "message": "Déjà croisé"
+  },
+  "ov_last_arch": {
+    "message": "Dernière fois : {arch}, {when}"
+  },
+  "ov_last": {
+    "message": "Dernière fois : {when}"
+  },
   "import_history": {
     "message": "Importer mes anciens matchs"
   },
@@ -784,6 +811,21 @@
   },
   "col_card": {
     "message": "Carte"
+  },
+  "col_gap": {
+    "message": "Écart"
+  },
+  "gap_sort_title": {
+    "message": "Écart de taux de victoire entre les games où je l’ai piochée et les autres"
+  },
+  "sort_by": {
+    "message": "Trier par {col}"
+  },
+  "sort_asc": {
+    "message": "ordre croissant"
+  },
+  "sort_desc": {
+    "message": "ordre décroissant"
   },
   "col_drawn": {
     "message": "Piochée"

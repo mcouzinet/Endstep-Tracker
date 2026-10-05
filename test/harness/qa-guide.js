@@ -72,6 +72,30 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.equal(await p.evaluate(() => document.querySelector('.panel-head [data-value="worst"]').getAttribute('aria-pressed')), 'true');
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('endstep-tracker.filters')).sort), 'worst');
 
+  // Renaming an archetype: Escape in the field gives up without closing the panel; the new name goes on every match
+  // filed under the old one, after a confirmation, and the panel follows it.
+  await click('#by-opp button.rec[data-key="a:Dimir Control"]');
+  await sleep(200);
+  await click('#drawer [data-rename]');
+  await sleep(100);
+  assert.equal(await p.evaluate(() => document.activeElement.value), 'Dimir Control');
+  await p.keyboard.press('Escape');
+  await sleep(100);
+  assert.equal(await p.evaluate(() => !document.getElementById('drawer').hidden && !document.querySelector('#drawer [data-rename-form]')), true);
+  await click('#drawer [data-rename]');
+  await sleep(100);
+  await p.keyboard.type('Dimir Tempo');
+  const dialogs = [];
+  p.once('dialog', (d) => { dialogs.push(d.message()); d.accept(); });
+  await p.keyboard.press('Enter');
+  await sleep(400);
+  assert.match(dialogs[0] || '', /« Dimir Control » en « Dimir Tempo »/);
+  assert.match(await $text('#drawer-title'), /Dimir Tempo/);
+  const keys = await p.evaluate(() => [...document.querySelectorAll('#by-opp button.rec')].map((x) => x.dataset.key));
+  assert.ok(keys.includes('a:Dimir Tempo') && !keys.includes('a:Dimir Control'), keys.join(', '));
+  assert.ok(await p.evaluate(() => Object.entries(window.__DATA).some(([k, v]) => k.startsWith('note:') && v.archetype === 'Dimir Tempo')));
+  await p.keyboard.press('Escape');
+
   // The toast never catches a click.
   assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('toast')).pointerEvents), 'none');
 

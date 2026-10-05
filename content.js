@@ -68,13 +68,15 @@
       // here (under its history id, or recorded by the tracker under another), or deleted from the dashboard while this
       // page is open, is left. Then the next page, one a second, to the last one or until I stop; the count and how far
       // it got show in the in-page panel.
-      const { historyImport: on } = await chrome.storage.local.get('historyImport');
+      const { historyImport: on, deletedMatches } = await chrome.storage.local.get(['historyImport', 'deletedMatches']);
       if (!S.importing(on)) return;
       const recs = data.rows.map((row) => T.fromHistory(row, ctx.decks)).filter(Boolean);
       const all = Object.entries(await S.loadStore()).filter(([k]) => k.startsWith('match:')).map(([, v]) => S.normalizeMatch(v)).filter(Boolean);
-      const known = new Set(all.map((m) => m.id));
+      // Matches I deleted from the dashboard stay deleted: by their id, or as the twin of a recorded one.
+      const gone = Object.entries(S.obj(deletedMatches)).map(([id, f]) => S.normalizeMatch({ ...S.obj(f), id, games: [] })).filter(Boolean);
+      const known = new Set([...all, ...gone].map((m) => m.id));
       const fresh = recs.filter((r) => !known.has(r.id) && !store.has(r.id) && !ignored.has(r.id));
-      const twins = new Set(S.historyDuplicates([...all, ...fresh]));
+      const twins = new Set(S.historyDuplicates([...all, ...gone.filter((g) => g.source !== 'history'), ...fresh]));
       const add = fresh.filter((r) => !twins.has(r.id));
       if (orphaned()) return;
       await chrome.storage.local.set({ ...Object.fromEntries(add.map((r) => ['match:' + r.id, r])),

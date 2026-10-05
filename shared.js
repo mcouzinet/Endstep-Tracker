@@ -68,6 +68,33 @@
     const used = new Set();
     return pairs.sort((a, b) => a.dt - b.dt).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map((p) => p.h);
   }
+  // My account on the site: the one name among the participants of every match whose details were seen (null when
+  // that is not one name).
+  function myAccount(list) {
+    const counts = new Map();
+    let n = 0;
+    for (const m of list) {
+      if (!Array.isArray(m.participants) || !m.participants.length) continue;
+      n++;
+      for (const name of new Set(m.participants.map((p) => p && p.username).filter(Boolean))) counts.set(name, (counts.get(name) || 0) + 1);
+    }
+    const all = [...counts].filter(([, k]) => k === n).map(([name]) => name);
+    return all.length === 1 ? all[0] : null;
+  }
+  // Who a match was against, lowercased: the opponents' names in the game and, my account known, their accounts too
+  // (what the history names them by).
+  function oppIds(m, me) {
+    const ids = opps(m).map((p) => p.name);
+    if (me && Array.isArray(m.participants)) for (const p of m.participants) if (p && p.username && p.username !== me) ids.push(p.username);
+    return new Set(ids.filter((n) => n && n !== '?').map((n) => n.toLowerCase()));
+  }
+  // My earlier matches against the same player, bots left out, newest first.
+  function metBefore(m, list) {
+    const me = myAccount(list);
+    const ids = oppIds(m, me);
+    return list.filter((x) => x.id !== m.id && x.startedAt < m.startedAt && !vsAI(x) && [...oppIds(x, me)].some((n) => ids.has(n)))
+      .sort((a, b) => b.startedAt - a.startedAt);
+  }
   const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
   const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
   const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
@@ -300,7 +327,7 @@
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
-    HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
+    HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore,
