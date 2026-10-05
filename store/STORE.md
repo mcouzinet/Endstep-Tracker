@@ -148,6 +148,20 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), Mac App Store ("What's New in This Version"). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
 
+### 1.3 (EN)
+
+- Met before: when you face a player you already played, the panel on endstep.cc shows your record against them and what they played last time.
+- Rename an archetype everywhere: the pencil in the matchup panel renames it on all your matches. A name already in use merges the two.
+- My cards can be sorted by any column: card, gap, drawn, not drawn, opening hand.
+- A match you delete stays deleted, even when you import your history again.
+
+### 1.3 (FR)
+
+- Déjà croisé : quand tu retrouves un joueur déjà affronté, le panneau sur endstep.cc affiche ton bilan contre lui et ce qu'il jouait la dernière fois.
+- Renomme un archétype partout : le crayon du panneau du matchup le renomme sur tous tes matchs. Un nom déjà utilisé fusionne les deux.
+- « Mes cartes » se trie par colonne : carte, écart, piochée, pas piochée, main de départ.
+- Un match que tu supprimes reste supprimé, même quand tu importes à nouveau ton historique.
+
 ### 1.2 (EN)
 
 - Import your past matches: "Import my past matches" in the Data menu opens your endstep.cc history and adds, page after page, the matches the extension did not record. Nothing is imported unless you ask.
