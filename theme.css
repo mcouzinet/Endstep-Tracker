@@ -80,7 +80,8 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .result.open { color: var(--ink-2); font-weight: 500; }
 
 /* "Buy me a coffee": a small pill, as in Deck Compare; never in the Safari build (Apple refuses tip links, 3.1.1) */
-.bmc { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--line-strong); border-radius: 999px;
-  color: var(--ink-2); font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.bmc { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid #ffdd00; border-radius: 999px;
+  background: #ffdd00; color: #0d0c22; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; } /* Buy Me a Coffee's own yellow */
 .bmc svg { width: 14px; height: 14px; flex: none; }
-.bmc:hover { color: var(--gold-hi); border-color: var(--gold); }
+.bmc:hover { background: #ffe74d; border-color: #ffe74d; }
+.bmc:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
