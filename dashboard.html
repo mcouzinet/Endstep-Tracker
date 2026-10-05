@@ -18,12 +18,12 @@
     .brand p { color: var(--ink-3); font-size: 13px; }
     .live {
       display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px;
-      border: 1px solid rgb(212 174 98 / .45); border-radius: 999px; background: rgb(212 174 98 / .08);
+      border: 1px solid oklch(.8 .135 80 / .45); border-radius: 999px; background: oklch(.8 .135 80 / .08);
       color: var(--ink); font: inherit; font-size: 13px; cursor: pointer;
     }
-    .live:hover { background: rgb(212 174 98 / .14); }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold-hi); box-shadow: 0 0 0 3px rgb(236 202 134 / .18); animation: pulse 1.6s var(--ease-out) infinite; }
-    @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgb(236 202 134 / 0); opacity: .7; } }
+    .live:hover { background: oklch(.8 .135 80 / .14); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold-hi); box-shadow: 0 0 0 3px oklch(.85 .13 83 / .18); animation: pulse 1.6s var(--ease-out) infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 6px oklch(.85 .13 83 / 0); opacity: .7; } }
 
     .menu[popover] {
       position-anchor: --data; inset: auto; top: calc(anchor(bottom) + 6px); right: anchor(right); margin: 0;
@@ -55,9 +55,9 @@
     .seg button { border: 0; background: none; color: var(--ink-2); font: inherit; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
     .seg button:hover { color: var(--ink); }
     .seg button[aria-pressed="true"] { background: var(--surface-3); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
-    .facet { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: rgb(212 174 98 / .12); border: 1px solid rgb(212 174 98 / .4); font-size: 13px; }
+    .facet { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: oklch(.8 .135 80 / .12); border: 1px solid oklch(.8 .135 80 / .4); font-size: 13px; }
     .facet button { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer; }
-    .facet button:hover { background: rgb(212 174 98 / .2); color: var(--ink); }
+    .facet button:hover { background: oklch(.8 .135 80 / .2); color: var(--ink); }
     .count { color: var(--ink-3); font-size: 13px; margin-left: auto; font-variant-numeric: tabular-nums; }
     #reset.off { visibility: hidden; } /* keeps its width so the count does not move ([hidden] would collapse it) */
 

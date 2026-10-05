@@ -150,6 +150,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 ### 1.3 (EN)
 
+- A new look to match endstep.cc's redesign: the panel on the site follows its colors and fonts, and the dashboard takes its new palette.
 - Met before: when you face a player you already played, the panel on endstep.cc shows your record against them and what they played last time.
 - Rename an archetype everywhere: the pencil in the matchup panel renames it on all your matches. A name already in use merges the two.
 - My cards can be sorted by any column: card, gap, drawn, not drawn, opening hand.
@@ -157,6 +158,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 ### 1.3 (FR)
 
+- Un nouveau look, aux couleurs du nouveau endstep.cc : le panneau sur le site suit ses couleurs et ses polices, et le tableau de bord prend sa nouvelle palette.
 - Déjà croisé : quand tu retrouves un joueur déjà affronté, le panneau sur endstep.cc affiche ton bilan contre lui et ce qu'il jouait la dernière fois.
 - Renomme un archétype partout : le crayon du panneau du matchup le renomme sur tous tes matchs. Un nom déjà utilisé fusionne les deux.
 - « Mes cartes » se trie par colonne : carte, écart, piochée, pas piochée, main de départ.

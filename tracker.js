@@ -457,8 +457,10 @@
     // The deck's id when the site gives it, else the one deck of mine with that name (a renamed deck keeps its matches).
     const named = row.deckName ? Object.entries(decks || {}).filter(([, d]) => d && d.name === row.deckName) : [];
     const deckId = typeof row.deckId === 'string' ? row.deckId : named.length === 1 ? named[0][0] : row.deckName ? 'name:' + row.deckName : null;
+    const end = Date.parse(row.endedAt); // given since the site's October 2026 redesign: the match's length
     return {
       v: 1, id: row.id, source: 'history', status: result ? 'complete' : 'abandoned', startedAt: at, updatedAt: at,
+      ...(end > at && { endedAt: end }),
       ...(result && { result }), ...(row.formatId && { formatId: row.formatId }), ranked: row.stakes === 'ranked',
       mySeat: 0, players: [{ seat: 0, name: '' }, ...opps.map((o, i) => ({ seat: i + 1, name: (o && o.username) || '?' }))],
       score: row.score ? [Number(row.score.you) || 0, Number(row.score.opponent) || 0] : [],

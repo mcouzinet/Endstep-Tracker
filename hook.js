@@ -42,7 +42,7 @@
   let historyRequest = null; // { url, init } of the site's last /api/me/matches request
   const who = (o) => o && { username: o.username };
   const historyRow = (r) => ({
-    id: r.id, createdAt: r.createdAt, result: r.result, formatId: r.formatId, stakes: r.stakes, score: r.score,
+    id: r.id, createdAt: r.createdAt, endedAt: r.endedAt, result: r.result, formatId: r.formatId, stakes: r.stakes, score: r.score,
     deckId: r.deckId, deckName: r.deckName, opponent: who(r.opponent), opponents: Array.isArray(r.opponents) ? r.opponents.map(who) : undefined,
   });
   function readHistory(pending) {

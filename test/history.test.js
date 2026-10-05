@@ -24,6 +24,8 @@ assert.equal(m.ranked, true);
 assert.deepEqual(m.games, []);
 assert.deepEqual(S.records([m], Date.now()).m, { W: 1, L: 0, D: 0 });
 assert.equal(S.matchOnPlay(m), null, 'play or draw unknown');
+assert.equal('endedAt' in m, false, 'no end time: no length');
+assert.equal(T.fromHistory(row({ endedAt: '2026-09-01T10:42:00Z' }), decks).endedAt, Date.parse('2026-09-01T10:42:00Z'), 'its length when the site gives the end');
 
 // The site's deck id wins; a name two decks share, or one no longer listed, stays a name.
 assert.equal(T.fromHistory(row({ deckId: 'deck-9' }), decks).myDeck.id, 'deck-9');

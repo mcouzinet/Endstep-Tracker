@@ -34,46 +34,54 @@
     :host { all: initial; position: fixed; z-index: 2147483000; color-scheme: dark; }
     :host([hidden]) { display: none; }
     * { box-sizing: border-box; }
+    /* endstep.cc's own design tokens (--es-*, inherited through the shadow root), with their values as of October
+       2026 when the site does not define them: the panel follows the site's look. */
     .box {
-      --ink: #efe7d7; --ink-2: #bfb29a; --ink-3: #8f846f; --gold: #d4ae62; --gold-hi: #ecca86; --line: #43392c;
-      --win: #1a9f86; --loss: #e5664b; --surface: #14110d; --surface-2: #1b1712;
-      width: max-content; max-width: 300px; border: 1px solid var(--line); border-radius: 10px; background: rgb(20 17 13 / .96);
+      --ink: var(--es-text, oklch(.95 .012 85)); --ink-2: var(--es-muted, oklch(.76 .022 80)); --ink-3: oklch(.62 .02 80);
+      --gold: var(--es-gold, oklch(.8 .135 80)); --gold-hi: var(--es-gold-hi, oklch(.85 .13 83)); --gold-ink: var(--es-gold-ink, oklch(.2 .035 70));
+      --gold-wash: var(--es-gold-wash, oklch(.8 .135 80 / .15));
+      --line: var(--es-line, oklch(.29 .012 75)); --line-strong: var(--es-line-strong, oklch(.5 .018 78));
+      --surface: var(--es-bg, oklch(.16 .006 75)); --surface-2: var(--es-raise, oklch(.205 .008 75)); --surface-3: var(--es-raise-hi, oklch(.25 .01 75));
+      --win: var(--es-up, oklch(.8 .14 145)); --loss: var(--es-down, oklch(.72 .16 32)); --live: var(--es-live, oklch(.69 .17 32));
+      --ui: var(--es-font-ui, "Archivo", "Arial Narrow", system-ui, sans-serif); --voice: var(--es-font-voice, "EB Garamond", "Iowan Old Style", Georgia, serif);
+      width: max-content; max-width: 300px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in oklab, var(--surface) 96%, transparent);
       box-shadow: 0 14px 34px -10px rgb(0 0 0 / .7), 0 2px 8px rgb(0 0 0 / .45);
-      color: var(--ink); font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased;
+      color: var(--ink); font: 14px/1.45 var(--ui); -webkit-font-smoothing: antialiased;
     }
     .box.open { width: 300px; }
     .bar { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 8px; cursor: grab; user-select: none; touch-action: none; }
     .bar:active { cursor: grabbing; }
     .grip { width: 10px; height: 14px; color: var(--ink-3); flex: none; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #e5664b; flex: none; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); flex: none; }
     .dot.off { background: var(--ink-3); }
     .dot.import { background: var(--gold); }
     .sum { white-space: nowrap; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-    .sum b { color: var(--ink); font-weight: 600; }
+    .sum b { color: var(--ink); font-weight: 700; letter-spacing: .02em; }
     button { font: inherit; color: inherit; cursor: pointer; }
     .icon { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-left: auto; border: 0; border-radius: 6px; background: none; color: var(--ink-2); }
-    .icon:hover { background: var(--surface-2); color: var(--ink); }
+    .icon:hover { background: var(--surface-3); color: var(--ink); }
     .icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .body { display: grid; gap: 10px; padding: 2px 12px 12px; border-top: 1px solid var(--line); padding-top: 10px; }
-    h2 { margin: 0; font-size: 14px; font-weight: 650; }
-    h3 { margin: 0 0 4px; font-size: 11px; font-weight: 500; color: var(--ink-3); }
+    h2 { margin: 0; font: 600 17px/1.15 var(--voice); color: var(--ink); }
+    h3 { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
     p { margin: 0; }
     .muted { color: var(--ink-3); }
-    .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: rgb(212 174 98 / .12); color: var(--gold-hi); font-size: 12px; }
-    .tag.guess { background: none; border: 1px dashed rgb(212 174 98 / .55); color: var(--ink-2); }
+    .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--gold-wash); color: var(--gold-hi); font-size: 12px; font-weight: 600; }
+    .tag.guess { background: none; border: 1px dashed color-mix(in oklab, var(--gold) 55%, transparent); color: var(--ink-2); font-weight: 500; }
     .stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
-    .stats b { color: var(--ink); font-weight: 600; }
+    .stats b { color: var(--ink); font-weight: 700; }
     .W { color: var(--win); } .L { color: var(--loss); }
     .row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .btn { padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-size: 12px; }
-    .btn:hover { border-color: var(--gold); }
-    .btn.primary { background: var(--gold); border-color: var(--gold); color: #0c0a08; font-weight: 600; }
+    .btn { padding: 6px 12px; border: 0; border-radius: 8px; background: var(--surface-2); font-size: 12px; font-weight: 600; }
+    .btn:hover { background: var(--surface-3); }
+    .btn.primary { background: var(--gold); color: var(--gold-ink); font-weight: 700; }
+    .btn.primary:hover { background: var(--gold-hi); }
     .side { display: grid; gap: 2px; }
     .side .in { color: var(--win); } .side .out { color: var(--loss); }
     .arch { display: flex; align-items: center; gap: 6px; }
     .edit { display: flex; align-items: center; gap: 6px; }
-    input { flex: 1; min-width: 0; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
-    input:focus { outline: none; border-color: var(--gold); }
+    input { flex: 1; min-width: 0; padding: 5px 9px; border: 0; border-radius: 8px; background: var(--surface-2); color: var(--ink); font: inherit; font-size: 12px; }
+    input:focus { outline: 2px solid var(--gold); outline-offset: 0; }
     .edit .icon { margin-left: 0; }
     @media (prefers-reduced-motion: no-preference) { .box { transition: width .15s cubic-bezier(.16, 1, .3, 1); } }
   </style><div class="box"></div>`;

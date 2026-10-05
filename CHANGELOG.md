@@ -5,7 +5,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## [1.3] (2026-10-05)
 
-Les adversaires déjà croisés dans le panneau, les archétypes renommés partout, « Mes cartes » triable par colonne, et les matchs supprimés qui le restent.
+Aux couleurs du nouveau endstep.cc, avec les adversaires déjà croisés dans le panneau, les archétypes renommés partout, « Mes cartes » triable par colonne, et les matchs supprimés qui le restent.
 
 ### Ajouté
 
@@ -13,6 +13,11 @@ Les adversaires déjà croisés dans le panneau, les archétypes renommés parto
 - **Adversaire déjà croisé** (panneau sur endstep.cc) : quand tu retrouves un joueur que tu as déjà affronté, le panneau affiche ton bilan contre lui et ce qu'il jouait la dernière fois. Il est reconnu à son nom en jeu ou à son nom de compte, donc aussi dans les matchs importés de l'historique.
 - **Renommer un archétype partout** (panneau du matchup, le crayon à côté du nom) : le nouveau nom s'applique à tous les matchs classés sous cet archétype, tous decks et formats confondus, après confirmation. Un nom déjà utilisé fusionne les deux archétypes.
 - **Trier « Mes cartes »** : un clic sur l'en-tête d'une colonne (Carte, Écart, Piochée, Pas piochée, Main de départ) trie la liste par elle, un second clic inverse l'ordre. Comme pour les matchups, un taux calculé sur moins de 5 games ne passe jamais devant. Le tri choisi est gardé d'une visite à l'autre.
+
+### Modifié
+
+- **Aux couleurs du nouveau endstep.cc** : le panneau sur le site reprend directement le nouveau design d'endstep (ses couleurs, ses polices Archivo et EB Garamond, ses boutons) et suivra ses prochains ajustements. Le tableau de bord et la popup passent à sa nouvelle palette : noir chaud, or ambré.
+- **Matchs importés de l'historique** : leur durée est maintenant connue, le site donnant leur heure de fin.
 
 ### Corrigé
 
