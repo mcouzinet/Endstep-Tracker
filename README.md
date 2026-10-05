@@ -6,6 +6,8 @@ Extension Chrome (Manifest V3, sans dépendance) qui enregistre automatiquement 
 
 Depuis les stores : [Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (aussi pour Brave et Opera), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/), [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp), [Safari sur Mac](https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12).
 
+Pour soutenir le projet : [Buy me a coffee](https://buymeacoffee.com/mcouzinet).
+
 Depuis ce dossier, pour le développement :
 
 1. `chrome://extensions` → activer **Mode développeur**

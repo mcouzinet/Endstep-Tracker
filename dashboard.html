@@ -385,7 +385,9 @@
       .tabs button { flex: 1; padding: 10px 4px; font-size: 14px; }
       .top { gap: 10px; }
       .brand { flex: 1 1 100%; margin-right: 0; } /* then the live pill, language and data menu share one row */
-      #data-btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      #data-btn span, .top .bmc span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      .top .bmc { align-self: stretch; padding: 0 10px; border-radius: var(--radius-sm); }
+      .top .bmc svg { width: 16px; height: 16px; }
       #data-btn { padding: 7px 9px; }
       .live { flex: 1; min-width: 0; }
       #live-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -426,6 +428,7 @@
         </div>
       </div>
       <button id="live" class="live" hidden><span class="dot"></span><span id="live-text"></span></button>
+      <a class="bmc" href="https://buymeacoffee.com/mcouzinet" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 3v2M10.5 3v2M14 3v2"/></svg><span data-i18n="buy_coffee"></span></a>
       <select id="lang" data-i18n-attr="aria-label:language,title:language">
         <option value="en">English</option>
         <option value="fr">Français</option>

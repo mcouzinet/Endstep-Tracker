@@ -242,6 +242,13 @@
     return translator(LANGS.includes(ui) ? ui : 'en', (k) => chrome.i18n.getMessage(k));
   }
 
+  // The Safari build shows no tip link (Apple refuses them, guideline 3.1.1): its manifest names Safari.
+  function dropTipLinks() {
+    let safari = false;
+    try { safari = !!(chrome.runtime.getManifest().browser_specific_settings || {}).safari; } catch { /* no manifest: a test page */ }
+    if (safari) for (const el of document.querySelectorAll('.bmc')) el.remove();
+  }
+
   // All of chrome.storage but the decision logs (dec:*), the bulk of it: those load one match at a time.
   async function loadStore() {
     const keys = (await chrome.storage.local.getKeys()).filter((k) => !k.startsWith('dec:'));
@@ -330,7 +337,7 @@
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
-    loadI18n, browserI18n, translator, loadStore,
+    loadI18n, browserI18n, translator, loadStore, dropTipLinks,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;

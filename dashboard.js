@@ -17,6 +17,7 @@ async function initI18n() {
   locale = I18N.locale;
   document.documentElement.lang = locale;
   $('#lang').value = locale;
+  S.dropTipLinks();
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const el of document.querySelectorAll('[data-i18n-attr]')) {
     for (const pair of el.dataset.i18nAttr.split(',')) { const [attr, key] = pair.split(':'); el.setAttribute(attr, t(key)); }

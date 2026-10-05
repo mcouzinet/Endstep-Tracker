@@ -632,6 +632,9 @@
   "open_dashboard": {
     "message": "Ouvrir le tableau de bord"
   },
+  "buy_coffee": {
+    "message": "Offre-moi un café"
+  },
   "popup_live": {
     "message": "En cours contre {opp}"
   },

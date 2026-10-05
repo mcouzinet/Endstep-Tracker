@@ -74,6 +74,7 @@ function render(d) {
 (async () => {
   I18N = await S.loadI18n();
   document.documentElement.lang = I18N.locale;
+  S.dropTipLinks();
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   let d = await load();
   render(d);

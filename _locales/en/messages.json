@@ -632,6 +632,9 @@
   "open_dashboard": {
     "message": "Open the dashboard"
   },
+  "buy_coffee": {
+    "message": "Buy me a coffee"
+  },
   "popup_live": {
     "message": "In progress against {opp}"
   },

@@ -9,6 +9,7 @@ Les adversaires déjà croisés dans le panneau, les archétypes renommés parto
 
 ### Ajouté
 
+- **« Offre-moi un café »** : un lien vers https://buymeacoffee.com/mcouzinet dans la popup et en haut du tableau de bord, comme dans Deck Compare. Absent sur Safari, où Apple refuse les liens de don.
 - **Adversaire déjà croisé** (panneau sur endstep.cc) : quand tu retrouves un joueur que tu as déjà affronté, le panneau affiche ton bilan contre lui et ce qu'il jouait la dernière fois. Il est reconnu à son nom en jeu ou à son nom de compte, donc aussi dans les matchs importés de l'historique.
 - **Renommer un archétype partout** (panneau du matchup, le crayon à côté du nom) : le nouveau nom s'applique à tous les matchs classés sous cet archétype, tous decks et formats confondus, après confirmation. Un nom déjà utilisé fusionne les deux archétypes.
 - **Trier « Mes cartes »** : un clic sur l'en-tête d'une colonne (Carte, Écart, Piochée, Pas piochée, Main de départ) trie la liste par elle, un second clic inverse l'ordre. Comme pour les matchups, un taux calculé sur moins de 5 games ne passe jamais devant. Le tri choisi est gardé d'une visite à l'autre.
