@@ -31,6 +31,7 @@
     footer .btn { justify-content: center; }
     .switch { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
     .switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--gold); }
+    .feedback { justify-self: start; font-size: 12px; color: var(--ink-3); }
   </style>
 </head>
 <body class="loading">
@@ -43,6 +44,7 @@
   <footer>
     <button id="open" class="btn primary" data-i18n="open_dashboard"></button>
     <label class="switch"><input type="checkbox" id="overlay"><span data-i18n="overlay_toggle"></span></label>
+    <a id="feedback" class="feedback" target="_blank" rel="noopener" data-i18n="feedback"></a>
   </footer>
   <script src="tracker.js"></script>
   <script src="meta.js"></script>

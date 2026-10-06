@@ -3,6 +3,12 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## Non publié
+
+### Ajouté
+
+- **Donner un avis, signaler un bug** (menu Données du tableau de bord, et la popup) : ouvre un court formulaire, sans compte, qui sait déjà ta version, ton navigateur et ta langue. Rien n'est envoyé sans ce clic.
+
 ## [1.3] (2026-10-05)
 
 Aux couleurs du nouveau endstep.cc, avec les adversaires déjà croisés dans le panneau, les archétypes renommés partout, « Mes cartes » triable par colonne, et les matchs supprimés qui le restent.

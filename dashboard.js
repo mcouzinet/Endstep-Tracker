@@ -1043,6 +1043,7 @@ const ACTIONS = {
     await chrome.storage.local.set({ historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: 0, added: 0 } });
     chrome.tabs.create({ url: 'https://endstep.cc/history' });
   },
+  feedback: () => chrome.tabs.create({ url: S.feedbackLink(I18N.locale) }),
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);

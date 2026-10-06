@@ -84,7 +84,7 @@ Limites : les événements survenus avant l'ouverture de la page de jeu (ex. rec
 ## Test
 
 ```bash
-node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js && node test/cards.test.js && node test/history.test.js && node test/met.test.js
+node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js && node test/cards.test.js && node test/history.test.js && node test/met.test.js && node test/feedback.test.js
 ```
 
 Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et vérifie la fiche produite et les décisions enregistrées ; le deuxième vérifie la reconnaissance du deck adverse sur un métagame réduit ; les suivants vérifient que le commandant adverse nomme l'archétype en Duel Commander, que les matchs contre l'IA ne comptent dans aucun bilan, que les bilans se comptent en matchs, sur le play ou sur la draw selon la première game, et que le format d'un match reste juste quand le site ne l'a pas donné. Le harnais Puppeteer est dans `test/harness/`.

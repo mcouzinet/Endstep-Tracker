@@ -635,6 +635,9 @@
   "buy_coffee": {
     "message": "Offre-moi un café"
   },
+  "feedback": {
+    "message": "Donner un avis, signaler un bug"
+  },
   "popup_live": {
     "message": "En cours contre {opp}"
   },

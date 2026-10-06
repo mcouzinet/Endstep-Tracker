@@ -242,6 +242,22 @@
     return translator(LANGS.includes(ui) ? ui : 'en', (k) => chrome.i18n.getMessage(k));
   }
 
+  // Feedback: a Tally form the user opens by a click. The link says which version, browser and language a report is
+  // about; nothing else, and the extension itself sends nothing.
+  const FEEDBACK = 'https://tally.so/r/LZQveG';
+  function browserName(manifest, nav) {
+    const bss = (manifest && manifest.browser_specific_settings) || {};
+    const ua = (nav && nav.userAgent) || '';
+    return bss.safari ? 'Safari' : bss.gecko || /Firefox\//.test(ua) ? 'Firefox' : / Edg\//.test(ua) ? 'Edge' : / OPR\//.test(ua) ? 'Opera'
+      : nav && nav.brave ? 'Brave' : 'Chrome';
+  }
+  const feedbackUrl = (version, browser, lang) => `${FEEDBACK}?${new URLSearchParams({ version, browser, lang })}`;
+  function feedbackLink(lang) {
+    let manifest = {};
+    try { manifest = chrome.runtime.getManifest(); } catch { /* a test page */ }
+    return feedbackUrl(manifest.version || '?', browserName(manifest, typeof navigator === 'object' ? navigator : null), lang);
+  }
+
   // The Safari build shows no tip link (Apple refuses them, guideline 3.1.1): its manifest names Safari.
   function dropTipLinks() {
     let safari = false;
@@ -337,7 +353,7 @@
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
-    loadI18n, browserI18n, translator, loadStore, dropTipLinks,
+    loadI18n, browserI18n, translator, loadStore, dropTipLinks, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;

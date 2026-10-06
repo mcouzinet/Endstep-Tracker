@@ -76,6 +76,7 @@ function render(d) {
   document.documentElement.lang = I18N.locale;
   S.dropTipLinks();
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  $('#feedback').href = S.feedbackLink(I18N.locale);
   let d = await load();
   render(d);
   document.body.classList.remove('loading');

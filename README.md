@@ -23,7 +23,7 @@ Desktop browsers only: Chrome on Android has no extensions.
 
 ## Privacy
 
-Everything is stored locally (`chrome.storage.local`). There is no server and no analytics. The only network requests are endstep's public metagame API (archetype recognition), Scryfall card images when you hover a card in the dashboard, and your own endstep history pages when you import them. The extension never plays or clicks for you. Details in [PRIVACY.md](PRIVACY.md).
+Everything is stored locally (`chrome.storage.local`). There is no server and no analytics. The only network requests are endstep's public metagame API (archetype recognition), Scryfall card images when you hover a card in the dashboard, and your own endstep history pages when you import them. The feedback form opens only when you click it. The extension never plays or clicks for you. Details in [PRIVACY.md](PRIVACY.md).
 
 ## How it works
 
@@ -45,6 +45,10 @@ Plain JavaScript, Manifest V3, no dependencies and no build step: the code in th
 3. Tests: `for t in test/*.test.js; do node "$t" || break; done`
 
 Releases follow `store/STORE.md`; changes are listed in [CHANGELOG.md](CHANGELOG.md) (in French), and the detailed notes on internals, tests and publishing are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) (in French).
+
+## Feedback
+
+"Give feedback" in the extension (Data menu, or the popup) opens a short form. Bugs and ideas are also welcome as [GitHub issues](https://github.com/mcouzinet/Endstep-Tracker/issues).
 
 ## License and support
 
