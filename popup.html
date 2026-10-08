@@ -32,6 +32,8 @@
     .switch { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
     .switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--gold); }
     .feedback { justify-self: start; font-size: 12px; color: var(--ink-3); }
+    .access { display: grid; gap: 10px; margin: 12px 14px 0; padding: 10px 12px; border: 1px solid var(--danger); border-radius: var(--radius-sm); font-size: 13px; color: var(--ink-2); }
+    .access b { color: var(--ink); }
   </style>
 </head>
 <body class="loading">
@@ -40,6 +42,7 @@
     <b>Endstep Tracker</b>
     <a class="bmc" style="margin-left:auto" href="https://buymeacoffee.com/mcouzinet" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 3v2M10.5 3v2M14 3v2"/></svg><span data-i18n="buy_coffee"></span></a>
   </header>
+  <div id="access" class="access" role="alert" hidden><p><b data-i18n="access_title"></b> <span data-i18n="access_text"></span></p><button id="access-btn" class="btn primary" data-i18n="access_btn"></button></div>
   <main id="main" aria-live="polite"></main>
   <footer>
     <button id="open" class="btn primary" data-i18n="open_dashboard"></button>

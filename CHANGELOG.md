@@ -7,7 +7,17 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Ajouté
 
+- **Whozic à côté de Deck Compare** : en haut du tableau de bord, une seconde carte présente Whozic, le jeu de soirée musical du même auteur. Chacune se ferme séparément, jusqu'à la version suivante ; l'autre prend alors toute la largeur. Absente sur Safari.
+- **Alerte d'accès au site** (popup et tableau de bord) : si le navigateur ne donne endstep.cc à l'extension qu'après un clic sur son icône, elle ne s'active qu'en cours de partie et n'enregistre les matchs qu'à moitié (sans format, sans deck, sans début de partie). Un bandeau le dit, avec un bouton « Autoriser sur endstep.cc » ; une fois l'accès donné, les onglets endstep.cc ouverts sont repris aussitôt.
+- **Matchs incomplets réparés par l'import de l'historique** : un match enregistré à moitié reçoit ce que l'historique d'endstep connaît (format, deck, classé ou non, résultat et score s'il manquait). En Duel Commander, le format retrouvé fait revenir le commandant adverse. Le panneau compte ces matchs complétés, et leur détail le signale.
 - **Donner un avis, signaler un bug** (menu Données du tableau de bord, et la popup) : ouvre un court formulaire, sans compte, qui sait déjà ta version, ton navigateur et ta langue. Rien n'est envoyé sans ce clic.
+
+### Corrigé
+
+- **Plusieurs onglets ou plusieurs ordinateurs** : endstep envoie chaque partie à tous les onglets ouverts du compte, même sur un autre ordinateur, et l'extension l'enregistrait dans chacun. Un onglet qui ne faisait que la recevoir en écrivait une copie à moitié vue (sans début de partie, ni format, ni deck), qui pouvait passer pour une perte de données. Désormais, seul l'onglet où l'on joue (celui qui envoie des actions) enregistre le match.
+- **Importer une sauvegarde fusionne** au lieu d'écraser : un match présent des deux côtés garde sa copie la plus complète, complétée par l'autre, et les notes saisies ici restent. On peut ainsi réunir les données de deux ordinateurs.
+- **Duel Commander reconnu même sans les détails du match** : quand l'extension s'éveille après le chargement de la page (accès au site « au clic »), elle manque les détails du match, donc son format. Le jeu lui-même dit pourtant qu'il s'agit de Duel Commander : le format et le commandant adverse s'affichent de nouveau, y compris pour les matchs déjà enregistrés.
+- **Le nettoyage des doublons ne perd plus rien** : quand un match importé de l'historique double un match enregistré en direct, le tableau de bord gardait l'enregistré et jetait l'importé, même quand l'enregistré était incomplet. Format, deck et résultat pouvaient ainsi disparaître. L'enregistré reprend désormais ce qui lui manque avant que le doublon soit retiré.
 
 ## [1.3] (2026-10-05)
 

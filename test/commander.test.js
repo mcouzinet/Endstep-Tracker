@@ -42,6 +42,11 @@ assert.deepEqual(run([state(7, [], [card(9, 'Ertai Resurrected', '1', true)])]).
 // A match recorded before the flag was read: the site's effect is left out of the name.
 assert.equal(S.archetype(Object.assign({}, m, { commanders: { 1: ['Deadpool, Trading Card', 'Commander Effect'] } }), C()), 'Deadpool, Trading Card');
 
+// The match details missed (the tracker woke up after the page loaded them): the game's own kind says Duel Commander.
+const late = Object.assign({}, m, { formatId: undefined, gameType: 'DuelCommander' });
+assert.equal(S.archetype(late, C()), 'Thrasios, Triton Hero + Kraum, Ludevic\'s Opus');
+assert.equal(S.formatOf(late, C()), 'Duel-commander');
+
 // Outside Duel Commander the command zone does not name the deck.
 const other = run([state(0, [], [card(2, 'Thrasios, Triton Hero', '1', true)])]);
 other.formatId = 'Pauper';

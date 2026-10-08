@@ -13,6 +13,8 @@ aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écriv
 - `qa-guess.js` : reconnaissance du deck adverse dans le harnais.
 - `qa-cards.js` : les onglets, « Mes cartes » et le side (panneau du matchup, détail d'un match), sur `harness-cards.html` (24 Bo3 Burn inventés, avec cartes piochées et side), large et étroit.
 - `qa-history.js` : l'import de l'historique dans la vraie extension, sur une page `/history` factice (réponses servies localement) : rien sans le bouton « Importer mes anciens matchs » ; ensuite matchs absents ajoutés, match déjà enregistré (sous un autre id) laissé tel quel, doublon d'une build précédente retiré, compteur du panneau, « Terminer ».
+- `qa-access.js` : le bandeau « pas d'accès permanent à endstep.cc » dans la popup et le tableau de bord (accès simulé via chrome.permissions), et son bouton.
+- `qa-acted.js` : un onglet qui ne fait que recevoir une partie (jouée dans un autre onglet ou sur un autre ordinateur) ne l'enregistre pas, celui qui y agit si ; l'import d'une sauvegarde fusionne (copie la plus complète gardée, notes d'ici conservées).
 - `e2e.js` : extension réellement chargée dans Chrome for Testing, partie rapide contre le bot puis vérification du stockage et du tableau de bord.
 - `e2e-reload.js` : onglet endstep.cc ouvert avant l'installation de l'extension (même chemin que ↻ / mise à jour) : le traqueur doit être injecté dans l'onglet et enregistrer une trame ; ne joue aucune partie.
   Crée une session invitée, un deck et un match sur endstep.cc : à lancer avec parcimonie (une fois par phase, pas en boucle).

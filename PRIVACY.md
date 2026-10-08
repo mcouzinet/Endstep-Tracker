@@ -30,6 +30,7 @@ Everything stays in your browser, in the extension's local storage (`chrome.stor
 - **Feedback** (`tally.so`): "Give feedback", in the dashboard's Data menu or the popup, opens a Tally form in a new tab, only when you click it. The link tells the form the extension's version, your browser's name and the interface language, so that a report says what it is about; what you then type in the form goes to Tally and to the author. The extension itself sends nothing.
 - **Scryfall** (`api.scryfall.com`): when you hover a card name in the dashboard, the card image is fetched from Scryfall. The request contains only the card name.
 - **Deck Compare** (another extension by the same author): the dashboard asks it, inside your browser, whether it is installed, to stop showing its promotion if so. The message says only that; nothing else is exchanged and nothing leaves your browser. The store link in that promotion opens only if you click it.
+- **Whozic** (`whozic.party`, the author's music party game): the dashboard shows a small promotion for it. Its link opens whozic.party only if you click it; the address only says the visit comes from Endstep Tracker (`utm_source`). Not shown in the Safari version.
 
 No analytics, no telemetry, no crash reporting, no third-party scripts.
 
@@ -62,6 +63,7 @@ Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur
 - **Avis** (`tally.so`) : « Donner un avis », dans le menu Données du tableau de bord ou dans la popup, ouvre un formulaire Tally dans un nouvel onglet, uniquement sur clic. Le lien indique au formulaire la version de l'extension, le nom de ton navigateur et la langue de l'interface, pour qu'un retour dise de quoi il parle ; ce que tu écris ensuite dans le formulaire va à Tally et à l'auteur. L'extension elle-même n'envoie rien.
 - **Scryfall** : au survol d'un nom de carte dans le tableau de bord, l'image est chargée depuis Scryfall. La requête ne contient que le nom de la carte.
 - **Deck Compare** (une autre extension du même auteur) : le tableau de bord lui demande, dans ton navigateur, si elle est installée, pour ne plus afficher sa promotion le cas échéant. Le message ne dit que ça ; rien d'autre n'est échangé et rien ne sort du navigateur. Le lien vers sa fiche ne s'ouvre que si tu cliques dessus.
+- **Whozic** (`whozic.party`, le jeu de soirée musical de l'auteur) : le tableau de bord en affiche une petite promotion. Son lien n'ouvre whozic.party que si tu cliques dessus ; l'adresse dit seulement que la visite vient d'Endstep Tracker (`utm_source`). Absente de la version Safari.
 
 Pas d'analytique, pas de télémétrie, pas de script tiers.
 

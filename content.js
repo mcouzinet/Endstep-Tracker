@@ -6,6 +6,10 @@
   const store = new Map(); // matchId -> { rec, rt, dec }
   const looked = new Set(); // matchIds already looked up in storage
   const ignored = new Set(); // matchIds the user deleted from the dashboard while this page was open
+  // Matches this tab plays (it sent a game action). endstep sends a match to every open tab of the account, on every
+  // computer: a tab that only watches it, another tab or a computer left open, records nothing (it would write a
+  // half-seen copy over the real one). Frames are followed all the same, and saved from the first action on.
+  const acted = new Set();
   const timers = new Map();
   const ctx = { meta: {}, lobby: null, lastDeck: null, decks: {} };
   let live = false;
@@ -40,6 +44,7 @@
       try { msg = JSON.parse(data); } catch { return; }
       const a = msg.payload;
       if (!a || ignored.has(a.matchId)) return;
+      acted.add(a.matchId);
       const side = T.onSideboard(store, a, at);
       if (side) save(side, true);
       // dev-only { the decision journal
@@ -60,7 +65,7 @@
         let changed = false;
         if (!mine.name && d.name) { mine.name = d.name; changed = true; }
         if (!mine.cards && d.cards) { mine.cards = d.cards; mine.sideboard = d.sideboard || null; changed = true; }
-        if (changed) save(entry);
+        if (changed && acted.has(entry.rec.id)) save(entry);
       }
     } else if (kind === 'history') {
       // A page of the site's match history, only while I asked to import it (the dashboard's "Import my past matches"):
@@ -76,12 +81,17 @@
       const gone = Object.entries(S.obj(deletedMatches)).map(([id, f]) => S.normalizeMatch({ ...S.obj(f), id, games: [] })).filter(Boolean);
       const known = new Set([...all, ...gone].map((m) => m.id));
       const fresh = recs.filter((r) => !known.has(r.id) && !store.has(r.id) && !ignored.has(r.id));
-      const twins = new Set(S.historyDuplicates([...all, ...gone.filter((g) => g.source !== 'history'), ...fresh]));
+      const pairs = S.historyPairs([...all, ...gone.filter((g) => g.source !== 'history'), ...fresh]);
+      const twins = new Set(pairs.map((p) => p.h));
       const add = fresh.filter((r) => !twins.has(r.id));
+      // A recorded twin the tracker caught only in part gets what the history knows: format, deck, ranked, result.
+      const byId = new Map([...all, ...fresh].map((m) => [m.id, m]));
+      const completed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)])
+        .filter(([m, h]) => m && h && m.source !== 'history' && !store.has(m.id) && S.fillFromHistory(m, h).length).map(([m]) => m);
       if (orphaned()) return;
-      await chrome.storage.local.set({ ...Object.fromEntries(add.map((r) => ['match:' + r.id, r])),
+      await chrome.storage.local.set({ ...Object.fromEntries([...add, ...completed].map((r) => ['match:' + r.id, r])),
         historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: (on.read || 0) + recs.length, added: (on.added || 0) + add.length,
-          done: !data.next, failed: !!data.failed } });
+          completed: (on.completed || 0) + completed.length, done: !data.next, failed: !!data.failed } });
       clearTimeout(nextPage); // the site's own "Older matches" and this chain make one chain
       if (data.next) {
         nextPage = setTimeout(async () => {
@@ -92,7 +102,12 @@
     } else if (kind === 'match') {
       ctx.meta[data.id] = Object.assign(ctx.meta[data.id] || {}, data);
       const entry = store.get(data.id);
-      if (entry) { T.applyMeta(entry.rec, ctx.meta[data.id], ctx); save(entry); }
+      if (entry) { T.applyMeta(entry.rec, ctx.meta[data.id], ctx); if (acted.has(data.id)) save(entry); }
+    } else if (kind === 'acted') {
+      if (typeof data !== 'string' || ignored.has(data)) return;
+      acted.add(data);
+      const entry = store.get(data);
+      if (entry) { save(entry, true); setLive(entry.rec.status === 'active'); }
     }
   }
 
@@ -108,6 +123,7 @@
     const entry = T.handle(store, f, ctx, f.timestamp || Date.now());
     if (!entry) return;
     const gameEnded = f.type === 'GAME_EVENT' && f.payload && f.payload.type === 'GAME_OUTCOME';
+    if (!acted.has(id)) return;
     save(entry, gameEnded || entry.rec.status !== 'active');
     setLive(entry.rec.status === 'active');
   }

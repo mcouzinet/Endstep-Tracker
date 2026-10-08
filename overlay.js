@@ -117,7 +117,7 @@
     if (S.importing(imp, now) && location.pathname.startsWith('/history')) {
       box.classList.add('open');
       box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}<span class="dot import"></span><span class="sum"><b>${esc(t('ov_import_title'))}</b></span></div>`
-        + `<div class="body"><p class="stats"><span>${esc(t('ov_import_read'))} <b>${imp.read || 0}</b></span><span>${esc(t('ov_import_added'))} <b>${imp.added || 0}</b></span></p>`
+        + `<div class="body"><p class="stats"><span>${esc(t('ov_import_read'))} <b>${imp.read || 0}</b></span><span>${esc(t('ov_import_added'))} <b>${imp.added || 0}</b></span><span>${esc(t('ov_import_completed'))} <b>${imp.completed || 0}</b></span></p>`
         + `<p class="muted">${esc(t(imp.failed ? 'ov_import_failed' : imp.done ? 'ov_import_all' : 'ov_import_hint'))}</p><div class="row"><button class="btn primary" tabindex="-1" data-import-done>${esc(t('ov_import_done'))}</button></div></div>`;
       host.hidden = false;
       shown = { id: null, phaseKey: 'import', open: true, current: '' };

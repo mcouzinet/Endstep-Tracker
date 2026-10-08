@@ -51,7 +51,7 @@
   // Returns the ids of the imported duplicates.
   const importing = (h, now = Date.now()) => !!h && Number.isFinite(h.until) && now < h.until;
   const TWIN_MS = 2 * 3600e3;
-  function historyDuplicates(list) {
+  function historyPairs(list) {
     const low = (n) => String(n).toLowerCase();
     const recorded = list.filter((m) => m.source !== 'history');
     const names = new Map(recorded.map((m) => [m, new Set([...opps(m).map((p) => p.name),
@@ -66,7 +66,41 @@
       }
     }
     const used = new Set();
-    return pairs.sort((a, b) => a.dt - b.dt).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map((p) => p.h);
+    return pairs.sort((a, b) => a.dt - b.dt).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map(({ h, m }) => ({ h, m }));
+  }
+  const historyDuplicates = (list) => historyPairs(list).map((p) => p.h);
+  // A recorded match the tracker caught only in part (it woke up mid-match: no format, no deck, no result), completed
+  // from its twin in the site's history. Fills only what is missing; returns the fields it filled.
+  function fillFromHistory(m, h, mark = true) {
+    const filled = [];
+    if (!m.formatId && h.formatId) { m.formatId = h.formatId; filled.push('formatId'); }
+    if (m.ranked === undefined && typeof h.ranked === 'boolean') { m.ranked = h.ranked; filled.push('ranked'); }
+    if (!m.myDeck && !m.limitedDeck && h.myDeck) { m.myDeck = h.myDeck; filled.push('myDeck'); }
+    if (m.status !== 'complete' && h.result) {
+      Object.assign(m, { status: 'complete', result: h.result });
+      const others = opps(m);
+      if (others.length === 1 && Number.isInteger(m.mySeat) && Array.isArray(h.score) && h.score.length === 2) {
+        const score = [];
+        score[m.mySeat] = h.score[0];
+        score[others[0].seat] = h.score[1];
+        m.score = Array.from(score, (x) => x || 0);
+      }
+      filled.push('result');
+    }
+    if (!m.endedAt && h.endedAt) { m.endedAt = h.endedAt; filled.push('endedAt'); }
+    if (filled.length && mark) m.historyFilled = [...new Set([...(Array.isArray(m.historyFilled) ? m.historyFilled : []), ...filled])];
+    return filled;
+  }
+  // Two copies of one match (two computers, a backup imported): the fuller one stays, completed with what the other
+  // has and it lacks. Fuller: more of the games seen (logged events, game starts); the match details only break a tie,
+  // the copy kept takes them from the other anyway.
+  const fullness = (m) => m.games.reduce((n, g) => n + (Array.isArray(g.log) ? g.log.length : 0) + (g.firstSeat === undefined || g.firstSeat === null ? 0 : 20), 0)
+    + (m.formatId ? 0.1 : 0) + (m.myDeck ? 0.1 : 0) + (m.result ? 0.1 : 0);
+  function mergeMatch(a, b) {
+    if (!a || !b) return a || b;
+    const [keep, other] = fullness(b) > fullness(a) ? [b, a] : [a, b];
+    fillFromHistory(keep, other, false);
+    return keep;
   }
   // My account on the site: the one name among the participants of every match whose details were seen (null when
   // that is not one name).
@@ -140,6 +174,7 @@
   function formatOf(m, c) {
     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     if (m.formatId && m.formatId !== 'casual') return cap(m.formatId);
+    if (duelCommander(m)) return cap('duel-commander'); // match details missed: the game itself says so
     if (m.format && m.format !== 'constructed') return cap(m.format);
     if (m.formatId === 'casual') return c.t('casual');
     const deckFormat = deckFormatOf(m, c);
@@ -155,7 +190,10 @@
   // In Duel Commander the opponent's deck is named after its commander ("A + B" for partners). Matches recorded
   // before 1.1.3 may also list the site's own command-zone effects.
   const NOT_COMMANDERS = new Set(['Commander Effect', 'Keyword Effects']);
-  const commanderOf = (m) => (m.formatId !== 'duel-commander' ? ''
+  // A Duel Commander match: by its format, else by the game's own kind when the match details were missed (the tracker
+  // woke up after the page had loaded them).
+  const duelCommander = (m) => m.formatId === 'duel-commander' || (!m.formatId && m.gameType === 'DuelCommander');
+  const commanderOf = (m) => (!duelCommander(m) ? ''
     : opps(m).map((p) => obj(m.commanders)[p.seat]).filter(Array.isArray).map((l) => l.filter((n) => !NOT_COMMANDERS.has(n)).join(' + ')).filter(Boolean).join(', '));
   // The opponent's archetype: the one I set by hand, else its commander.
   const archetype = (m, c) => (c.notes[m.id] && c.notes[m.id].archetype) || commanderOf(m);
@@ -258,6 +296,12 @@
     return feedbackUrl(manifest.version || '?', browserName(manifest, typeof navigator === 'object' ? navigator : null), lang);
   }
 
+  // Whether the extension may run on endstep.cc on its own. A browser can be set to give it the site only on a click on
+  // its icon: it then wakes up mid-match and records it in part (no format, no deck, no game start).
+  const SITE = { origins: ['https://endstep.cc/*'] };
+  async function hasSiteAccess() { try { return await chrome.permissions.contains(SITE); } catch { return true; } } // unknown: no false alarm
+  async function askSiteAccess() { try { return await chrome.permissions.request(SITE); } catch { return false; } }
+
   // The Safari build shows no tip link (Apple refuses them, guideline 3.1.1): its manifest names Safari.
   function dropTipLinks() {
     let safari = false;
@@ -350,10 +394,10 @@
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
-    HISTORY_IMPORT_MS, importing, opps, vsAI, historyDuplicates, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
+    HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
-    loadI18n, browserI18n, translator, loadStore, dropTipLinks, browserName, feedbackUrl, feedbackLink,
+    loadI18n, browserI18n, translator, loadStore, dropTipLinks, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;

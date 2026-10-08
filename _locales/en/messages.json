@@ -638,6 +638,21 @@
   "feedback": {
     "message": "Give feedback, report a bug"
   },
+  "access_title": {
+    "message": "The extension can't always see endstep.cc."
+  },
+  "access_text": {
+    "message": "It only wakes up after a click on its icon, and then records your matches in part (no format, no deck)."
+  },
+  "access_btn": {
+    "message": "Allow on endstep.cc"
+  },
+  "ov_import_completed": {
+    "message": "Completed"
+  },
+  "history_filled": {
+    "message": "filled in from your endstep history"
+  },
   "popup_live": {
     "message": "In progress against {opp}"
   },
@@ -766,6 +781,15 @@
   },
   "promo_shot_alt": {
     "message": "Deck Compare preview: two lists compared, 82 % similar"
+  },
+  "promo_same_author": {
+    "message": "By the same author"
+  },
+  "wz_lead": {
+    "message": "The music party game: everyone adds songs on personal themes, and the whole table guesses who picked what. No account, no install, on your phones."
+  },
+  "wz_cta": {
+    "message": "Play on whozic.party"
   },
   "ai_tag": {
     "message": "AI"

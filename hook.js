@@ -71,6 +71,10 @@
       const send = ws.send;
       ws.send = function (data) {
         if (typeof data === 'string' && data.startsWith('{"type":"GAME_ACTION"')) {
+          // This tab plays that match: endstep sends a match to every open tab of the account, the tracker records
+          // only where it is played. The match id alone goes out.
+          const played = /"matchId":"([0-9a-f-]{36})"/.exec(data);
+          if (played) post('acted', played[1]);
           if (/"type":"(SIDEBOARD_SUBMIT|DECLINE)"/.test(data)) post('out', data);
           // dev-only { every other one (keep, cast, attack, targets…) for the decision journal; release.sh leaves this out
           else post('out', data);

@@ -64,7 +64,12 @@ const ws2 = new win2.WebSocket('wss://endstep.cc/ws');
 ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"PASS_PRIORITY"}}');
 ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"SIDEBOARD_SUBMIT","orderedCards":[0,1]}}');
 ws2.send('{"type":"GAME_ACTION","payload":{"matchId":"m","type":"DECLINE"}}');
-assert.deepEqual(out.map((m) => JSON.parse(m.data).payload.type), ['SIDEBOARD_SUBMIT', 'DECLINE'], 'store build: sideboarding only');
+assert.deepEqual(out.filter((m) => m[TAG] === 'out').map((m) => JSON.parse(m.data).payload.type), ['SIDEBOARD_SUBMIT', 'DECLINE'], 'store build: sideboarding only');
+// Any game action marks its match as played in this tab, and only its id goes out (store build included).
+const M1 = '11111111-2222-3333-4444-555555555555';
+out.length = 0;
+ws2.send(`{"type":"GAME_ACTION","payload":{"matchId":"${M1}","type":"PASS_PRIORITY"}}`);
+assert.deepEqual(out.map((m) => [m[TAG], m.data]), [['acted', M1]]);
 
 // My match history (/history): each page the site loads goes to content.js, cut down to what a match record needs; asked
 // for the next page (an import I started), the hook sends the site's own request again, with the next cursor.

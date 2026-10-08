@@ -65,6 +65,41 @@ assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), rec('r2', H + 50 * 60e3, 'Ba
   ['h1', 'h2'], 'two and two: each with its own');
 assert.deepEqual(dups([imp('h1', H, 'Bartok', 'won'), imp('h2', H, 'Bartok', 'won')]), [], 'two imported ones are not duplicates of each other');
 
+// A recorded match the tracker caught only in part (it woke up mid-match): its hist in the history fills what is missing,
+// never what it has.
+const part = rec('p1', H + 20 * 60e3, 'Bartok', undefined);
+Object.assign(part, { status: 'active', score: [1, 0] });
+const hist = imp('h9', H, 'Bartok', 'won');
+hist.endedAt = H + 50 * 60e3;
+assert.deepEqual(S.historyPairs([part, hist]), [{ h: 'h9', m: 'p1' }]);
+assert.deepEqual(S.fillFromHistory(part, hist), ['formatId', 'ranked', 'myDeck', 'result', 'endedAt']);
+assert.equal(part.formatId, 'pauper');
+assert.equal(part.ranked, true);
+assert.equal(S.deckName(part, C), 'Esper Affinity');
+assert.equal(part.status, 'complete');
+assert.equal(part.result, 'W');
+assert.deepEqual(part.score, [2, 1], 'the score by seat: mine first here');
+assert.deepEqual(part.historyFilled, ['formatId', 'ranked', 'myDeck', 'result', 'endedAt']);
+assert.deepEqual(S.fillFromHistory(part, hist), [], 'nothing left to fill');
+const full = Object.assign(rec('f1', H, 'Bartok', 'W'), { formatId: 'modern', ranked: false, myDeck: { id: 'deck-2', name: 'Twin' }, endedAt: H + 1 });
+assert.deepEqual(S.fillFromHistory(full, hist), [], 'a complete record keeps its own');
+assert.equal(full.formatId, 'modern');
+const seat1 = Object.assign(S.normalizeMatch({ id: 's1', startedAt: H, status: 'active', mySeat: 1, players: [{ seat: 0, name: 'Bartok' }, { seat: 1, name: 'me' }], games: [] }));
+S.fillFromHistory(seat1, hist);
+assert.deepEqual(seat1.score, [1, 2], 'the score by seat: mine second here');
+
+// Two copies of one match (two computers): the fuller one stays, whichever side it comes from, completed by the other.
+const seenAll = Object.assign(rec('x1', H, 'Bartok', 'W'), { games: [{ n: 1, firstSeat: 0, mulligans: {}, life: {}, seen: {}, log: [[1, 0, 'GAME_STARTED'], [1, 0, 'LAND_PLAYED'], [2, 1, 'SPELL_CAST']] }] });
+const ghost = () => Object.assign(rec('x1', H + 60e3, 'Bartok', undefined), { status: 'active', formatId: 'pauper', games: [{ n: 1, mulligans: {}, life: {}, seen: {}, log: [[0, 1, 'ATTACKERS_DECLARED']] }] });
+for (const [a, b] of [[seenAll, ghost()], [ghost(), seenAll]]) {
+  const kept = S.mergeMatch(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
+  assert.equal(kept.games[0].log.length, 3, 'the fuller copy stays');
+  assert.equal(kept.formatId, 'pauper', 'completed by the other');
+  assert.equal(kept.result, 'W');
+  assert.equal('historyFilled' in kept, false, 'not marked as coming from the history');
+}
+assert.equal(S.mergeMatch(undefined, seenAll), seenAll, 'nothing here: the imported one');
+
 // Nothing to make a record of.
 assert.equal(T.fromHistory(row({ id: undefined }), decks), null);
 assert.equal(T.fromHistory(row({ createdAt: 'yesterday' }), decks), null);

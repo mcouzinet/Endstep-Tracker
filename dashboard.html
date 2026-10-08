@@ -332,7 +332,17 @@
 
     /* ---- Deck Compare promo: a dashboard panel; Deck Compare shows in its wordmark and a real crop of its page ---- */
     .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .promo { position: relative; margin-bottom: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 44px 14px 16px; }
+    .access { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 16px; border-color: var(--danger); color: var(--ink-2); }
+    .access b { color: var(--ink); }
+    .promos { display: flex; flex-wrap: wrap; gap: 16px; }
+    .promos:has(.promo:not([hidden])) { margin-bottom: 16px; }
+    .promos > .promo { flex: 1 1 360px; min-width: 0; }
+    .promos.both .promo-shot { display: none; } /* side by side: no room for Deck Compare's screenshot */
+    .promos.both .promo { grid-template-columns: auto minmax(0, 1fr); }
+    .promo-wz .promo-title { color: #57ff96; letter-spacing: .01em; } /* Whozic's own neon green */
+    .promo-wz .promo-foot a { color: #57ff96; text-decoration-color: rgb(87 255 150 / .45); }
+    .promo-wz .promo-foot a:hover { color: #8dffb8; }
+    .promo { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 44px 14px 16px; }
     .promo > img { align-self: start; width: 40px; height: 40px; }
     .promo-body { display: grid; gap: 4px; }
     .promo-title { margin: 0; font-size: 15px; font-weight: 650; }
@@ -448,6 +458,9 @@
       <input id="import" type="file" accept="application/json,.json" hidden>
     </header>
 
+    <div id="access" class="panel access" role="alert" hidden><p><b data-i18n="access_title"></b> <span data-i18n="access_text"></span></p><button class="btn primary" data-action="access" data-i18n="access_btn"></button></div>
+
+    <div id="promos" class="promos">
     <aside id="promo" class="panel promo" aria-labelledby="promo-title" hidden>
       <img src="icons/deckcompare-128.png" alt="">
       <div class="promo-body">
@@ -459,6 +472,16 @@
       <figure class="promo-shot"><img src="icons/deckcompare-preview.png" data-i18n-attr="alt:promo_shot_alt"></figure>
       <button id="promo-close" class="promo-close" data-i18n-attr="title:promo_close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
     </aside>
+    <aside id="promo-wz" class="panel promo promo-wz" aria-labelledby="promo-wz-title" hidden>
+      <img src="icons/whozic-128.png" alt="">
+      <div class="promo-body">
+        <h2 id="promo-wz-title" class="promo-title">Whozic</h2>
+        <p class="promo-lead" data-i18n="wz_lead"></p>
+        <p class="promo-foot"><span data-i18n="promo_same_author"></span> · <a id="promo-wz-link" target="_blank" rel="noopener"><span data-i18n="wz_cta"></span><span class="vh" data-i18n="new_tab"></span><svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a></p>
+      </div>
+      <button id="promo-wz-close" class="promo-close" data-i18n-attr="title:promo_close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </aside>
+    </div>
 
     <div id="filters" class="filters">
       <select id="f-scope" data-i18n-attr="aria-label:scope_label,title:scope_label"></select>

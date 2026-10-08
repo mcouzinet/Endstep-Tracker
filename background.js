@@ -22,7 +22,7 @@ if (!chrome.runtime.getManifest().content_scripts.some((c) => c.js.includes('hoo
 
 // Reloading or updating the extension kills its content scripts in open Endstep tabs (Chrome only injects them on
 // page load). Put them back: hook.js keeps running in the page and replays what the tab missed to the new content.js.
-chrome.runtime.onInstalled.addListener(async () => {
+async function attachOpenTabs() {
   for (const tab of await chrome.tabs.query({ url: 'https://endstep.cc/*' })) {
     try {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', files: ['hook.js'] });
@@ -31,7 +31,12 @@ chrome.runtime.onInstalled.addListener(async () => {
       console.warn('[endstep-tracker] could not re-attach to tab', tab.id, e);
     }
   }
-});
+}
+chrome.runtime.onInstalled.addListener(attachOpenTabs);
+// Access to endstep.cc given back (it was set to "on click"): attach to the open tabs too.
+if (chrome.permissions && chrome.permissions.onAdded) {
+  chrome.permissions.onAdded.addListener((p) => { if ((p.origins || []).some((o) => o.includes('endstep.cc'))) attachOpenTabs(); });
+}
 
 // "REC" badge on the Endstep tab while a match is being tracked.
 chrome.runtime.onMessage.addListener((msg, sender) => {

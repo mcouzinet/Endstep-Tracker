@@ -37,7 +37,14 @@ const older = { nextCursor: null, matches: [
     const stale = { v: 1, id: 'h3', source: 'history', status: 'complete', result: 'L', startedAt: Date.parse('2026-09-20T20:01:00Z'), updatedAt: Date.parse('2026-09-20T20:01:00Z'),
       mySeat: 0, players: [{ seat: 0, name: '' }, { seat: 1, name: 'Corvid' }], games: [], score: [0, 2], colors: {}, formatId: 'pauper', ranked: true,
       myDeck: { id: 'deck-1', name: 'Esper Affinity', cards: null, sideboard: null, source: 'history' } };
-    await ext.evaluate(async (r, h) => { await chrome.storage.local.clear(); await chrome.storage.local.set({ 'match:m-rec': r, 'match:h3': h, decks: { 'deck-1': { id: 'deck-1', name: 'Esper Affinity', formatId: 'pauper' } } }); }, recorded, stale);
+    // Recorded in part (the tracker woke up mid-match): no format, no deck, no result. h4, on the next page, is its twin.
+    const partial = { v: 1, id: 'm-part', status: 'active', startedAt: Date.parse('2026-08-30T18:20:00Z'), updatedAt: Date.parse('2026-08-30T18:40:00Z'),
+      mySeat: 0, players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'Delphine' }], games: [{ n: 2, mulligans: {}, life: {}, seen: {}, log: [] }], score: [1, 1], colors: {} };
+    // Recorded in part, with its history twin imported by an earlier build: the dashboard must keep what the twin knew.
+    const partial2 = { ...partial, id: 'm-p2', startedAt: Date.parse('2026-09-10T20:30:00Z'), updatedAt: Date.parse('2026-09-10T20:50:00Z'), players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'Kaladin' }] };
+    const stale2 = { ...stale, id: 'h-p2', result: 'W', startedAt: Date.parse('2026-09-10T20:00:00Z'), updatedAt: Date.parse('2026-09-10T20:00:00Z'), score: [2, 0], formatId: 'duel-commander',
+      players: [{ seat: 0, name: '' }, { seat: 1, name: 'Kaladin' }] };
+    await ext.evaluate(async (r, h, m, m2, h2) => { await chrome.storage.local.clear(); await chrome.storage.local.set({ 'match:m-rec': r, 'match:h3': h, 'match:m-part': m, 'match:m-p2': m2, 'match:h-p2': h2, decks: { 'deck-1': { id: 'deck-1', name: 'Esper Affinity', formatId: 'pauper' } } }); }, recorded, stale, partial, partial2, stale2);
     const get = (k) => ext.evaluate(async (key) => (await chrome.storage.local.get(key))[key], k);
 
     const p = await b.newPage();
@@ -88,6 +95,9 @@ const older = { nextCursor: null, matches: [
     await d.goto(`chrome-extension://${id}/dashboard.html`);
     await sleep(800);
     assert.equal(await get('match:h3'), undefined, 'the duplicate an earlier build imported is gone');
+    assert.equal(await get('match:h-p2'), undefined);
+    const kept = await get('match:m-p2');
+    assert.ok(kept.formatId === 'duel-commander' && kept.myDeck && kept.result === 'W' && kept.status === 'complete', 'what the duplicate knew is kept: ' + JSON.stringify(kept));
     await d.evaluate(() => { window.__opened = []; Object.defineProperty(chrome.tabs, 'create', { value: (o) => window.__opened.push(o.url) }); });
     await d.evaluate(() => document.querySelector('#data-menu [data-action="import-history"]').click());
     await sleep(300);
@@ -99,14 +109,17 @@ const older = { nextCursor: null, matches: [
     await p.reload();
     await sleep(2500);
     assert.deepEqual(api.splice(0), [['?limit=25', 'Bearer qa-token'], ['?limit=25&before=c1', 'Bearer qa-token']]);
-    assert.equal((await get('match:h4')).result, 'W', 'from the page the extension loaded');
+    assert.equal(await get('match:h4'), undefined, 'the twin of a match recorded in part: not added');
+    const done = await get('match:m-part');
+    assert.ok(done.formatId === 'pauper' && done.ranked === true && done.myDeck.id === 'deck-1' && done.result === 'W' && done.status === 'complete', JSON.stringify(done));
+    assert.deepEqual(done.score, [2, 1]);
     const h1 = await get('match:h1');
     assert.ok(h1 && h1.source === 'history' && h1.result === 'W' && h1.myDeck.id === 'deck-1', JSON.stringify(h1));
     assert.equal((await get('match:h2')).result, 'L');
     assert.equal(await get('match:h3'), undefined, 'recorded by the tracker: not imported');
     assert.deepEqual(await get('match:m-rec'), recorded, 'a match the tracker recorded is left as it is');
     const text = await panelText();
-    assert.match(text, /(Import de l'historique|Importing your history) .*(Lus|Read) 4 (Ajoutés|Added) 3 (Tout ton historique est importé|Your whole history is imported)/, text);
+    assert.match(text, /(Import de l'historique|Importing your history) .*(Lus|Read) 4 (Ajoutés|Added) 2 (Complétés|Completed) 1 (Tout ton historique est importé|Your whole history is imported)/, text);
     const r = await p.evaluate(() => { const x = document.getElementById('endstep-tracker-panel').getBoundingClientRect(); return { x: x.x, y: x.y, width: x.width, height: x.height }; });
     await p.screenshot({ path: path.join(__dirname, 'qa-history-panel.png'), clip: { x: r.x - 12, y: r.y - 12, width: r.width + 24, height: r.height + 24 } });
 

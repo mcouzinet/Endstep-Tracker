@@ -235,14 +235,19 @@ async function load() {
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
     else if (k === 'decks') decks = obj(v);
   }
-  // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays.
-  const twins = new Set(S.historyDuplicates(matches));
-  if (twins.size) {
+  // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays, and
+  // first takes what the imported one knows and it lacks (a record caught in part has no format, deck or result).
+  const pairs = S.historyPairs(matches);
+  if (pairs.length) {
+    const byId = new Map(matches.map((m) => [m.id, m]));
+    const completed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)]).filter(([m, h]) => m && h && S.fillFromHistory(m, h).length).map(([m]) => m);
+    const twins = new Set(pairs.map((p) => p.h));
     matches = matches.filter((m) => !twins.has(m.id));
+    await chrome.storage.local.set(Object.fromEntries(completed.map((m) => ['match:' + m.id, m])));
     chrome.storage.local.remove([...twins].map((id) => 'match:' + id));
   }
   if (addon) addon.load(all);
-  showPromo(all.promoClosed);
+  showPromo(all.promoClosed, all.whozicClosed);
   refresh();
 }
 
@@ -253,9 +258,22 @@ const DECK_COMPARE = location.protocol !== 'chrome-extension:' ? null // Firefox
   : / Edg\//.test(navigator.userAgent)
     ? { id: 'akklkakfdidemfbbnjmhiofkhkcnhfbc', cta: 'promo_cta_edge', url: 'https://microsoftedge.microsoft.com/addons/detail/deck-compare-%E2%80%93-mtg/akklkakfdidemfbbnjmhiofkhkcnhfbc' }
     : { id: 'miijiappldgijnnokopjfiponelkdhcg', cta: 'promo_cta_chrome', url: 'https://chromewebstore.google.com/detail/deck-compare-%E2%80%93-mtg/miijiappldgijnnokopjfiponelkdhcg' };
+// Whozic, the author's music party game, beside it (a website: Firefox too; not on Safari, as Apple refuses links to
+// other products). Each closes on its own, until the next release; the other then takes the whole row.
+const WHOZIC = S.browserName(chrome.runtime.getManifest(), navigator) === 'Safari' ? null : 'https://whozic.party';
 let promoOn = false; // shown above the summary once there are matches (never over the onboarding)
-async function showPromo(closed) {
+let whozicOn = false;
+function placePromos() {
+  const has = matches.length > 0;
+  $('#promo').hidden = !(has && promoOn);
+  $('#promo-wz').hidden = !(has && whozicOn);
+  $('#promos').classList.toggle('both', promoOn && whozicOn);
+  if (WHOZIC) $('#promo-wz-link').href = `${WHOZIC}${locale === 'en' ? '/en' : ''}?utm_source=endstep-tracker`; // where the visit comes from, nothing else
+}
+async function showPromo(closed, whozicClosed) {
   closed = obj(closed);
+  whozicOn = !!WHOZIC && obj(whozicClosed).at !== RELEASE;
+  placePromos();
   if (!DECK_COMPARE || closed.at === RELEASE) return;
   // An installed Deck Compare answers this ping (its background.js); otherwise sendMessage rejects.
   if (await chrome.runtime.sendMessage(DECK_COMPARE.id, { ping: 'endstep-tracker' }).catch(() => null)) return;
@@ -265,12 +283,17 @@ async function showPromo(closed) {
   cta.textContent = t(DECK_COMPARE.cta);
   $('#promo-news').hidden = !closed.at || closed.news === t('promo_news');
   promoOn = true;
-  $('#promo').hidden = !matches.length;
+  placePromos();
 }
 $('#promo-close').addEventListener('click', () => {
   promoOn = false;
-  $('#promo').hidden = true;
+  placePromos();
   chrome.storage.local.set({ promoClosed: { at: RELEASE, news: t('promo_news') } });
+});
+$('#promo-wz-close').addEventListener('click', () => {
+  whozicOn = false;
+  placePromos();
+  chrome.storage.local.set({ whozicClosed: { at: RELEASE } });
 });
 
 // Apply a chrome.storage change set in place: no full reload while a match is being written every second.
@@ -300,6 +323,13 @@ function applyChanges(changes) {
 async function loadDecisions(id) {
   const key = 'dec:' + id;
   decisions[id] = obj((await chrome.storage.local.get(key))[key]);
+}
+
+// No lasting access to endstep.cc (the browser gives it on a click only): matches would be recorded in part. Say so.
+async function checkAccess() { $('#access').hidden = await S.hasSiteAccess(); }
+if (chrome.permissions && chrome.permissions.onAdded) {
+  chrome.permissions.onAdded.addListener(checkAccess);
+  chrome.permissions.onRemoved.addListener(checkAccess);
 }
 
 function refresh() {
@@ -392,7 +422,7 @@ function render() {
   document.body.classList.remove('loading');
   const has = matches.length > 0;
   for (const id of ['#filters', '#glance', '#tabs', '#list-tools', '#list-head', '#list-foot']) $(id).hidden = !has;
-  $('#promo').hidden = !(has && promoOn);
+  placePromos();
   for (const b of document.querySelectorAll('#tabs [role="tab"]')) {
     const on = b.dataset.tab === state.tab;
     b.setAttribute('aria-selected', String(on));
@@ -799,6 +829,7 @@ function detail(m) {
     esc(fullDate(m.startedAt)),
     esc(minutes(m.startedAt, m.endedAt)),
     `${esc(t('my_deck'))}${esc(t('colon'))}<b>${esc(deckName(m))}</b>`,
+    Array.isArray(m.historyFilled) && m.historyFilled.length ? esc(t('history_filled')) : '',
   ].filter(Boolean).join(' · ');
   const seen = opps(m).map((p) => `<section><h3>${esc(t('seen_at', { name: p.name }))} ${pips(m.colors[p.seat] || '')}</h3>${cardList(T.seenCards(m, p.seat))}</section>`).join('');
   const md = myDeck(m);
@@ -1044,6 +1075,7 @@ const ACTIONS = {
     chrome.tabs.create({ url: 'https://endstep.cc/history' });
   },
   feedback: () => chrome.tabs.create({ url: S.feedbackLink(I18N.locale) }),
+  access: () => S.askSiteAccess().then(checkAccess),
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
@@ -1072,10 +1104,13 @@ $('#import').addEventListener('change', async (e) => {
     const data = JSON.parse(await file.text());
     const raw = Array.isArray(data) ? data : (data && Array.isArray(data.matches)) ? data.matches : [];
     const list = raw.map(normalizeMatch).filter(Boolean);
+    // Merged with what is here, never written over it: a match both sides have keeps its fuller copy (a backup from
+    // another computer may hold a half-seen copy of a match played here), notes keep what is typed here.
+    const here = new Map(matches.map((m) => [m.id, m]));
     const items = {};
-    for (const m of list) items['match:' + m.id] = m;
-    for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = obj(n);
-    for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id]) items['dec:' + id] = obj(d);
+    for (const m of list) items['match:' + m.id] = S.mergeMatch(here.get(m.id), m);
+    for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = { ...obj(n), ...obj(notes[id]) };
+    for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id] && !here.has(id)) items['dec:' + id] = obj(d);
     if (addon) addon.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     await chrome.storage.local.set(items);
@@ -1302,4 +1337,5 @@ setInterval(renderHeader, 60e3); // keep "il y a…" and the live pill fresh
   if (addon) await addon.init();
   // } dev-only
   await load();
+  checkAccess();
 })();

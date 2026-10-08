@@ -638,6 +638,21 @@
   "feedback": {
     "message": "Donner un avis, signaler un bug"
   },
+  "access_title": {
+    "message": "L'extension n'a pas accès à endstep.cc en permanence."
+  },
+  "access_text": {
+    "message": "Elle ne s'active qu'après un clic sur son icône, et n'enregistre alors tes matchs qu'à moitié (sans format ni deck)."
+  },
+  "access_btn": {
+    "message": "Autoriser sur endstep.cc"
+  },
+  "ov_import_completed": {
+    "message": "Complétés"
+  },
+  "history_filled": {
+    "message": "complété depuis ton historique endstep"
+  },
   "popup_live": {
     "message": "En cours contre {opp}"
   },
@@ -766,6 +781,15 @@
   },
   "promo_shot_alt": {
     "message": "Aperçu de Deck Compare : deux listes comparées, 82 % similaires"
+  },
+  "promo_same_author": {
+    "message": "Du même auteur"
+  },
+  "wz_lead": {
+    "message": "Le jeu de soirée musical : chacun ajoute ses chansons sur des thèmes perso, et toute la table devine qui a mis quoi. Sans compte ni installation, sur vos téléphones."
+  },
+  "wz_cta": {
+    "message": "Jouer sur whozic.party"
   },
   "ai_tag": {
     "message": "IA"
