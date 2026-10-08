@@ -148,6 +148,24 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), Mac App Store ("What's New in This Version"). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
 
+### 1.4 (EN)
+
+- Several tabs or two computers: only the tab you play in records the match, so no more half-recorded copies.
+- Importing a backup now merges it with your data: each match keeps its most complete copy. Handy to bring two computers together.
+- Matches recorded in part are completed when you import your endstep history (format, deck, result).
+- Duel Commander: the opponent's commander shows even when the match details were missed.
+- A warning when your browser gives the extension endstep.cc only after a click, with a button to allow it.
+- Give feedback or report a bug, from the Data menu or the popup.
+
+### 1.4 (FR)
+
+- Plusieurs onglets ou deux ordinateurs : seul l'onglet où tu joues enregistre le match, fini les copies à moitié enregistrées.
+- Importer une sauvegarde la fusionne avec tes données : chaque match garde sa copie la plus complète. Pratique pour réunir deux ordinateurs.
+- Les matchs enregistrés à moitié sont complétés quand tu importes ton historique endstep (format, deck, résultat).
+- Duel Commander : le commandant adverse s'affiche même quand les détails du match ont été manqués.
+- Une alerte quand ton navigateur ne donne endstep.cc à l'extension qu'après un clic, avec un bouton pour l'autoriser.
+- Donner un avis ou signaler un bug, depuis le menu Données ou la popup.
+
 ### 1.3 (EN)
 
 - A new look to match endstep.cc's redesign: the panel on the site follows its colors and fonts, and the dashboard takes its new palette.
