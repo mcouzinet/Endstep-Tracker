@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Endstep Tracker</title>
+<meta name="description" content="A browser extension that records the Magic: The Gathering matches you play on endstep.cc and turns them into win rates by deck and by matchup. Nothing to type, no account, everything stays in your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://endstep-tracker.tolarianstudio.com/">
+<meta property="og:title" content="Endstep Tracker">
+<meta property="og:description" content="Every match you play on endstep.cc, recorded automatically: win rates by deck and matchup, your sideboarding, your cards. Free, no account.">
+<meta property="og:image" content="https://endstep-tracker.tolarianstudio.com/poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#14110d">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-128.png">
+<style>
+:root {
+  color-scheme: dark;
+  /* Same tokens as the extension (theme.css). */
+  --bg: oklch(.16 .006 75);
+  --surface: oklch(.19 .007 75);
+  --surface-2: oklch(.225 .008 75);
+  --line: oklch(.27 .011 75);
+  --line-strong: oklch(.36 .015 78);
+  --ink: oklch(.95 .012 85);
+  --ink-2: oklch(.76 .022 80);
+  --ink-3: oklch(.62 .02 80);
+  --gold: oklch(.8 .135 80);
+  --gold-hi: oklch(.85 .13 83);
+  --on-fill: oklch(.2 .035 70);
+  --win: #1a9f86;
+}
+* { box-sizing: border-box; }
+html { scrollbar-color: var(--line-strong) var(--bg); }
+body {
+  margin: 0; color: var(--ink);
+  background: radial-gradient(1100px 520px at 50% -120px, oklch(.8 .135 80 / .13), transparent 70%), var(--bg);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+a:hover { color: var(--gold-hi); text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; padding-bottom: 20px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
+.brand img { width: 32px; height: 32px; }
+.top nav { display: flex; gap: 20px; font-size: 14px; color: var(--ink-2); }
+
+.hero { text-align: center; padding-top: 48px; padding-bottom: 40px; }
+.hero h1 { font-size: clamp(34px, 6.4vw, 60px); line-height: 1.06; letter-spacing: -.025em; font-weight: 800; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--gold); }
+.lede { max-width: 620px; margin: 20px auto 0; font-size: clamp(17px, 2.2vw, 19px); color: var(--ink-2); text-wrap: pretty; }
+
+.stores { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 32px; }
+.store {
+  display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  min-width: 172px; padding: 10px 18px; border-radius: 10px; text-decoration: none;
+  background: var(--surface-2); border: 1px solid var(--line); transition: border-color .15s, background-color .15s, transform .15s;
+}
+.store:hover { color: var(--ink); border-color: var(--line-strong); background: oklch(.26 .01 75); }
+.store:active { transform: translateY(1px); }
+.store small { font-size: 12px; color: var(--ink-3); }
+.store b { font-size: 16px; }
+.store.primary { background: var(--gold); border-color: var(--gold); color: var(--on-fill); }
+.store.primary small { color: oklch(.32 .05 70); }
+.store.primary:hover { background: var(--gold-hi); border-color: var(--gold-hi); color: var(--on-fill); }
+.note { margin-top: 14px; font-size: 14px; color: var(--ink-3); }
+
+.video { padding-bottom: 72px; }
+.video video {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px;
+  border: 1px solid var(--line); background: #0c0a08;
+  box-shadow: 0 30px 80px -30px rgb(0 0 0 / .8), 0 0 0 1px oklch(.8 .135 80 / .06);
+}
+
+section h2 { font-size: clamp(24px, 3.4vw, 32px); letter-spacing: -.015em; line-height: 1.15; text-align: center; text-wrap: balance; }
+.kicker { display: block; margin-bottom: 10px; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+
+.features { padding-bottom: 72px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; }
+.card { padding: 20px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.card h3 { font-size: 16px; margin-bottom: 6px; }
+.card p { font-size: 15px; color: var(--ink-2); }
+.extra { margin-top: 18px; text-align: center; font-size: 15px; color: var(--ink-3); }
+
+.shots { padding-bottom: 72px; }
+.shot-list { display: grid; gap: 40px; margin-top: 32px; }
+figure { margin: 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
+figcaption { margin-top: 10px; font-size: 15px; color: var(--ink-3); text-align: center; }
+
+.privacy { padding-bottom: 72px; }
+.privacy .box { max-width: 720px; margin: 0 auto; padding: 28px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); text-align: center; }
+.privacy p { margin-top: 12px; color: var(--ink-2); }
+.privacy .stores { margin-top: 24px; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 14px; color: var(--ink-3); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+
+@media (max-width: 820px) { .grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+  .top nav a:not(:last-child) { display: none; }
+  .hero { padding-top: 24px; }
+  .store { flex: 1 1 100%; align-items: center; }
+  .privacy .box { padding: 22px 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .store { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="#"><img src="icon.svg" alt="" width="32" height="32">Endstep Tracker</a>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#privacy">Privacy</a>
+    <a href="https://github.com/mcouzinet/Endstep-Tracker">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Every match you play on endstep.cc, <em>recorded automatically.</em></h1>
+    <p class="lede">Win rates by deck and by matchup, your sideboarding, the cards that win you games. Nothing to type, no account, everything stays in your browser.</p>
+    <div class="stores" data-stores>
+      <a class="store" data-store="chrome" href="https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho"><small>Chrome, Brave, Opera</small><b>Add to Chrome</b></a>
+      <a class="store" data-store="firefox" href="https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/"><small>Firefox Add-ons</small><b>Add to Firefox</b></a>
+      <a class="store" data-store="edge" href="https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp"><small>Edge Add-ons</small><b>Add to Edge</b></a>
+      <a class="store" data-store="safari" href="https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12"><small>Mac App Store</small><b>Get it for Safari</b></a>
+    </div>
+    <p class="note">Free and open source. Desktop browsers only. English and French.</p>
+  </section>
+
+  <section class="wrap video" aria-label="Video">
+    <video src="video.mp4" poster="poster.jpg" width="1280" height="720" autoplay muted loop playsinline controls preload="metadata"></video>
+  </section>
+
+  <section class="wrap features" id="features">
+    <h2><span class="kicker">Features</span>Play your games. The tracker does the rest.</h2>
+    <div class="grid">
+      <div class="card"><h3>Every match recorded</h3><p>Format, Bo1 or Bo3, score, play or draw, mulligans, opening hand, turns, life totals, length and the full game log.</p></div>
+      <div class="card"><h3>The opponent's archetype</h3><p>Recognized from the cards you saw, against endstep's own metagame. Named after the commander in Duel Commander. Correctable by hand.</p></div>
+      <div class="card"><h3>Win rates that mean something</h3><p>By deck and by matchup, on the play and on the draw, for each version of your list.</p></div>
+      <div class="card"><h3>My cards</h3><p>For each card: your win rate in the games where you drew it, where you didn't, and when it was in your opening hand.</p></div>
+      <div class="card"><h3>Your sideboarding</h3><p>Recorded between games, so you see your usual plan against each archetype.</p></div>
+      <div class="card"><h3>A panel on endstep.cc</h3><p>Your record in the matchup, your usual side between games, and the opponents you met before.</p></div>
+    </div>
+    <p class="extra">Also: import your past matches from your endstep history, CSV and JSON export, backups.</p>
+  </section>
+
+  <section class="wrap shots" aria-label="Screenshots">
+    <div class="shot-list">
+      <figure><img src="dashboard.png" width="1280" height="800" loading="lazy" alt="The dashboard: overall win rate, last matches and matchups by archetype."><figcaption>The dashboard: your win rate, your last matches, your matchups.</figcaption></figure>
+      <figure><img src="my-cards.png" width="1280" height="800" loading="lazy" alt="My cards: the win rate of each card when drawn, not drawn, and in the opening hand."><figcaption>My cards: which cards actually win you games.</figcaption></figure>
+      <figure><img src="matchup.png" width="1280" height="800" loading="lazy" alt="A matchup panel: record on the play and on the draw, sideboarding after game 1, the opponent's cards seen and past matches."><figcaption>A matchup: play and draw, your sideboarding, the cards they play.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="wrap privacy" id="privacy">
+    <div class="box">
+      <h2><span class="kicker">Privacy</span>Your matches stay on your computer.</h2>
+      <p>No server, no account, no analytics. The extension only reads the game messages endstep already sends to your browser. It never plays or clicks for you.</p>
+      <div class="stores" data-stores>
+        <a class="store" data-store="chrome" href="https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho"><small>Chrome, Brave, Opera</small><b>Add to Chrome</b></a>
+        <a class="store" data-store="firefox" href="https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/"><small>Firefox Add-ons</small><b>Add to Firefox</b></a>
+        <a class="store" data-store="edge" href="https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp"><small>Edge Add-ons</small><b>Add to Edge</b></a>
+        <a class="store" data-store="safari" href="https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12"><small>Mac App Store</small><b>Get it for Safari</b></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>A fan project, not affiliated with endstep.cc or Wizards of the Coast. MIT license.</span>
+    <nav>
+      <a href="https://tally.so/r/LZQveG">Give feedback</a>
+      <a href="https://github.com/mcouzinet/Endstep-Tracker">GitHub</a>
+      <a href="https://buymeacoffee.com/mcouzinet">Buy me a coffee</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// Put the visitor's own browser first, in gold.
+const ua = navigator.userAgent;
+const mine = /Firefox\//.test(ua) ? 'firefox' : /Edg\//.test(ua) ? 'edge' : /Safari\//.test(ua) && !/Chrome|Chromium|CriOS/.test(ua) ? 'safari' : 'chrome';
+for (const row of document.querySelectorAll('[data-stores]')) {
+  const btn = row.querySelector(`[data-store="${mine}"]`);
+  btn.classList.add('primary');
+  row.prepend(btn);
+}
+</script>
+</body>
+</html>
