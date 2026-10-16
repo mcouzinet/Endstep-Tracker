@@ -922,5 +922,17 @@
   },
   "by_card": {
     "message": "Card by card"
+  },
+  "telemetry_on": {
+    "message": "Anonymous usage statistics: on"
+  },
+  "telemetry_off": {
+    "message": "Anonymous usage statistics: off"
+  },
+  "telemetry_now_on": {
+    "message": "Anonymous usage statistics switched on. Thanks!"
+  },
+  "telemetry_now_off": {
+    "message": "Anonymous usage statistics switched off: the extension sends nothing anymore."
   }
 }

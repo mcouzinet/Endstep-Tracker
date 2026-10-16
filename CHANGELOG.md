@@ -3,6 +3,12 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## [Prochaine version]
+
+### Ajouté
+
+- **Statistiques d'usage anonymes** : l'extension signale son installation, ses mises à jour, un jour d'utilisation (au plus une fois par jour, avec un identifiant aléatoire qui ne sert qu'à compter chaque appareil une fois) et sa désinstallation (une courte page s'ouvre). Jamais de match, de deck, de nom ni de page visitée ; pas d'adresse IP gardée. Se coupe dans le menu Données du tableau de bord ; sur Firefox, seulement avec l'accord donné à l'installation. Politique de confidentialité mise à jour.
+
 ## [1.4] (2026-10-08)
 
 Plusieurs onglets et plusieurs ordinateurs sans copies à moitié vues, des sauvegardes qui fusionnent, les matchs incomplets réparés, et Whozic à côté de Deck Compare.

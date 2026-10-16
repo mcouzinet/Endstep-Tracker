@@ -922,5 +922,17 @@
   },
   "by_card": {
     "message": "Carte par carte"
+  },
+  "telemetry_on": {
+    "message": "Statistiques d'usage anonymes : activées"
+  },
+  "telemetry_off": {
+    "message": "Statistiques d'usage anonymes : désactivées"
+  },
+  "telemetry_now_on": {
+    "message": "Statistiques d'usage anonymes activées. Merci !"
+  },
+  "telemetry_now_off": {
+    "message": "Statistiques d'usage anonymes désactivées : l'extension n'envoie plus rien."
   }
 }

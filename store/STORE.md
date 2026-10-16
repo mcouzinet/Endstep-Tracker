@@ -41,7 +41,7 @@ The dashboard opens on the deck you play most:
 
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
-Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no server, account, analytics or ads. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
+Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no account or ads. Only anonymous usage statistics are sent (install, update, one signal a day), and they can be switched off. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
 
 Not affiliated with endstep.cc or Wizards of the Coast.
 
@@ -75,7 +75,7 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 
-Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni serveur, ni compte, ni analytique, ni publicité. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
+Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni compte ni publicité. Seules des statistiques d'usage anonymes sont envoyées (installation, mise à jour, un signal par jour), et elles se coupent. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
 
 Non affilié à endstep.cc ni à Wizards of the Coast.
 
@@ -94,7 +94,7 @@ Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because o
 
 **Remote code**: No. All code is in the package.
 
-**Data usage** (check): *Website content* (game state shown by endstep.cc). Nothing else. All of it stays on the device.
+**Data usage** (check): *Website content* (game state shown by endstep.cc, which stays on the device). Since the anonymous usage statistics (telemetry.js): nothing else needs ticking for anonymous install and daily-use counts, which hold no personal data, but say it in the justification field if asked: "Anonymous usage statistics: install, update and one daily signal with a random install id, no personal data, can be switched off; see the privacy policy."
 
 **Certifications** (all true): not sold to third parties; not used for purposes unrelated to the single purpose; not used to determine creditworthiness or for lending.
 
@@ -126,7 +126,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 
 ## Firefox (addons.mozilla.org)
 
-`./release.sh firefox` builds `dist/endstep-tracker-<version>-firefox.zip`: same files, manifest rewritten for Firefox (`background.scripts` instead of the service worker, a `browser_specific_settings.gecko` block with the add-on id `endstep-tracker@mcouzinet.github.io`, `strict_min_version` 143 for `storage.getKeys` and the mandatory `data_collection_permissions: none`). No code differs: Firefox's `chrome.*` returns promises, and `runtime.getContexts` and `scripting.executeScript` in the MAIN world are available (checked on Firefox 134).
+`./release.sh firefox` builds `dist/endstep-tracker-<version>-firefox.zip`: same files, manifest rewritten for Firefox (`background.scripts` instead of the service worker, a `browser_specific_settings.gecko` block with the add-on id `endstep-tracker@mcouzinet.github.io`, `strict_min_version` 143 for `storage.getKeys` and `data_collection_permissions` with nothing required and the optional `technicalAndInteraction`, which Firefox offers at install time for the anonymous usage statistics). No code differs: Firefox's `chrome.*` returns promises, and `runtime.getContexts` and `scripting.executeScript` in the MAIN world are available (checked on Firefox 134).
 
 - Upload: https://addons.mozilla.org/developers/ → Submit a New Add-on → "On this site". Listing texts, screenshots and privacy policy: same as above. AMO also asks for a summary (≤ 250 chars, the manifest one fits) and a category (Games & Entertainment or Other).
 - Before uploading: `npx web-ext lint --source-dir <unzipped build>` must show 0 errors (it shows `innerHTML` warnings on dashboard.js, which AMO accepts; the content is escaped with `esc()`).
@@ -141,7 +141,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Wrapper app: the Xcode project `safari/Endstep Tracker/Endstep Tracker.xcodeproj`. It **references** `dist/safari/` instead of copying it: run `./release.sh safari` before archiving, and add any new extension file to the Extension target. Bundle id `io.github.mcouzinet.endsteptracker` (permanent once published), team `6DTUA72PA3`, macOS 13 minimum, category Entertainment, encryption exempt. Edit this project rather than regenerate it: Apple's converter ignores the requested app id, sets version 1.0, targets the SDK's macOS and leaves out the category.
 - Each release: `MARKETING_VERSION` (the manifest version) and `CURRENT_PROJECT_VERSION` go up in both targets, app and extension.
 - App icon (`Assets.xcassets/AppIcon.appiconset`): Apple's macOS grid, the tile 824 px with ~185 px corners centred on a transparent 1024 px canvas, with a soft shadow; anything else (a full-bleed tile) is shown by macOS 26 and App Store Connect on a white rounded plate. `node safari/mac-icon.js icons/icon.svg 4 120 out.png` renders it, then resize to the 10 sizes of the set.
-- Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: Data Not Collected. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
+- Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: since the anonymous usage statistics, *Usage Data, Product Interaction*, not linked to the user, not used for tracking, purpose *Analytics*. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
 - The first time, Safari asks the user to allow the extension on endstep.cc; until then nothing is recorded.
 
 ## Release notes

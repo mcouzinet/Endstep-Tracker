@@ -11,7 +11,7 @@ suffix=$([ "$target" = chrome ] || echo "-$target")
 out="$PWD/dist/endstep-tracker-$v$suffix.zip"
 mkdir -p dist && rm -f "$out"
 if [ "$target" = safari ]; then stage="$PWD/dist/safari"; rm -rf "$stage"; mkdir -p "$stage"; else stage=$(mktemp -d); fi
-cp -R manifest.json background.js hook.js tracker.js content.js dashboard.js meta.js shared.js theme.css popup.html popup.js overlay.js _locales "$stage"/
+cp -R manifest.json background.js telemetry.js hook.js tracker.js content.js dashboard.js meta.js shared.js theme.css popup.html popup.js overlay.js _locales "$stage"/
 mkdir "$stage/icons" && cp icons/*.png "$stage/icons/"
 [ "$target" = safari ] || rm "$stage/icons/icon-1024.png"
 cp dashboard.html "$stage/"
@@ -21,12 +21,13 @@ for f in "$stage"/*.js; do sed -i '' '/\/\/ dev-only {/,/\/\/ } dev-only/d' "$f"
 if grep -ril coach "$stage" >/dev/null; then echo "coach mentioned in: $(grep -ril coach "$stage" | tr '\n' ' ')"; exit 1; fi
 if [ "$target" = firefox ]; then
   # Firefox has no background service worker (event page instead), needs a gecko id, and AMO requires the
-  # data-collection declaration for new extensions (nothing leaves the browser: "none").
+  # data-collection declaration: nothing is required; the anonymous usage statistics (telemetry.js) are the optional
+  # "technicalAndInteraction" kind, which Firefox offers at install time and telemetry.js checks before sending.
   node -e '
     const fs = require("fs"), p = process.argv[1], m = JSON.parse(fs.readFileSync(p, "utf8"));
     delete m.minimum_chrome_version;
-    m.background = { scripts: ["background.js"] };
-    m.browser_specific_settings = { gecko: { id: "endstep-tracker@mcouzinet.github.io", strict_min_version: "143.0", data_collection_permissions: { required: ["none"] } }, gecko_android: { strict_min_version: "143.0" } }; // 143 for storage.getKeys
+    m.background = { scripts: ["telemetry.js", "background.js"] };
+    m.browser_specific_settings = { gecko: { id: "endstep-tracker@mcouzinet.github.io", strict_min_version: "143.0", data_collection_permissions: { required: ["none"], optional: ["technicalAndInteraction"] } }, gecko_android: { strict_min_version: "143.0" } }; // 143 for storage.getKeys
     fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
   ' "$stage/manifest.json"
 fi
