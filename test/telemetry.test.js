@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const code = fs.readFileSync(require('node:path').join(__dirname, '..', 'telemetry.js'), 'utf8');
 
-async function run({ ua = 'Mozilla/5.0 Chrome/140.0 Safari/537.36', stored = {}, firefoxGranted = true, day = '2026-10-16' } = {}) {
+async function run({ ua = 'Mozilla/5.0 Chrome/140.0 Safari/537.36', stored = {}, firefoxGranted = true, day = '2026-10-16', atLoad } = {}) {
   const store = { ...stored }, sent = [], listeners = {}, uninstall = [];
   const on = (name) => ({ addListener: (f) => { listeners[name] = f; } });
   const chrome = {
@@ -19,6 +19,7 @@ async function run({ ua = 'Mozilla/5.0 Chrome/140.0 Safari/537.36', stored = {},
   ctx.globalThis = ctx;
   if (/Firefox/.test(ua)) ctx.browser = { permissions: { contains: async () => firefoxGranted } };
   vm.runInNewContext(code, ctx);
+  if (atLoad) atLoad(listeners);
   await new Promise((r) => setTimeout(r, 10));
   return { store, sent, listeners, uninstall };
 }
@@ -30,6 +31,9 @@ async function run({ ua = 'Mozilla/5.0 Chrome/140.0 Safari/537.36', stored = {},
   assert.equal(r.sent[0].id, '3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b');
   assert.deepEqual({ p: r.sent[0].p, b: r.sent[0].b, v: r.sent[0].v }, { p: 'endstep', b: 'chrome', v: '1.5' });
   assert.equal(r.uninstall[0], 'https://stats.tolarianstudio.com/bye?p=endstep&b=chrome&v=1.5');
+  // A change during the worker's own check (the setting, or Firefox's permission): still one "active" that day.
+  r = await run({ atLoad: (l) => l.changed({ telemetry: { newValue: true } }, 'local') });
+  assert.deepEqual(r.sent.map((s) => s.e), ['active']);
   // Same day again: nothing more. Install and update are their own signals, without the id.
   r = await run({ stored: { telemetryDay: '2026-10-16', telemetryId: 'x' } });
   assert.equal(r.sent.length, 0);

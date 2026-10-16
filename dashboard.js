@@ -1045,20 +1045,27 @@ function download(name, text, type) {
 const stamp = () => new Date().toISOString().slice(0, 10);
 const csvCell = (v) => { const s = String(v === undefined || v === null ? '' : v); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 
-// Anonymous usage statistics (telemetry.js): on unless switched off here; the menu item says which.
+// Anonymous usage statistics (telemetry.js): on unless switched off here; the menu item says which. On Firefox they
+// also need the "technical and interaction data" permission (offered at install time): without it they are off, and
+// switching them on asks for it.
+const FIREFOX_DATA = S.browserName(chrome.runtime.getManifest(), navigator) === 'Firefox' ? { data_collection: ['technicalAndInteraction'] } : null;
+let telemetryOn = true; // as the menu shows it
 async function showTelemetry() {
   const { telemetry } = await chrome.storage.local.get('telemetry');
+  telemetryOn = telemetry !== false && (!FIREFOX_DATA || await browser.permissions.contains(FIREFOX_DATA).catch(() => false));
   const btn = $('#telemetry-btn');
-  btn.setAttribute('aria-checked', String(telemetry !== false));
-  btn.querySelector('span').textContent = t(telemetry === false ? 'telemetry_off' : 'telemetry_on');
+  btn.setAttribute('aria-checked', String(telemetryOn));
+  btn.querySelector('span').textContent = t(telemetryOn ? 'telemetry_on' : 'telemetry_off');
 }
 
 const ACTIONS = {
   telemetry: async () => {
-    const { telemetry } = await chrome.storage.local.get('telemetry');
-    await chrome.storage.local.set({ telemetry: telemetry === false });
+    const on = telemetryOn;
+    // Firefox only grants a permission during the click itself: asked before anything is awaited.
+    if (!on && FIREFOX_DATA && !(await browser.permissions.request(FIREFOX_DATA).catch(() => false))) return;
+    await chrome.storage.local.set({ telemetry: !on });
     await showTelemetry();
-    toast(t(telemetry === false ? 'telemetry_now_on' : 'telemetry_now_off'));
+    toast(t(on ? 'telemetry_now_off' : 'telemetry_now_on'));
   },
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);

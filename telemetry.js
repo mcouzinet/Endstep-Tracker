@@ -34,12 +34,16 @@
     return telemetryId;
   }
 
-  async function daily() {
-    const day = new Date().toISOString().slice(0, 10);
-    const { telemetryDay } = await chrome.storage.local.get('telemetryDay');
-    if (telemetryDay === day || !(await allowed())) return;
-    await chrome.storage.local.set({ telemetryDay: day });
-    await send('active', { id: await installId() });
+  // One check at a time: two at once would both read yesterday's date and send the day twice.
+  let checking = null;
+  function daily() {
+    return checking || (checking = (async () => {
+      const day = new Date().toISOString().slice(0, 10);
+      const { telemetryDay } = await chrome.storage.local.get('telemetryDay');
+      if (telemetryDay === day || !(await allowed())) return;
+      await chrome.storage.local.set({ telemetryDay: day });
+      await send('active', { id: await installId() });
+    })().finally(() => { checking = null; }));
   }
 
   async function uninstallUrl() {
@@ -52,8 +56,12 @@
     if (reason === 'install') send('install');
     else if (reason === 'update' && previousVersion !== VERSION) send('update');
   });
-  chrome.runtime.onStartup.addListener(daily);
-  chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && 'telemetry' in changes) { uninstallUrl(); daily(); } });
+  // No onStartup listener: the worker loads at every browser start, and the call below runs then.
+  // Switched on or off in the dashboard, or Firefox's data permission granted or taken back: applied at once.
+  const refresh = () => { uninstallUrl(); daily(); };
+  chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && 'telemetry' in changes) refresh(); });
+  chrome.permissions?.onAdded?.addListener(refresh);
+  chrome.permissions?.onRemoved?.addListener(refresh);
   daily();
   uninstallUrl();
 })();
