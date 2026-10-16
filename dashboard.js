@@ -1027,7 +1027,14 @@ function showPreview(el, x, y) {
 function hidePreview() { clearTimeout(hoverTimer); previewName = null; preview.hidden = true; }
 
 // --- actions ---
+// Safari on iPhone and iPad can't download from an extension page (it opens the file's blob: address and fails): the
+// file goes to the share sheet instead (Save to Files, AirDrop, Mail…). An iPad says it's a Mac; its touch screen doesn't.
+const SHARE_FILES = S.browserName(chrome.runtime.getManifest(), navigator) === 'Safari' && navigator.maxTouchPoints > 1;
 function download(name, text, type) {
+  if (SHARE_FILES) {
+    navigator.share({ files: [new File([text], name, { type })] }).catch((e) => e.name === 'AbortError' || console.warn('[endstep-tracker] share', e));
+    return;
+  }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type }));
   a.download = name;
@@ -1094,6 +1101,19 @@ document.addEventListener('click', (e) => {
   const menu = $('#data-menu');
   if (menu.matches(':popover-open')) menu.hidePopover();
   ACTIONS[el.dataset.action]();
+});
+
+// The Data menu opens under its button, kept inside the window. Placed here, not in CSS: Safari before 26 has no anchor
+// positioning, and on a phone the button sits on the left, where a menu aligned to its right edge would leave the screen.
+// Its width is known once it shows: aligned on the button's right edge before, moved in after if it has to.
+$('#data-menu').addEventListener('beforetoggle', (e) => {
+  if (e.newState !== 'open') return;
+  const b = $('#data-btn').getBoundingClientRect();
+  Object.assign(e.target.style, { top: b.bottom + 6 + 'px', right: Math.max(8, innerWidth - b.right) + 'px', left: 'auto' });
+});
+$('#data-menu').addEventListener('toggle', (e) => {
+  const r = e.target.getBoundingClientRect();
+  if (e.newState === 'open' && r.left < 8) Object.assign(e.target.style, { left: '8px', right: 'auto' });
 });
 
 $('#import').addEventListener('change', async (e) => {

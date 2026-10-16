@@ -3,6 +3,18 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## Non publié
+
+### Ajouté
+
+- **Safari sur iPhone** (1.4.1) : la même extension, dans une app iPhone qui explique comment l'activer (Réglages › Apps › Safari › Extensions, puis endstep.cc sur « Autoriser »). Une seule fiche App Store pour le Mac et l'iPhone. Les matchs restent sur l'appareil où ils sont joués : une sauvegarde exportée puis importée les réunit (sur iPhone, l'export passe par le menu de partage : Enregistrer dans Fichiers, AirDrop…). Il faut jouer dans Safari : les extensions ne tournent pas dans endstep ajouté à l'écran d'accueil.
+- **Firefox pour Android vérifié** (1.4.1) : popup, tableau de bord, panneau sur endstep.cc, import de l'historique et sauvegarde fonctionnent. AMO y proposait déjà l'extension.
+
+### Corrigé
+
+- **Le menu Données sur Safari** (1.4.1) : avant Safari 26, il s'ouvrait dans le coin de la fenêtre au lieu de sous son bouton, et sur un téléphone il pouvait sortir de l'écran. Il s'ouvre maintenant sous le bouton, toujours en entier.
+- **La popup sur téléphone** (1.4.1) : sur Firefox pour Android, elle s'affichait en tout petit (rendue comme sur un écran d'ordinateur puis réduite). Elle prend maintenant la largeur de l'écran, sur Android comme sur iPhone.
+
 ## [1.4] (2026-10-08)
 
 Plusieurs onglets et plusieurs ordinateurs sans copies à moitié vues, des sauvegardes qui fusionnent, les matchs incomplets réparés, et Whozic à côté de Deck Compare.

@@ -1,6 +1,6 @@
 # Chrome Web Store — listing and submission
 
-Everything to paste into the developer dashboards. The store builds have no Coach: it lives in the Endstep-coach repository and is only ever copied next to the extension by its install script (git ignores those files here); `release.sh` still refuses a zip that would contain one. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (Mac App Store). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
+Everything to paste into the developer dashboards. The store builds have no Coach: it lives in the Endstep-coach repository and is only ever copied next to the extension by its install script (git ignores those files here); `release.sh` still refuses a zip that would contain one. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (App Store, Mac and iPhone). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
 
 ## Listing
 
@@ -134,7 +134,7 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Firefox 127+ grants `host_permissions` at install time, so the tracker runs on endstep.cc right after installing; on older Firefox the user would have to allow the site by hand, hence the minimum version.
 - The Chrome zip also serves Edge Add-ons unchanged.
 
-## Safari (Mac App Store)
+## Safari (App Store: Mac and iPhone)
 
 `./release.sh safari` builds `dist/safari/` (plus a zip): manifest rewritten with `browser_specific_settings.safari` (`strict_min_version` 18.4, for `storage.getKeys`) instead of `minimum_chrome_version`, a 1024 px icon (Apple's packager builds the App Store icon from the largest one), and `hook.js` out of `content_scripts`: Apple's packager says Safari ignores `world` there, so `background.js` registers it in the MAIN world with `scripting.registerContentScripts`. One code path differs: Safari has no `runtime.getContexts`, so `background.js` looks for the dashboard tab with `tabs.query`. The REC badge shows without its red background (Safari ignores `setBadgeBackgroundColor`).
 
@@ -144,9 +144,19 @@ The dashboard has a "Test instructions" tab for reviewers (500 characters max; o
 - Upload: create the app in App Store Connect first (bundle id above), then Xcode: Product, Archive, Distribute App, App Store Connect. Listing texts, screenshots (1280×800 fits the Mac sizes) and privacy policy: same as above; App Privacy: Data Not Collected. The description in `_locales/*/messages.json` must stay at 112 characters or fewer in every language, or the upload is refused.
 - The first time, Safari asks the user to allow the extension on endstep.cc; until then nothing is recorded.
 
+### iPhone
+
+The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/Endstep Tracker.xcodeproj` (iPhone only, iOS 18.4 minimum, dark appearance). Same bundle ids as the Mac app (`io.github.mcouzinet.endsteptracker`, extension `….Extension`): one app record in App Store Connect, one purchase for both (universal purchase). The same rules apply as for the Mac project: it references `dist/safari/`, `release.sh safari` sets its `MARKETING_VERSION`, edit it rather than regenerate it.
+
+- The app shows one page (`Resources/Base.lproj/Main.html`, French on a French iPhone through `ViewController.swift`, English otherwise): how to turn the extension on (Settings › Apps › Safari › Extensions), set endstep.cc to "Allow", and play in Safari. Extensions don't run in endstep added to the Home Screen, which endstep suggests on phones: the page says so. No tip or donation link, no link to other products (guideline 3.1.1); "Open endstep.cc" goes to Safari.
+- App icon: `node safari/ios-icon.js icons/icon.svg out.png`, the tile edge to edge on an opaque 1024 px square (iOS masks the corners and refuses transparency), as `AppIcon.appiconset/universal-icon-1024@1x.png`.
+- Differences on the phone, in the extension's code: no windows API (`background.js` checks it before bringing the dashboard back), no download from an extension page (`dashboard.js` hands backups to the share sheet: Save to Files, AirDrop…), no CSS anchor positioning before Safari 26 (the Data menu is placed by script). No REC badge in sight: Safari on iPhone shows none.
+- Screenshots: `store/iphone/`, 1320×2868 for the 6.9" iPhone (Apple scales them down for the smaller ones): 1 to 5 in English (the in-page panel during a match, the dashboard, a matchup with my usual sideboarding, My cards, a match's detail), 6 and 7 in French for the French listing. Taken in the iPhone 16 Pro Max simulator (status bar set to 9:41 with `xcrun simctl status_bar`) from the store screenshots' demo data (`store/shots.js`, made-up opponents), imported as a backup.
+- App Store Connect, the first time: on the app record, add the iOS platform (+ next to the platforms), then fill its version page: the screenshots above, description and keywords as above, the same privacy answers (Data Not Collected). The iPhone version goes through its own review. `publish.sh safari` uploads both builds; select each on its platform's version.
+
 ## Release notes
 
-What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), Mac App Store ("What's New in This Version"). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
+What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
 
 ### 1.4 (EN)
 
@@ -217,7 +227,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 - **Release** `X.Y`: what the stores publish, tagged `vX.Y`. `Y` moves up by one at each release, `X` for a major one.
 - **Dev** `X.Y.Z` between two releases: `X.Y.1`, `X.Y.2`… `Z` goes up at **every batch of changes tested in the browser**, so the number shown in `chrome://extensions` tells which build is loaded. The next release drops back to two numbers, `X.(Y+1)`.
 - Browsers compare component by component, a missing one counts as 0: `0.9` < `0.9.2` < `0.10`. A release must stay above the previous published one.
-- **The four stores ship together** (Chrome Web Store, Edge Add-ons, AMO, Mac App Store), once `CHANGELOG.md` "Non publié" holds enough. `release.sh safari` copies the manifest version into the Xcode project (`MARKETING_VERSION`); raise `CURRENT_PROJECT_VERSION` only to upload the same version to Apple again.
+- **The four stores ship together** (Chrome Web Store, Edge Add-ons, AMO, App Store for Mac and iPhone), once `CHANGELOG.md` "Non publié" holds enough. `release.sh safari` copies the manifest version into both Xcode projects (`MARKETING_VERSION`); raise `CURRENT_PROJECT_VERSION` only to upload the same version to Apple again.
 
 ## Automated publishing (`publish.sh`)
 
@@ -248,7 +258,7 @@ What each store gets: Chrome, through API v2 (v1.1 stops on 2026-10-15), the zip
 
 1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js && node test/cards.test.js && node test/history.test.js && node test/met.test.js && node test/feedback.test.js`
 2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in both `_locales` (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
-3. `./publish.sh --dry-run` then `./publish.sh` (see Automated publishing), or by hand: `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive the Xcode project (Mac App Store).
+3. `./publish.sh --dry-run` then `./publish.sh` (see Automated publishing), or by hand: `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive both Xcode projects, `safari/` (Mac) and `safari-ios/` (iPhone).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.
 6. After the release, the next dev build is `X.Y.1`.

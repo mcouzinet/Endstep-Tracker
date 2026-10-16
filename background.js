@@ -9,7 +9,8 @@ async function openDashboard() {
   const open = tabs.find((t) => (t.url || '').startsWith(url));
   if (!open) return chrome.tabs.create({ url });
   await chrome.tabs.update(open.id, { active: true });
-  await chrome.windows.update(open.windowId, { focused: true });
+  // Firefox for Android has no windows API (one window); Safari on iPhone may lack it too.
+  if (chrome.windows) await chrome.windows.update(open.windowId, { focused: true });
 }
 
 // Apple's packager says Safari ignores "world" in manifest content_scripts: release.sh leaves hook.js out of the

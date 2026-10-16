@@ -133,7 +133,7 @@ firefox() {
   echo "✓ Firefox: $v submitted to addons.mozilla.org; it goes live after Mozilla's review"
 }
 
-# --- Mac App Store: archive and upload the build with an App Store Connect API key ---
+# --- App Store (Mac and iPhone): archive and upload the builds with an App Store Connect API key ---
 safari() {
   need asc-key-id asc-issuer-id
   local id; id=$(secret asc-key-id)
@@ -153,12 +153,17 @@ safari() {
 </dict></plist>
 PLIST
   local auth=(-allowProvisioningUpdates -authenticationKeyPath "$p8" -authenticationKeyID "$id" -authenticationKeyIssuerID "$(secret asc-issuer-id)")
-  xcodebuild archive -project "$REL/safari/Endstep Tracker/Endstep Tracker.xcodeproj" -scheme "Endstep Tracker" -configuration Release \
-    -destination 'generic/platform=macOS' -archivePath "$out/Endstep Tracker.xcarchive" "${auth[@]}" >"$out/archive.log" 2>&1 ||
-    fail "Safari archive failed: $(tail -5 "$out/archive.log")"
-  xcodebuild -exportArchive -archivePath "$out/Endstep Tracker.xcarchive" -exportOptionsPlist "$out/ExportOptions.plist" \
-    -exportPath "$out/export" "${auth[@]}" >"$out/upload.log" 2>&1 || fail "Safari upload failed: $(tail -5 "$out/upload.log")"
-  echo "✓ Safari: build $v uploaded to App Store Connect; once processed, select it on the $v version and submit it for review there"
+  # One app record, two builds: the Mac app (safari/) and the iPhone app (safari-ios/).
+  local x platform
+  for x in safari:macOS safari-ios:iOS; do
+    platform=${x#*:}; x=${x%%:*}
+    xcodebuild archive -project "$REL/$x/Endstep Tracker/Endstep Tracker.xcodeproj" -scheme "Endstep Tracker" -configuration Release \
+      -destination "generic/platform=$platform" -archivePath "$out/$x.xcarchive" "${auth[@]}" >"$out/$x-archive.log" 2>&1 ||
+      fail "Safari ($platform) archive failed: $(tail -5 "$out/$x-archive.log")"
+    xcodebuild -exportArchive -archivePath "$out/$x.xcarchive" -exportOptionsPlist "$out/ExportOptions.plist" \
+      -exportPath "$out/$x-export" "${auth[@]}" >"$out/$x-upload.log" 2>&1 || fail "Safari ($platform) upload failed: $(tail -5 "$out/$x-upload.log")"
+  done
+  echo "✓ Safari: build $v uploaded for Mac and iPhone; once processed, select each on its platform's $v version and submit them for review there"
 }
 
 if [ $dry = 0 ] && [ $yes = 0 ]; then

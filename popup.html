@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Endstep Tracker</title>
   <link rel="stylesheet" href="theme.css">
   <style>
     body { width: 360px; }
+    /* On a phone the popup is a whole page or a sheet (Firefox for Android, Safari on iPhone): the screen's width. Read
+       from the screen, not the pointer: an Android emulator says it has a mouse. */
+    @media (max-device-width: 600px) { body { width: auto; } }
     body.loading main { visibility: hidden; }
     header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
     header img { width: 24px; height: 24px; }

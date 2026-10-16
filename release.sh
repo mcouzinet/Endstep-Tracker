@@ -2,7 +2,8 @@
 # Builds dist/endstep-tracker-<version>[-firefox|-safari].zip for the stores: runtime files only, without the Coach
 # (the coach lives in Endstep-coach/extension-coach and is never in this repository; the leak check below stays as a guard).
 # Usage: ./release.sh [chrome|firefox|safari]   (chrome by default; the Chrome zip also serves Edge)
-# safari also leaves the package in dist/safari/, which the Xcode project in safari/ references: run it before archiving.
+# safari also leaves the package in dist/safari/, which the Xcode projects reference (Mac in safari/, iPhone in safari-ios/):
+# run it before archiving.
 set -e
 cd "$(dirname "$0")"
 target=${1:-chrome}
@@ -42,8 +43,8 @@ if [ "$target" = safari ]; then
     m.content_scripts = m.content_scripts.filter((c) => c.world !== "MAIN");
     fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
   ' "$stage/manifest.json"
-  # The App Store reads the app's version from the Xcode project: keep it on the manifest's.
-  sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $v;/" "safari/Endstep Tracker/Endstep Tracker.xcodeproj/project.pbxproj"
+  # The App Store reads the apps' version from the Xcode projects (Mac in safari/, iPhone in safari-ios/): keep it on the manifest's.
+  for x in safari safari-ios; do sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $v;/" "$x/Endstep Tracker/Endstep Tracker.xcodeproj/project.pbxproj"; done
 fi
 (cd "$stage" && zip -qr "$out" . -x '*/.DS_Store')
 [ "$target" = safari ] || rm -rf "$stage"

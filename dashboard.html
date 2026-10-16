@@ -26,11 +26,10 @@
     @keyframes pulse { 50% { box-shadow: 0 0 0 6px oklch(.85 .13 83 / 0); opacity: .7; } }
 
     .menu[popover] {
-      position-anchor: --data; inset: auto; top: calc(anchor(bottom) + 6px); right: anchor(right); margin: 0;
+      inset: auto; margin: 0; /* top and left: dashboard.js */
       min-width: 260px; padding: 6px; border: 1px solid var(--line-strong); border-radius: var(--radius);
       background: var(--surface-2); color: var(--ink); box-shadow: var(--shadow-pop);
     }
-    #data-btn { anchor-name: --data; }
     #lang { padding-block: 6px; }
     .menu button {
       display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--radius-sm);

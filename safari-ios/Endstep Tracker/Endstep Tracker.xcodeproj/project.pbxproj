@@ -1,0 +1,644 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2AC0DEA53077F5ED008498E1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC0DEA43077F5ED008498E1 /* AppDelegate.swift */; };
+		2AC0DEA93077F5ED008498E1 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEA73077F5ED008498E1 /* Main.html */; };
+		2AC0DEAB3077F5ED008498E1 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEAA3077F5ED008498E1 /* Icon.png */; };
+		2AC0DEAD3077F5ED008498E1 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEAC3077F5ED008498E1 /* Style.css */; };
+		2AC0DEAF3077F5ED008498E1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC0DEAE3077F5ED008498E1 /* SceneDelegate.swift */; };
+		2AC0DEB13077F5ED008498E1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC0DEB03077F5ED008498E1 /* ViewController.swift */; };
+		2AC0DEB43077F5ED008498E1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEB23077F5ED008498E1 /* LaunchScreen.storyboard */; };
+		2AC0DEB73077F5ED008498E1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEB53077F5ED008498E1 /* Main.storyboard */; };
+		2AC0DEBF3077F5EE008498E1 /* Endstep Tracker Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2AC0DEBE3077F5EE008498E1 /* Endstep Tracker Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2AC0DEC43077F5EE008498E1 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC0DEC33077F5EE008498E1 /* SafariWebExtensionHandler.swift */; };
+		2AC0DEC63077F5EE008498E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEB83077F5EE008498E1 /* Assets.xcassets */; };
+		2AC0DEE03077F5EE008498E1 /* theme.css in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED13077F5EE008498E1 /* theme.css */; };
+		2AC0DEE13077F5EE008498E1 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED23077F5EE008498E1 /* popup.js */; };
+		2AC0DEE23077F5EE008498E1 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED33077F5EE008498E1 /* background.js */; };
+		2AC0DEE33077F5EE008498E1 /* hook.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED43077F5EE008498E1 /* hook.js */; };
+		2AC0DEE43077F5EE008498E1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED53077F5EE008498E1 /* popup.html */; };
+		2AC0DEE53077F5EE008498E1 /* overlay.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED63077F5EE008498E1 /* overlay.js */; };
+		2AC0DEE63077F5EE008498E1 /* dashboard.html in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED73077F5EE008498E1 /* dashboard.html */; };
+		2AC0DEE73077F5EE008498E1 /* meta.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED83077F5EE008498E1 /* meta.js */; };
+		2AC0DEE83077F5EE008498E1 /* icons in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED93077F5EE008498E1 /* icons */; };
+		2AC0DEE93077F5EE008498E1 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDA3077F5EE008498E1 /* manifest.json */; };
+		2AC0DEEA3077F5EE008498E1 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDB3077F5EE008498E1 /* _locales */; };
+		2AC0DEEB3077F5EE008498E1 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDC3077F5EE008498E1 /* content.js */; };
+		2AC0DEEC3077F5EE008498E1 /* dashboard.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDD3077F5EE008498E1 /* dashboard.js */; };
+		2AC0DEED3077F5EE008498E1 /* shared.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDE3077F5EE008498E1 /* shared.js */; };
+		2AC0DEEE3077F5EE008498E1 /* tracker.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEDF3077F5EE008498E1 /* tracker.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2AC0DEC03077F5EE008498E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2AC0DE993077F5ED008498E1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2AC0DEBD3077F5EE008498E1;
+			remoteInfo = "Endstep Tracker Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2AC0DECC3077F5EE008498E1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				2AC0DEBF3077F5EE008498E1 /* Endstep Tracker Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2AC0DEA13077F5ED008498E1 /* Endstep Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Endstep Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2AC0DEA43077F5ED008498E1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2AC0DEA83077F5ED008498E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
+		2AC0DEAA3077F5ED008498E1 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		2AC0DEAC3077F5ED008498E1 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		2AC0DEAE3077F5ED008498E1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		2AC0DEB03077F5ED008498E1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2AC0DEB33077F5ED008498E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		2AC0DEB63077F5ED008498E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2AC0DEB83077F5EE008498E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2AC0DEB93077F5EE008498E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2AC0DEBE3077F5EE008498E1 /* Endstep Tracker Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Endstep Tracker Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2AC0DEC33077F5EE008498E1 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		2AC0DEC53077F5EE008498E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2AC0DED13077F5EE008498E1 /* theme.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = theme.css; path = ../../../dist/safari/theme.css; sourceTree = "<group>"; };
+		2AC0DED23077F5EE008498E1 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.js; path = ../../../dist/safari/popup.js; sourceTree = "<group>"; };
+		2AC0DED33077F5EE008498E1 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../../dist/safari/background.js; sourceTree = "<group>"; };
+		2AC0DED43077F5EE008498E1 /* hook.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = hook.js; path = ../../../dist/safari/hook.js; sourceTree = "<group>"; };
+		2AC0DED53077F5EE008498E1 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../../dist/safari/popup.html; sourceTree = "<group>"; };
+		2AC0DED63077F5EE008498E1 /* overlay.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = overlay.js; path = ../../../dist/safari/overlay.js; sourceTree = "<group>"; };
+		2AC0DED73077F5EE008498E1 /* dashboard.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = dashboard.html; path = ../../../dist/safari/dashboard.html; sourceTree = "<group>"; };
+		2AC0DED83077F5EE008498E1 /* meta.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = meta.js; path = ../../../dist/safari/meta.js; sourceTree = "<group>"; };
+		2AC0DED93077F5EE008498E1 /* icons */ = {isa = PBXFileReference; lastKnownFileType = folder; name = icons; path = ../../../dist/safari/icons; sourceTree = "<group>"; };
+		2AC0DEDA3077F5EE008498E1 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/safari/manifest.json; sourceTree = "<group>"; };
+		2AC0DEDB3077F5EE008498E1 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../../dist/safari/_locales; sourceTree = "<group>"; };
+		2AC0DEDC3077F5EE008498E1 /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.js; path = ../../../dist/safari/content.js; sourceTree = "<group>"; };
+		2AC0DEDD3077F5EE008498E1 /* dashboard.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = dashboard.js; path = ../../../dist/safari/dashboard.js; sourceTree = "<group>"; };
+		2AC0DEDE3077F5EE008498E1 /* shared.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = shared.js; path = ../../../dist/safari/shared.js; sourceTree = "<group>"; };
+		2AC0DEDF3077F5EE008498E1 /* tracker.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = tracker.js; path = ../../../dist/safari/tracker.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2AC0DE9E3077F5ED008498E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		2AC0DEBB3077F5EE008498E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2AC0DE983077F5ED008498E1 = {
+			isa = PBXGroup;
+			children = (
+				2AC0DEA33077F5ED008498E1 /* Endstep Tracker */,
+				2AC0DEC23077F5EE008498E1 /* Endstep Tracker Extension */,
+				2AC0DEA23077F5ED008498E1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2AC0DEA23077F5ED008498E1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2AC0DEA13077F5ED008498E1 /* Endstep Tracker.app */,
+				2AC0DEBE3077F5EE008498E1 /* Endstep Tracker Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2AC0DEA33077F5ED008498E1 /* Endstep Tracker */ = {
+			isa = PBXGroup;
+			children = (
+				2AC0DEA43077F5ED008498E1 /* AppDelegate.swift */,
+				2AC0DEAE3077F5ED008498E1 /* SceneDelegate.swift */,
+				2AC0DEB03077F5ED008498E1 /* ViewController.swift */,
+				2AC0DEB23077F5ED008498E1 /* LaunchScreen.storyboard */,
+				2AC0DEB53077F5ED008498E1 /* Main.storyboard */,
+				2AC0DEB83077F5EE008498E1 /* Assets.xcassets */,
+				2AC0DEB93077F5EE008498E1 /* Info.plist */,
+				2AC0DEA63077F5ED008498E1 /* Resources */,
+			);
+			path = "Endstep Tracker";
+			sourceTree = "<group>";
+		};
+		2AC0DEA63077F5ED008498E1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2AC0DEA73077F5ED008498E1 /* Main.html */,
+				2AC0DEAA3077F5ED008498E1 /* Icon.png */,
+				2AC0DEAC3077F5ED008498E1 /* Style.css */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2AC0DEC23077F5EE008498E1 /* Endstep Tracker Extension */ = {
+			isa = PBXGroup;
+			children = (
+				2AC0DED03077F5EE008498E1 /* Resources */,
+				2AC0DEC33077F5EE008498E1 /* SafariWebExtensionHandler.swift */,
+				2AC0DEC53077F5EE008498E1 /* Info.plist */,
+			);
+			path = "Endstep Tracker Extension";
+			sourceTree = "<group>";
+		};
+		2AC0DED03077F5EE008498E1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2AC0DED13077F5EE008498E1 /* theme.css */,
+				2AC0DED23077F5EE008498E1 /* popup.js */,
+				2AC0DED33077F5EE008498E1 /* background.js */,
+				2AC0DED43077F5EE008498E1 /* hook.js */,
+				2AC0DED53077F5EE008498E1 /* popup.html */,
+				2AC0DED63077F5EE008498E1 /* overlay.js */,
+				2AC0DED73077F5EE008498E1 /* dashboard.html */,
+				2AC0DED83077F5EE008498E1 /* meta.js */,
+				2AC0DED93077F5EE008498E1 /* icons */,
+				2AC0DEDA3077F5EE008498E1 /* manifest.json */,
+				2AC0DEDB3077F5EE008498E1 /* _locales */,
+				2AC0DEDC3077F5EE008498E1 /* content.js */,
+				2AC0DEDD3077F5EE008498E1 /* dashboard.js */,
+				2AC0DEDE3077F5EE008498E1 /* shared.js */,
+				2AC0DEDF3077F5EE008498E1 /* tracker.js */,
+			);
+			name = Resources;
+			path = "Endstep Tracker Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2AC0DEA03077F5ED008498E1 /* Endstep Tracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2AC0DECD3077F5EE008498E1 /* Build configuration list for PBXNativeTarget "Endstep Tracker" */;
+			buildPhases = (
+				2AC0DE9D3077F5ED008498E1 /* Sources */,
+				2AC0DE9E3077F5ED008498E1 /* Frameworks */,
+				2AC0DE9F3077F5ED008498E1 /* Resources */,
+				2AC0DECC3077F5EE008498E1 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2AC0DEC13077F5EE008498E1 /* PBXTargetDependency */,
+			);
+			name = "Endstep Tracker";
+			productName = "Endstep Tracker";
+			productReference = 2AC0DEA13077F5ED008498E1 /* Endstep Tracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2AC0DEBD3077F5EE008498E1 /* Endstep Tracker Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2AC0DEC93077F5EE008498E1 /* Build configuration list for PBXNativeTarget "Endstep Tracker Extension" */;
+			buildPhases = (
+				2AC0DEBA3077F5EE008498E1 /* Sources */,
+				2AC0DEBB3077F5EE008498E1 /* Frameworks */,
+				2AC0DEBC3077F5EE008498E1 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = "Endstep Tracker Extension";
+			productName = "Endstep Tracker Extension";
+			productReference = 2AC0DEBE3077F5EE008498E1 /* Endstep Tracker Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2AC0DE993077F5ED008498E1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					2AC0DEA03077F5ED008498E1 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					2AC0DEBD3077F5EE008498E1 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 2AC0DE9C3077F5ED008498E1 /* Build configuration list for PBXProject "Endstep Tracker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2AC0DE983077F5ED008498E1;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2AC0DEA23077F5ED008498E1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2AC0DEA03077F5ED008498E1 /* Endstep Tracker */,
+				2AC0DEBD3077F5EE008498E1 /* Endstep Tracker Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2AC0DE9F3077F5ED008498E1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				2AC0DEAB3077F5ED008498E1 /* Icon.png in Resources */,
+				2AC0DEB73077F5ED008498E1 /* Main.storyboard in Resources */,
+				2AC0DEB43077F5ED008498E1 /* LaunchScreen.storyboard in Resources */,
+				2AC0DEA93077F5ED008498E1 /* Main.html in Resources */,
+				2AC0DEC63077F5EE008498E1 /* Assets.xcassets in Resources */,
+				2AC0DEAD3077F5ED008498E1 /* Style.css in Resources */,
+			);
+		};
+		2AC0DEBC3077F5EE008498E1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				2AC0DEEB3077F5EE008498E1 /* content.js in Resources */,
+				2AC0DEE03077F5EE008498E1 /* theme.css in Resources */,
+				2AC0DEEE3077F5EE008498E1 /* tracker.js in Resources */,
+				2AC0DEE73077F5EE008498E1 /* meta.js in Resources */,
+				2AC0DEE93077F5EE008498E1 /* manifest.json in Resources */,
+				2AC0DEE53077F5EE008498E1 /* overlay.js in Resources */,
+				2AC0DEE83077F5EE008498E1 /* icons in Resources */,
+				2AC0DEEC3077F5EE008498E1 /* dashboard.js in Resources */,
+				2AC0DEE43077F5EE008498E1 /* popup.html in Resources */,
+				2AC0DEE63077F5EE008498E1 /* dashboard.html in Resources */,
+				2AC0DEED3077F5EE008498E1 /* shared.js in Resources */,
+				2AC0DEE23077F5EE008498E1 /* background.js in Resources */,
+				2AC0DEE13077F5EE008498E1 /* popup.js in Resources */,
+				2AC0DEEA3077F5EE008498E1 /* _locales in Resources */,
+				2AC0DEE33077F5EE008498E1 /* hook.js in Resources */,
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2AC0DE9D3077F5ED008498E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				2AC0DEB13077F5ED008498E1 /* ViewController.swift in Sources */,
+				2AC0DEA53077F5ED008498E1 /* AppDelegate.swift in Sources */,
+				2AC0DEAF3077F5ED008498E1 /* SceneDelegate.swift in Sources */,
+			);
+		};
+		2AC0DEBA3077F5EE008498E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				2AC0DEC43077F5EE008498E1 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2AC0DEC13077F5EE008498E1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2AC0DEBD3077F5EE008498E1 /* Endstep Tracker Extension */;
+			targetProxy = 2AC0DEC03077F5EE008498E1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2AC0DEA73077F5ED008498E1 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2AC0DEA83077F5ED008498E1 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		2AC0DEB23077F5ED008498E1 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2AC0DEB33077F5ED008498E1 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		2AC0DEB53077F5ED008498E1 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2AC0DEB63077F5ED008498E1 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2AC0DEC73077F5EE008498E1 /* Debug configuration for PBXProject "Endstep Tracker" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2AC0DEC83077F5EE008498E1 /* Release configuration for PBXProject "Endstep Tracker" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2AC0DECA3077F5EE008498E1 /* Debug configuration for PBXNativeTarget "Endstep Tracker Extension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Endstep Tracker Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				DEVELOPMENT_TEAM = 6DTUA72PA3;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mcouzinet.endsteptracker.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		2AC0DECB3077F5EE008498E1 /* Release configuration for PBXNativeTarget "Endstep Tracker Extension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Endstep Tracker Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				DEVELOPMENT_TEAM = 6DTUA72PA3;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mcouzinet.endsteptracker.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		2AC0DECE3077F5EE008498E1 /* Debug configuration for PBXNativeTarget "Endstep Tracker" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Endstep Tracker/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				DEVELOPMENT_TEAM = 6DTUA72PA3;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mcouzinet.endsteptracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		2AC0DECF3077F5EE008498E1 /* Release configuration for PBXNativeTarget "Endstep Tracker" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Endstep Tracker/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				DEVELOPMENT_TEAM = 6DTUA72PA3;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mcouzinet.endsteptracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2AC0DE9C3077F5ED008498E1 /* Build configuration list for PBXProject "Endstep Tracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AC0DEC73077F5EE008498E1 /* Debug configuration for PBXProject "Endstep Tracker" */,
+				2AC0DEC83077F5EE008498E1 /* Release configuration for PBXProject "Endstep Tracker" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		2AC0DEC93077F5EE008498E1 /* Build configuration list for PBXNativeTarget "Endstep Tracker Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AC0DECA3077F5EE008498E1 /* Debug configuration for PBXNativeTarget "Endstep Tracker Extension" */,
+				2AC0DECB3077F5EE008498E1 /* Release configuration for PBXNativeTarget "Endstep Tracker Extension" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		2AC0DECD3077F5EE008498E1 /* Build configuration list for PBXNativeTarget "Endstep Tracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AC0DECE3077F5EE008498E1 /* Debug configuration for PBXNativeTarget "Endstep Tracker" */,
+				2AC0DECF3077F5EE008498E1 /* Release configuration for PBXNativeTarget "Endstep Tracker" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2AC0DE993077F5ED008498E1 /* Project object */;
+	validationLevel = 1;
+}

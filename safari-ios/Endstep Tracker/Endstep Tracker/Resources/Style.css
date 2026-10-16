@@ -1,0 +1,123 @@
+/* The extension's look (theme.css): warm near-black, amber gold. */
+* {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: dark;
+    --bg: oklch(.16 .006 75);
+    --surface: oklch(.19 .007 75);
+    --line: oklch(.27 .011 75);
+    --ink: oklch(.95 .012 85);
+    --ink-2: oklch(.76 .022 80);
+    --ink-3: oklch(.62 .02 80);
+    --gold: oklch(.8 .135 80);
+    --on-fill: oklch(.2 .035 70);
+}
+
+html:not(.fr) .fr, html.fr .en {
+    display: none;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    background: var(--bg);
+    color: var(--ink);
+    font: -apple-system-body;
+    line-height: 1.45;
+}
+
+header {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+header img {
+    border-radius: 20px;
+}
+
+h1 {
+    margin: 6px 0 0;
+    font-size: 26px;
+    letter-spacing: -.01em;
+}
+
+header p {
+    margin: 0;
+    color: var(--ink-2);
+}
+
+ol {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+}
+
+li {
+    position: relative;
+    padding: 14px 16px 14px 56px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink-2);
+    counter-increment: step;
+}
+
+li::before {
+    content: counter(step);
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: oklch(.8 .135 80 / .16);
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+li b {
+    display: block;
+    color: var(--ink);
+}
+
+.btn {
+    display: block;
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--gold);
+    color: var(--on-fill);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+
+.note {
+    margin: 0;
+    color: var(--ink-3);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* iOS turns "endstep.cc" into links on its own: keep them plain text. */
+a[x-apple-data-detectors] {
+    color: inherit !important;
+    text-decoration: none !important;
+    pointer-events: none;
+}
