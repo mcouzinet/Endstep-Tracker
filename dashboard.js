@@ -22,6 +22,7 @@ async function initI18n() {
   for (const el of document.querySelectorAll('[data-i18n-attr]')) {
     for (const pair of el.dataset.i18nAttr.split(',')) { const [attr, key] = pair.split(':'); el.setAttribute(attr, t(key)); }
   }
+  showTelemetry();
 }
 
 const RESULT = { W: 'win', L: 'loss', D: 'draw' }; // message keys
@@ -1044,7 +1045,21 @@ function download(name, text, type) {
 const stamp = () => new Date().toISOString().slice(0, 10);
 const csvCell = (v) => { const s = String(v === undefined || v === null ? '' : v); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 
+// Anonymous usage statistics (telemetry.js): on unless switched off here; the menu item says which.
+async function showTelemetry() {
+  const { telemetry } = await chrome.storage.local.get('telemetry');
+  const btn = $('#telemetry-btn');
+  btn.setAttribute('aria-checked', String(telemetry !== false));
+  btn.querySelector('span').textContent = t(telemetry === false ? 'telemetry_off' : 'telemetry_on');
+}
+
 const ACTIONS = {
+  telemetry: async () => {
+    const { telemetry } = await chrome.storage.local.get('telemetry');
+    await chrome.storage.local.set({ telemetry: telemetry === false });
+    await showTelemetry();
+    toast(t(telemetry === false ? 'telemetry_now_on' : 'telemetry_now_off'));
+  },
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));

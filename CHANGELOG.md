@@ -9,6 +9,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 - **Safari sur iPhone** (1.4.1) : la même extension, dans une app iPhone qui explique comment l'activer (Réglages › Apps › Safari › Extensions, puis endstep.cc sur « Autoriser »). Une seule fiche App Store pour le Mac et l'iPhone. Les matchs restent sur l'appareil où ils sont joués : une sauvegarde exportée puis importée les réunit (sur iPhone, l'export passe par le menu de partage : Enregistrer dans Fichiers, AirDrop…). Il faut jouer dans Safari : les extensions ne tournent pas dans endstep ajouté à l'écran d'accueil.
 - **Firefox pour Android vérifié** (1.4.1) : popup, tableau de bord, panneau sur endstep.cc, import de l'historique et sauvegarde fonctionnent. AMO y proposait déjà l'extension.
+- **Statistiques d'usage anonymes** (1.4.2) : l'extension signale son installation, ses mises à jour, un jour d'utilisation (au plus une fois par jour, avec un identifiant aléatoire qui ne sert qu'à compter chaque appareil une fois) et sa désinstallation (une courte page s'ouvre). Jamais de match, de deck, de nom ni de page visitée ; pas d'adresse IP gardée. Se coupe dans le menu Données du tableau de bord ; sur Firefox, seulement avec l'accord donné à l'installation. Politique de confidentialité mise à jour.
 
 ### Corrigé
 

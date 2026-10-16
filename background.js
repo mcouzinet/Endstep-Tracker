@@ -1,3 +1,7 @@
+// Anonymous usage statistics (telemetry.js). Chrome, Edge and Safari run this file as a service worker; the Firefox
+// build lists telemetry.js before it in background.scripts, where importScripts does not exist.
+if (typeof importScripts === 'function') importScripts('telemetry.js');
+
 // The toolbar icon opens popup.html. The popup and the in-page panel ask for the dashboard here: bring back its tab
 // when one is open, otherwise open it.
 async function openDashboard() {

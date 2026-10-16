@@ -1,8 +1,8 @@
 # Privacy policy — Endstep Tracker
 
-*Last updated: 2026-10-06. Version française ci-dessous.*
+*Last updated: 2026-10-16. Version française ci-dessous.*
 
-Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no server and no account.
+Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no account, and your matches never leave your browser. The only thing sent to the author's server is anonymous usage statistics, which you can switch off (see below).
 
 ## What is recorded
 
@@ -32,7 +32,21 @@ Everything stays in your browser, in the extension's local storage (`chrome.stor
 - **Deck Compare** (another extension by the same author): the dashboard asks it, inside your browser, whether it is installed, to stop showing its promotion if so. The message says only that; nothing else is exchanged and nothing leaves your browser. The store link in that promotion opens only if you click it.
 - **Whozic** (`whozic.party`, the author's music party game): the dashboard shows a small promotion for it. Its link opens whozic.party only if you click it; the address only says the visit comes from Endstep Tracker (`utm_source`). Not shown in the Safari version.
 
-No analytics, no telemetry, no crash reporting, no third-party scripts.
+- **Anonymous usage statistics** (`stats.tolarianstudio.com`, the author's own server): see the next section.
+
+No crash reporting, no third-party scripts, no advertising.
+
+## Anonymous usage statistics
+
+To know how many people use the extension, it sends a few anonymous signals to the author's server:
+
+- when it is installed or updated: the event, the extension's version and the browser's name (Chrome, Edge, Firefox or Safari);
+- at most once a day while the browser runs: the same, plus a random identifier drawn when the extension is installed. It identifies nothing but this installation and only serves to count each device once; it is kept 120 days;
+- when it is uninstalled, the browser opens a short page on that server, which counts the uninstall (version and browser name).
+
+Nothing else is ever sent: no match, deck, player name, note, page visited or anything you type. The server does not record IP addresses. The figures are only used by the author, as totals, to follow the extension's use.
+
+You can switch this off at any time in the dashboard's "Data" menu ("Anonymous usage statistics"): from then on nothing is sent and no page opens on uninstall. On Firefox it is only sent if you allowed "technical and interaction data" when installing (you can change it in the add-on's permissions).
 
 ## Permissions
 
@@ -47,7 +61,7 @@ Questions or requests: open an issue at <https://github.com/mcouzinet/Endstep-Tr
 
 # Politique de confidentialité — Endstep Tracker
 
-Endstep Tracker est une extension Chrome qui enregistre les parties de Magic: The Gathering que tu joues sur [endstep.cc](https://endstep.cc) et les affiche dans un tableau de bord local. Elle n'a ni serveur ni compte.
+Endstep Tracker est une extension Chrome qui enregistre les parties de Magic: The Gathering que tu joues sur [endstep.cc](https://endstep.cc) et les affiche dans un tableau de bord local. Elle n'a pas de compte, et tes matchs ne quittent jamais ton navigateur. La seule chose envoyée au serveur de l'auteur, ce sont des statistiques d'usage anonymes, que tu peux couper (voir plus bas).
 
 ## Ce qui est enregistré
 
@@ -65,7 +79,21 @@ Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur
 - **Deck Compare** (une autre extension du même auteur) : le tableau de bord lui demande, dans ton navigateur, si elle est installée, pour ne plus afficher sa promotion le cas échéant. Le message ne dit que ça ; rien d'autre n'est échangé et rien ne sort du navigateur. Le lien vers sa fiche ne s'ouvre que si tu cliques dessus.
 - **Whozic** (`whozic.party`, le jeu de soirée musical de l'auteur) : le tableau de bord en affiche une petite promotion. Son lien n'ouvre whozic.party que si tu cliques dessus ; l'adresse dit seulement que la visite vient d'Endstep Tracker (`utm_source`). Absente de la version Safari.
 
-Pas d'analytique, pas de télémétrie, pas de script tiers.
+- **Statistiques d'usage anonymes** (`stats.tolarianstudio.com`, le serveur de l'auteur) : voir la section suivante.
+
+Pas de rapport de plantage, pas de script tiers, pas de publicité.
+
+## Statistiques d'usage anonymes
+
+Pour savoir combien de personnes l'utilisent, l'extension envoie quelques signaux anonymes au serveur de l'auteur :
+
+- à l'installation et à chaque mise à jour : l'événement, la version de l'extension et le nom du navigateur (Chrome, Edge, Firefox ou Safari) ;
+- au plus une fois par jour quand le navigateur tourne : la même chose, plus un identifiant aléatoire tiré à l'installation. Il n'identifie que cette installation et sert seulement à compter chaque appareil une fois ; il est gardé 120 jours ;
+- à la désinstallation, le navigateur ouvre une courte page de ce serveur, qui compte la désinstallation (version et nom du navigateur).
+
+Rien d'autre n'est jamais envoyé : ni match, ni deck, ni nom de joueur, ni note, ni page visitée, ni ce que tu tapes. Le serveur n'enregistre pas les adresses IP. Les chiffres ne servent qu'à l'auteur, en totaux, pour suivre l'usage de l'extension.
+
+Tu peux couper ces statistiques à tout moment dans le menu « Données » du tableau de bord (« Statistiques d'usage anonymes ») : plus rien n'est envoyé et aucune page ne s'ouvre à la désinstallation. Sur Firefox, elles ne partent que si tu as accepté les « données techniques et d'interaction » à l'installation (modifiable dans les permissions du module).
 
 ## Contact
 
