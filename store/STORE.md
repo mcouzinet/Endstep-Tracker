@@ -158,6 +158,24 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
 
+### 1.5 (EN)
+
+- Safari on iPhone: the same extension, in an iPhone app that shows how to turn it on. Matches stay on the device you play on; export a backup and import it on the other to bring them together.
+- Firefox for Android checked: the popup, the dashboard, the panel on endstep.cc, the history import and backups all work.
+- Anonymous usage statistics: install, updates and one signal a day, never a match, a deck or a name. Switch them off in the Data menu; on Firefox they are only sent if you allow it.
+- With "All my decks" selected, each deck's record now comes first in the Matchups tab.
+- New in the top band: the share of matches you started on the play, whatever the result.
+- The Data menu opens under its button on older Safari and on phones, and the popup fits a phone's screen.
+
+### 1.5 (FR)
+
+- Safari sur iPhone : la même extension, dans une app iPhone qui montre comment l'activer. Les matchs restent sur l'appareil où tu joues ; exporte une sauvegarde et importe-la sur l'autre pour les réunir.
+- Firefox pour Android vérifié : la popup, le tableau de bord, le panneau sur endstep.cc, l'import de l'historique et les sauvegardes fonctionnent.
+- Statistiques d'usage anonymes : installation, mises à jour et un signal par jour, jamais un match, un deck ni un nom. Elles se coupent dans le menu Données ; sur Firefox, elles ne partent que si tu l'autorises.
+- Avec « Tous mes decks », le bilan de chaque deck passe en tête de l'onglet Matchups.
+- Nouveau dans le bandeau du haut : la part des matchs que tu as commencés sur le play, quel que soit le résultat.
+- Le menu Données s'ouvre sous son bouton sur les anciens Safari et sur téléphone, et la popup tient dans l'écran d'un téléphone.
+
 ### 1.4 (EN)
 
 - Several tabs or two computers: only the tab you play in records the match, so no more half-recorded copies.

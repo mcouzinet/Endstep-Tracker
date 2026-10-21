@@ -3,23 +3,25 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
-## Non publié
+## [1.5] (2026-10-21)
+
+Safari sur iPhone et Firefox pour Android, des statistiques d'usage anonymes, « Mes decks » en tête des Matchups et la part des matchs commencés sur le play.
 
 ### Ajouté
 
-- **Safari sur iPhone** (1.4.1) : la même extension, dans une app iPhone qui explique comment l'activer (Réglages › Apps › Safari › Extensions, puis endstep.cc sur « Autoriser »). Une seule fiche App Store pour le Mac et l'iPhone. Les matchs restent sur l'appareil où ils sont joués : une sauvegarde exportée puis importée les réunit (sur iPhone, l'export passe par le menu de partage : Enregistrer dans Fichiers, AirDrop…). Il faut jouer dans Safari : les extensions ne tournent pas dans endstep ajouté à l'écran d'accueil.
-- **Firefox pour Android vérifié** (1.4.1) : popup, tableau de bord, panneau sur endstep.cc, import de l'historique et sauvegarde fonctionnent. AMO y proposait déjà l'extension.
-- **Statistiques d'usage anonymes** (1.4.2) : l'extension signale son installation, ses mises à jour, un jour d'utilisation (au plus une fois par jour, avec un identifiant aléatoire qui ne sert qu'à compter chaque appareil une fois) et sa désinstallation (une courte page s'ouvre). Jamais de match, de deck, de nom ni de page visitée ; pas d'adresse IP gardée. Se coupe dans le menu Données du tableau de bord ; sur Firefox, seulement avec l'accord donné à l'installation ou depuis ce menu. Politique de confidentialité mise à jour.
-- **Part sur le play** (1.4.3) : dans le bandeau du haut, la part des matchs commencés sur le play (première game), quel que soit le résultat, à côté des bilans sur le play et sur la draw ; le détail (par exemple 15 matchs sur 28) au survol.
+- **Safari sur iPhone** : la même extension, dans une app iPhone qui explique comment l'activer (Réglages › Apps › Safari › Extensions, puis endstep.cc sur « Autoriser »). Une seule fiche App Store pour le Mac et l'iPhone. Les matchs restent sur l'appareil où ils sont joués : une sauvegarde exportée puis importée les réunit (sur iPhone, l'export passe par le menu de partage : Enregistrer dans Fichiers, AirDrop…). Il faut jouer dans Safari : les extensions ne tournent pas dans endstep ajouté à l'écran d'accueil.
+- **Firefox pour Android vérifié** : popup, tableau de bord, panneau sur endstep.cc, import de l'historique et sauvegarde fonctionnent. AMO y proposait déjà l'extension.
+- **Statistiques d'usage anonymes** : l'extension signale son installation, ses mises à jour, un jour d'utilisation (au plus une fois par jour, avec un identifiant aléatoire qui ne sert qu'à compter chaque appareil une fois) et sa désinstallation (une courte page s'ouvre). Jamais de match, de deck, de nom ni de page visitée ; pas d'adresse IP gardée. Se coupe dans le menu Données du tableau de bord ; sur Firefox, seulement avec l'accord donné à l'installation ou depuis ce menu. Politique de confidentialité mise à jour.
+- **Part sur le play** : dans le bandeau du haut, la part des matchs commencés sur le play (première game), quel que soit le résultat, à côté des bilans sur le play et sur la draw ; le détail (par exemple 15 matchs sur 28) au survol.
 
 ### Modifié
 
-- **« Mes decks » en tête de l'onglet Matchups** (1.4.3) : quand « Tous mes decks » est choisi (un format ou tous), le bilan de chaque deck passe au-dessus des archétypes adverses au lieu d'être en bas de l'onglet. Il disparaît toujours dès qu'un deck est choisi.
+- **« Mes decks » en tête de l'onglet Matchups** : quand « Tous mes decks » est choisi (un format ou tous), le bilan de chaque deck passe au-dessus des archétypes adverses au lieu d'être en bas de l'onglet. Il disparaît toujours dès qu'un deck est choisi.
 
 ### Corrigé
 
-- **Le menu Données sur Safari** (1.4.1) : avant Safari 26, il s'ouvrait dans le coin de la fenêtre au lieu de sous son bouton, et sur un téléphone il pouvait sortir de l'écran. Il s'ouvre maintenant sous le bouton, toujours en entier.
-- **La popup sur téléphone** (1.4.1) : sur Firefox pour Android, elle s'affichait en tout petit (rendue comme sur un écran d'ordinateur puis réduite). Elle prend maintenant la largeur de l'écran, sur Android comme sur iPhone.
+- **Le menu Données sur Safari** : avant Safari 26, il s'ouvrait dans le coin de la fenêtre au lieu de sous son bouton, et sur un téléphone il pouvait sortir de l'écran. Il s'ouvre maintenant sous le bouton, toujours en entier.
+- **La popup sur téléphone** : sur Firefox pour Android, elle s'affichait en tout petit (rendue comme sur un écran d'ordinateur puis réduite). Elle prend maintenant la largeur de l'écran, sur Android comme sur iPhone.
 
 ## [1.4] (2026-10-08)
 
