@@ -934,5 +934,14 @@
   },
   "telemetry_now_off": {
     "message": "Statistiques d'usage anonymes désactivées : l'extension n'envoie plus rien."
+  },
+  "fact_play_share": {
+    "message": "Part sur le play"
+  },
+  "of_matches": {
+    "message": "des matchs"
+  },
+  "play_share_hint": {
+    "message": "{play} matchs sur {n} commencés sur le play (première game)"
   }
 }

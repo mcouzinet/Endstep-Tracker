@@ -934,5 +934,14 @@
   },
   "telemetry_now_off": {
     "message": "Anonymous usage statistics switched off: the extension sends nothing anymore."
+  },
+  "fact_play_share": {
+    "message": "Share on the play"
+  },
+  "of_matches": {
+    "message": "of matches"
+  },
+  "play_share_hint": {
+    "message": "{play} of {n} matches started on the play (first game)"
   }
 }

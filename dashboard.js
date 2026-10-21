@@ -606,11 +606,15 @@ function renderGlance(list, cmp) {
   const enough = (x) => x.W + x.L + x.D >= MIN_SAMPLE;
   const record = (x) => `${wl(x)}${enough(x) ? ` <span class="muted">· ${pct(x)}</span>` : ''}`;
   const fact = (label, value, cls = '') => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
+  // How often I start on the play, whatever the result: matches whose first game is known, as in the records above.
+  const count = (x) => x.W + x.L + x.D;
+  const onPlayN = count(r.play), knownN = onPlayN + count(r.draw);
   const facts = [
     fact(t('matches'), record(r.m)),
     cmp ? fact(`${cmp.label} · ${t('matches')}`, record(S.records(cmp.list).m), 'cmp') : '',
     fact(t('on_play'), record(r.play)),
     fact(t('on_draw'), record(r.draw)),
+    knownN ? fact(t('fact_play_share'), `<span title="${esc(t('play_share_hint', { play: onPlayN, n: knownN }))}">${Math.round((100 * onPlayN) / knownN)} % <span class="muted">${esc(t('of_matches'))}</span></span>`) : '',
     played ? fact(t('fact_mulligans'), `${(mulls / played).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`) : '',
     timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
   ].join('');
