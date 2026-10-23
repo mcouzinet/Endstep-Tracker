@@ -797,9 +797,6 @@
   "ai_tag_title": {
     "message": "Contre l’IA : hors des bilans"
   },
-  "context_hint": {
-    "message": "Le play/draw et le mulligan d’un match sont ceux de sa première game."
-  },
   "per_match": {
     "message": "par match"
   },
@@ -829,9 +826,6 @@
   },
   "my_cards": {
     "message": "Mes cartes"
-  },
-  "cards_hint": {
-    "message": "Compté en games. À côté de chaque carte : l’écart en points entre Piochée et Pas piochée."
   },
   "cards_since": {
     "message": "Cartes piochées enregistrées depuis la 1.1 : Piochée et Pas piochée se remplissent avec tes prochaines games."
@@ -874,12 +868,6 @@
   },
   "gap_title": {
     "message": "{d} points de taux de victoire entre les games où je l’ai piochée et les autres"
-  },
-  "more_cards_one": {
-    "message": "{n} autre carte"
-  },
-  "more_cards_other": {
-    "message": "{n} autres cartes"
   },
   "side_plan": {
     "message": "Mon side après la game 1"
@@ -943,5 +931,29 @@
   },
   "play_share_hint": {
     "message": "{play} matchs sur {n} commencés sur le play (première game)"
+  },
+  "col_later": {
+    "message": "Plus tard"
+  },
+  "later_title": {
+    "message": "Games où je l’ai piochée en cours de partie, sans l’avoir en main de départ"
+  },
+  "info_label": {
+    "message": "Expliquer ce tableau"
+  },
+  "info_glance": {
+    "message": "Tes résultats sur les matchs choisis en haut : deck ou format, et période.\n« Sur le play » et « Sur la draw » se lisent d’après la première game de chaque match. « Part sur le play » : la part des matchs que tu as commencés sur le play, quel que soit le résultat.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
+  },
+  "info_decks": {
+    "message": "Le bilan en matchs de chacun de tes decks, quand « Tous mes decks » est choisi.\nClique sur un deck pour n’afficher que lui. Deux decks au même nom, dans un même format, comptent comme un seul."
+  },
+  "info_archetypes": {
+    "message": "Ton bilan en matchs contre chaque archétype adverse, reconnu d’après les cartes vues ou corrigé à la main.\nPlay et Draw : selon qui a commencé la première game. Clique sur une ligne pour voir le matchup en détail et ton side habituel contre lui."
+  },
+  "info_context": {
+    "message": "Ton bilan selon la situation de départ : sur le play ou sur la draw, main de 7 gardée ou après un mulligan.\nTout se lit d’après la première game de chaque match."
+  },
+  "info_cards": {
+    "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nClique sur un en-tête de colonne pour trier."
   }
 }

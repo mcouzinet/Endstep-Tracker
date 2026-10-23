@@ -3,6 +3,18 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## Non publié
+
+### Ajouté
+
+- **Colonne « Plus tard » dans « Carte par carte »** (1.5.2) : les games où la carte est arrivée en cours de partie, sans être dans la main de départ. Avec « Main de départ », elle détaille « Piochée » : une carte qui gagne quand elle est là dès le début et perd quand elle arrive tard se lit d'un coup d'œil. Triable comme les autres colonnes.
+
+### Modifié
+
+- **Le nombre de matchs sur le play et sur la draw** (1.5.4) : dans le bandeau du haut, « Sur le play (7) » et « Sur la draw (18) », sans avoir à additionner le bilan.
+- **Un ⓘ à côté du titre de chaque tableau** (1.5.3) : le bandeau du haut, Mes decks, Par archétype adverse, Selon le contexte et Carte par carte. Un clic, ou un toucher sur téléphone, ouvre une courte explication de ce que compte le tableau (par exemple Piochée = Main de départ + Plus tard) ; un second clic, un clic ailleurs ou Échap la referme. Les phrases grises sous les titres disparaissent, l'explication les remplace.
+- **Toutes les cartes dans « Carte par carte »** (1.5.1) : la liste n'est plus coupée après 15 cartes avec un « N autres cartes » à déplier ; un deck de Duel Commander montre ses 100 cartes, triables par colonne comme avant.
+
 ## [1.5] (2026-10-21)
 
 Safari sur iPhone et Firefox pour Android, des statistiques d'usage anonymes, « Mes decks » en tête des Matchups et la part des matchs commencés sur le play.

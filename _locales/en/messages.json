@@ -797,9 +797,6 @@
   "ai_tag_title": {
     "message": "Against the AI: left out of every record"
   },
-  "context_hint": {
-    "message": "A match’s play/draw and mulligan are those of its first game."
-  },
   "per_match": {
     "message": "per match"
   },
@@ -829,9 +826,6 @@
   },
   "my_cards": {
     "message": "My cards"
-  },
-  "cards_hint": {
-    "message": "Counted in games. Next to each card: the gap in points between Drawn and Not drawn."
   },
   "cards_since": {
     "message": "Drawn cards are recorded since 1.1: Drawn and Not drawn fill up with your next games."
@@ -874,12 +868,6 @@
   },
   "gap_title": {
     "message": "{d} points of win rate between the games where I drew it and the others"
-  },
-  "more_cards_one": {
-    "message": "{n} more card"
-  },
-  "more_cards_other": {
-    "message": "{n} more cards"
   },
   "side_plan": {
     "message": "My sideboarding after game 1"
@@ -943,5 +931,29 @@
   },
   "play_share_hint": {
     "message": "{play} of {n} matches started on the play (first game)"
+  },
+  "col_later": {
+    "message": "Later"
+  },
+  "later_title": {
+    "message": "Games where I drew it during the game, not in my opening hand"
+  },
+  "info_label": {
+    "message": "Explain this table"
+  },
+  "info_glance": {
+    "message": "Your results over the matches picked at the top: deck or format, and period.\n\"On the play\" and \"On the draw\" go by the first game of each match. \"Share on the play\": the share of matches you started on the play, whatever the result.\nBefore {n} results, no percentage: too early to tell."
+  },
+  "info_decks": {
+    "message": "The match record of each of your decks, when \"All my decks\" is selected.\nClick a deck to show it alone. Two decks with the same name, in the same format, count as one."
+  },
+  "info_archetypes": {
+    "message": "Your match record against each opposing archetype, recognized from the cards you saw or fixed by hand.\nPlay and Draw: by who started the first game. Click a row for the matchup in detail and your usual sideboarding against it."
+  },
+  "info_context": {
+    "message": "Your record by how the match started: on the play or on the draw, seven kept or after a mulligan.\nAll of it goes by the first game of each match."
+  },
+  "info_cards": {
+    "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nClick a column head to sort."
   }
 }

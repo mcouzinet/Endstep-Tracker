@@ -373,7 +373,7 @@
   // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
   function cardStats(list, c) {
     const by = new Map();
-    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally() }).get(name);
+    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally() }).get(name);
     for (const m of list) {
       for (const g of m.games) {
         const r = gRes(m, g);
@@ -381,7 +381,9 @@
         if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand)) row(name).opening[r]++;
         if (!g.drawn) continue;
         const drawn = new Set(Object.keys(g.drawn));
-        for (const name of drawn) row(name).drawn[r]++;
+        // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
+        const kept = Array.isArray(g.openingHand) ? new Set(g.openingHand) : null;
+        for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
         for (const name of Object.keys(mainOf(m, g.n, c) || {})) if (!drawn.has(name)) row(name).notDrawn[r]++;
       }
     }

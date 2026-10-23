@@ -494,6 +494,8 @@ function renderFilters(s, shown, list, vs, v) {
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
 // Below MIN_SAMPLE results a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
 const MIN_SAMPLE = 5;
+// The ⓘ beside a table's title: a click, or a tap on a phone where nothing hovers, opens its explanation (#info-pop).
+const infoBtn = (key) => `<button type="button" class="info-btn" data-info="${key}" aria-expanded="false" aria-controls="info-pop" aria-label="${esc(t('info_label'))}" title="${esc(t('info_label'))}"><svg class="i"><use href="#i-info"/></svg></button>`;
 const { wl } = S;
 // Secondary record cells: [{ key, title, r, cls }], each W–L plus the rate once the sample allows it.
 // Their key is read by screen readers and shown in narrow windows, where the column captions are hidden.
@@ -535,7 +537,7 @@ function renderOverview(list) {
     if (g1) ctx[g1.mulligans[x.mySeat] ? 'mull' : 'keep'][x.result]++;
   }
   const row = (label, k) => rec(esc(label), ctx[k]);
-  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}</h2><p class="muted context-hint">${esc(t('context_hint'))}</p>
+  $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}${infoBtn('info_context')}</h2>
     ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}`;
 }
 
@@ -543,8 +545,7 @@ function renderOverview(list) {
 // Counted in games (a card is drawn in a game). The gap between the two rates, in points, sorts the list once both
 // have MIN_SAMPLE results: a link between drawing the card and winning, not proof that the card wins. A click on a
 // column's head sorts by it instead (best first, the names from A), again reverses it; a rate under MIN_SAMPLE games
-// never ranks before one that has them.
-const CARD_ROWS = 15;
+// never ranks before one that has them. Every card is listed: a 100-card Duel Commander deck as much as a 60-card one.
 function renderCards(s, list) {
   const el = $('#cards-panel');
   if (s.deck === null) { // a card's results only mean something within one deck
@@ -563,7 +564,8 @@ function renderCards(s, list) {
     .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
       : (key(a) === null) - (key(b) === null) || dir * ((key(b) || 0) - (key(a) || 0)))
       || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
-  const cells = (x) => [{ key: t('col_not_drawn'), title: t('not_drawn_title'), r: x.notDrawn }, { key: t('col_opening'), title: t('opening_title'), r: x.opening }];
+  const cells = (x) => [{ key: t('col_not_drawn'), title: t('not_drawn_title'), r: x.notDrawn }, { key: t('col_opening'), title: t('opening_title'), r: x.opening },
+    { key: t('col_later'), title: t('later_title'), r: x.later }];
   // The head: each column sorts the list; the arrow says which and which way (down: best first, or Z to A).
   const sortBtn = (col, label, title = '') => {
     const on = by === col;
@@ -572,19 +574,16 @@ function renderCards(s, list) {
     return `<button type="button" class="sort" data-card-sort="${col}" aria-pressed="${on}" aria-label="${esc(aria)}"${title ? ` title="${esc(title)}"` : ''}>`
       + `${esc(label)}${on ? `<span class="arrow" aria-hidden="true">${down ? '↓' : '↑'}</span>` : ''}</button>`;
   };
-  const head = `<div class="rec cells head" style="--cells:2"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
+  const head = `<div class="rec cells head" style="--cells:3"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
     + `<span class="main">${sortBtn('drawn', t('col_drawn'))}</span><span>${sortBtn('notDrawn', t('col_not_drawn'), t('not_drawn_title'))}</span>`
-    + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span></div>`;
+    + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span><span>${sortBtn('later', t('col_later'), t('later_title'))}</span></div>`;
   const row = (x) => {
     const g = x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
     return rec(cardLink(x.name) + g, x.drawn, { cells: cells(x) });
   };
   const recorded = list.some((m) => m.games.some((g) => g.drawn));
-  const more = rows.slice(CARD_ROWS);
-  const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>`
-    : head + rows.slice(0, CARD_ROWS).map(row).join('')
-      + (more.length ? `<details class="others more"${(el.querySelector('details.more') || {}).open ? ' open' : ''}><summary><svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>${esc(tn('more_cards', more.length))}</summary>${more.map(row).join('')}</details>` : '');
-  el.innerHTML = `<h2 class="panel-title">${esc(t('by_card'))}</h2><p class="muted context-hint">${esc(t('cards_hint'))}</p>`
+  const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>` : head + rows.map(row).join('');
+  el.innerHTML = `<h2 class="panel-title">${esc(t('by_card'))}${infoBtn('info_cards')}</h2>`
     + (recorded ? '' : `<p class="muted cards-note">${esc(t('cards_since'))}</p>`) + body;
 }
 
@@ -612,15 +611,15 @@ function renderGlance(list, cmp) {
   const facts = [
     fact(t('matches'), record(r.m)),
     cmp ? fact(`${cmp.label} · ${t('matches')}`, record(S.records(cmp.list).m), 'cmp') : '',
-    fact(t('on_play'), record(r.play)),
-    fact(t('on_draw'), record(r.draw)),
+    fact(`${t('on_play')} (${onPlayN})`, record(r.play)), // the number of matches in the label: 4–3 reads as 7 at once
+    fact(`${t('on_draw')} (${knownN - onPlayN})`, record(r.draw)),
     knownN ? fact(t('fact_play_share'), `<span title="${esc(t('play_share_hint', { play: onPlayN, n: knownN }))}">${Math.round((100 * onPlayN) / knownN)} % <span class="muted">${esc(t('of_matches'))}</span></span>`) : '',
     played ? fact(t('fact_mulligans'), `${(mulls / played).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`) : '',
     timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
   ].join('');
   const hero = `<b class="hero-n">${enough(r.m) ? pct(r.m) : wl(r.m)}</b><span class="hero-l">${esc(t(enough(r.m) ? 'glance_rate' : 'glance_early'))}<br><span class="muted">${esc(tn('glance_over', n))}</span></span>`;
   const square = (x) => `<button type="button" class="${x.result}" data-show="${esc(x.id)}" aria-label="${esc([resultLabel(x.result), scoreText(x), oppLabel(x), archetype(x)].filter(Boolean).join(' · '))}"><i></i></button>`;
-  el.innerHTML = `<div class="glance-head"><div class="hero">${hero}</div><dl class="glance-facts">${facts}</dl></div>
+  el.innerHTML = `${infoBtn('info_glance')}<div class="glance-head"><div class="hero">${hero}</div><dl class="glance-facts">${facts}</dl></div>
     <div class="glance-form"><h3>${esc(t('recent_form', { n: Math.min(FORM, n) }))}</h3><div class="form-strip">${done.slice(-FORM).map(square).join('')}</div>
     <div class="form-tip" hidden></div></div>`;
 }
@@ -1128,6 +1127,33 @@ document.addEventListener('click', (e) => {
   if (menu.matches(':popover-open')) menu.hidePopover();
   ACTIONS[el.dataset.action]();
 });
+
+// The explanation of a table, under its ⓘ and kept inside the window; a second click, a click elsewhere, Escape, a scroll or
+// a resize closes it. A manual popover: the page decides, so another ⓘ moves it instead of only closing it.
+let infoFor = null; // the open ⓘ
+function closeInfo() {
+  if (!infoFor) return;
+  $('#info-pop').hidePopover();
+  infoFor.setAttribute('aria-expanded', 'false');
+  infoFor = null;
+}
+document.addEventListener('click', (e) => {
+  const pop = $('#info-pop');
+  const b = e.target.closest('[data-info]');
+  if (!b) { if (!pop.contains(e.target)) closeInfo(); return; }
+  const again = b === infoFor;
+  closeInfo();
+  if (again) return;
+  pop.innerHTML = t(b.dataset.info, { n: MIN_SAMPLE }).split('\n').map((x) => `<p>${esc(x)}</p>`).join('');
+  pop.showPopover();
+  const r = b.getBoundingClientRect();
+  Object.assign(pop.style, { top: r.bottom + 6 + 'px', left: Math.max(8, Math.min(r.left - 8, innerWidth - pop.offsetWidth - 8)) + 'px' });
+  b.setAttribute('aria-expanded', 'true');
+  infoFor = b;
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoFor) { const b = infoFor; closeInfo(); b.focus(); } });
+addEventListener('scroll', closeInfo, { passive: true });
+addEventListener('resize', closeInfo);
 
 // The Data menu opens under its button, kept inside the window. Placed here, not in CSS: Safari before 26 has no anchor
 // positioning, and on a phone the button sits on the left, where a menu aligned to its right edge would leave the screen.

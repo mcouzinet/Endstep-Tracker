@@ -25,6 +25,16 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold-hi); box-shadow: 0 0 0 3px oklch(.85 .13 83 / .18); animation: pulse 1.6s var(--ease-out) infinite; }
     @keyframes pulse { 50% { box-shadow: 0 0 0 6px oklch(.85 .13 83 / 0); opacity: .7; } }
 
+    /* ⓘ beside a table's title, and its explanation (one bubble for all, placed by dashboard.js under its button) */
+    .info-btn { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-left: 4px; padding: 0; vertical-align: -4px;
+      border: 0; border-radius: 50%; background: none; color: var(--ink-3); cursor: pointer; }
+    .info-btn:hover, .info-btn[aria-expanded="true"] { color: var(--gold-hi); }
+    .glance { position: relative; }
+    .glance > .info-btn { position: absolute; top: 12px; right: 12px; margin: 0; }
+    .info-pop[popover] { inset: auto; margin: 0; width: max-content; max-width: min(340px, calc(100vw - 16px)); padding: 12px 14px;
+      border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); color: var(--ink-2);
+      font-size: 13px; line-height: 1.5; box-shadow: var(--shadow-pop); }
+    .info-pop p + p { margin-top: 8px; }
     .menu[popover] {
       inset: auto; margin: 0; /* top and left: dashboard.js */
       min-width: 260px; padding: 6px; border: 1px solid var(--line-strong); border-radius: var(--radius);
@@ -81,13 +91,11 @@
     .context .rec { padding-left: 8px; padding-right: 8px; } /* aligned with the clickable rows of the other panels */
     .split .panel { padding: 16px 12px 10px; }
     .split .panel-title, .cards .panel-title { padding: 0 8px 6px; }
-    .context-hint { margin: 0 8px 12px; font-size: 12.5px; }
     /* ---- my cards ---- */
     .panel.cards { padding: 16px 12px 10px; }
     .cards .rec { padding-left: 8px; padding-right: 8px; }
     .cards .rec.cells { --bar: 9rem; --cell: 7.2rem; }
     .cards .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* the gap stays visible */
-    .cards .context-hint { max-width: 90ch; margin-top: 0; }
     .cards-note { margin: 0 8px 10px; font-size: 12px; }
     .rec.head .sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
     .rec.head .sort:hover, .rec.head .sort[aria-pressed="true"] { color: var(--ink); }
@@ -95,8 +103,6 @@
     .rec.head .sort .arrow { margin-left: 3px; color: var(--gold-hi); }
     .gap { margin-left: 6px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); }
     .gap.up { color: var(--win); } .gap.down { color: var(--loss); }
-    .more summary { padding: 7px 8px; font-size: 13px; color: var(--ink-2); }
-    .more > .rec { padding-left: 28px; }
     /* ---- sideboarding: + in, − out ---- */
     .chg.add { color: var(--win); } .chg.cut { color: var(--loss); }
     .chg .card { color: var(--ink); }
@@ -422,6 +428,7 @@
     <symbol id="i-message" viewBox="0 0 24 24"><path d="M5 5h14v10H10l-5 4z"/><path d="M9 9h6M9 12h4"/></symbol>
     <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.4"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
     <symbol id="i-equal" viewBox="0 0 24 24"><path d="M6 9.5h12M6 14.5h12"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7z"/></symbol>
@@ -500,8 +507,8 @@
     </nav>
 
     <section id="split" class="split" role="tabpanel" aria-labelledby="tab-matchups">
-      <div id="decks-panel" class="panel" hidden><h2 class="panel-title" data-i18n="my_decks"></h2><div id="by-deck"></div></div>
-      <div class="panel"><div class="panel-head"><h2 class="panel-title" data-i18n="by_archetype"></h2><div class="seg" role="group" data-i18n-attr="aria-label:sort_label" data-filter="sort"><button data-value="n" data-i18n="sort_n"></button><button data-value="worst" data-i18n="sort_worst"></button><button data-value="best" data-i18n="sort_best"></button></div></div><p id="versions" class="versions" hidden></p><div id="by-opp"></div></div>
+      <div id="decks-panel" class="panel" hidden><h2 class="panel-title"><span data-i18n="my_decks"></span><button type="button" class="info-btn" data-info="info_decks" aria-expanded="false" aria-controls="info-pop" data-i18n-attr="aria-label:info_label,title:info_label"><svg class="i"><use href="#i-info"/></svg></button></h2><div id="by-deck"></div></div>
+      <div class="panel"><div class="panel-head"><h2 class="panel-title"><span data-i18n="by_archetype"></span><button type="button" class="info-btn" data-info="info_archetypes" aria-expanded="false" aria-controls="info-pop" data-i18n-attr="aria-label:info_label,title:info_label"><svg class="i"><use href="#i-info"/></svg></button></h2><div class="seg" role="group" data-i18n-attr="aria-label:sort_label" data-filter="sort"><button data-value="n" data-i18n="sort_n"></button><button data-value="worst" data-i18n="sort_worst"></button><button data-value="best" data-i18n="sort_best"></button></div></div><p id="versions" class="versions" hidden></p><div id="by-opp"></div></div>
       <div class="side">
         <div id="overview" class="panel context"></div>
       </div>
@@ -545,5 +552,6 @@
   <script src="meta.js"></script>
   <script src="shared.js"></script>
   <script src="dashboard.js"></script>
+<div id="info-pop" class="info-pop" popover="manual" aria-live="polite"></div>
 </body>
 </html>

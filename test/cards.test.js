@@ -98,6 +98,8 @@ assert.deepEqual(stats.Thoughtcast.notDrawn, { W: 0, L: 1, D: 0 }, 'in my deck f
 assert.deepEqual(stats.Pyroblast.drawn, { W: 0, L: 1, D: 0 });
 assert.deepEqual(stats['Galvanic Blast'].notDrawn, { W: 0, L: 0, D: 0 }, 'sided out of game 2: not counted as not drawn there');
 assert.deepEqual(stats['Galvanic Blast'].opening, { W: 1, L: 0, D: 0 }, 'in the kept seven of game 1');
+assert.deepEqual(stats['Myr Enforcer'].later, { W: 1, L: 0, D: 0 }, 'drawn during game 1, not in the kept seven: drawn later');
+assert.deepEqual(stats.Thoughtcast.later, { W: 0, L: 0, D: 0 }, 'in the kept seven: not drawn later');
 assert.ok(!stats.Island, 'basic lands are left out');
 assert.ok(!stats['Mulliganed Away']);
 
@@ -106,6 +108,8 @@ const old = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: undefi
 const oldStats = Object.fromEntries(S.cardStats([old], C).map((x) => [x.name, x]));
 assert.deepEqual(oldStats.Thoughtcast.opening, { W: 1, L: 0, D: 0 });
 assert.deepEqual(oldStats.Thoughtcast.drawn, { W: 0, L: 0, D: 0 });
+const noHand = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), games: [{ ...rec.games[0], openingHand: undefined }] });
+assert.ok(S.cardStats([noHand], C).every((x) => x.later.W + x.later.L === 0), 'opening hand missed: nothing counts as drawn later');
 
 // Imported records: unreadable draws, opening hands and sideboarding entries are dropped, not fatal.
 const junk = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: { 1: { Bolt: 4, Zero: 0, Text: 'x' } },
