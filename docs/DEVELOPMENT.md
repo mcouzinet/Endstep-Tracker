@@ -92,3 +92,22 @@ Le premier rejoue une vraie séquence de messages capturée (Bo3 contre l'IA) et
 ## Publication (Chrome, Edge, Firefox, Safari)
 
 `./release.sh` construit `dist/endstep-tracker-<version>.zip` avec les seuls fichiers d'exécution (ni tests, ni `decks/`) ; ce zip sert aussi pour Edge. `./release.sh firefox` produit la variante Firefox (manifest réécrit : page d'événement au lieu du service worker, bloc `browser_specific_settings.gecko`, déclaration de collecte : rien d'obligatoire, les « données techniques et d'interaction » en option pour les statistiques anonymes de `telemetry.js`), à déposer sur addons.mozilla.org. `./release.sh safari` prépare `dist/safari/`, que référencent les deux apps Xcode à archiver pour l'App Store : `safari/` pour le Mac, `safari-ios/` pour l'iPhone (détails dans `store/STORE.md`). Les textes de la fiche, les justifications de permissions et les captures à téléverser sont dans `store/` ; la politique de confidentialité à déclarer est [`PRIVACY.md`](../PRIVACY.md). La version store ne contient pas le Coach : `release.sh` écarte `coach.js` et `coach-model.json` et retire leur balise du dashboard, qui masque alors le bloc Coach. Versions : `X.Y` pour une release, publiée sur les quatre stores en même temps, `X.Y.Z` pour les builds de dev entre deux releases (`Z` monte à chaque lot testé) ; ce qui attend la prochaine release est dans [`CHANGELOG.md`](../CHANGELOG.md), la procédure dans `store/STORE.md`.
+
+## Statistiques d'usage anonymes (`telemetry.js`)
+
+- Ce qui part : `install` et `update` (version et navigateur), `active` au plus une fois par jour avec un identifiant aléatoire (`telemetryId`, tiré à l'installation), et la page `/bye` ouverte à la désinstallation. Jamais rien sur les matchs, les decks ou les noms.
+- Coupé quand `telemetry` vaut `false` (menu Données du tableau de bord). Sur Firefox, seulement avec la permission optionnelle `technicalAndInteraction`, proposée à l'installation ou demandée depuis le menu pendant le clic ; Firefox ne la propose pas à une mise à jour, donc les installations d'avant la 1.5 ne remontent pas.
+- Un seul contrôle du jour à la fois (`daily()`), sans écouteur `onStartup` : le worker se charge à chaque démarrage du navigateur, et deux contrôles simultanés enverraient le jour deux fois.
+- Serveur : `stats.tolarianstudio.com`, dépôt privé `~/Developer/dashboard` (Node 22, SQLite : `tel_events` pour install, update et uninstall, `tel_active` pour un « active » par jour, projet et identifiant). Il tourne sur le serveur Tolarian (`~/Developer/infra/README.md`), conteneur `stats-…`.
+- Vérifier pour de vrai : charger la build store (`./release.sh`, zip décompressé) dans Chrome for Testing avec Puppeteer ; dans le service worker, `performance.getEntriesByType('resource')` doit montrer deux `POST /e` répondus 204, et la base les compter (`docker exec -i <conteneur stats> node -`, `node:sqlite` en lecture seule). Fait le 2026-10-21 en 1.4.3.
+
+## Page de présentation (`site/`)
+
+- `https://endstep-tracker.tolarianstudio.com`, servie par le serveur Tolarian. Publier : `node ~/Developer/infra/deploy-static.mjs site endstep-tracker.tolarianstudio.com` (Node 22, skill `publier`) ; plus de surge.
+- Mesure d'audience Umami, sans cookie : site « Endstep Tracker » de `umami.tolarianstudio.com` (identifiant dans `site/index.html` et `~/Developer/infra/README.md`), compté seulement sur ce domaine ; l'événement `installer` sur les boutons des stores porte `store` et `emplacement` (`haut` ou `confidentialite`). Pour savoir d'où viennent les visites, partager le lien avec `?utm_source=<canal>` (`discord`, `reddit`…).
+- La vidéo est le reel `store/reel/out/endstep-tracker-15s.mp4` réencodé pour le web (1280 px, `-crf 25`, `-movflags +faststart`, environ 2 Mo) ; le poster et l'image de partage sont sa dernière image.
+- À mettre à jour quand la version iPhone sera en ligne : la note « Desktop browsers only », le bouton Safari (Mac et iPhone), la mention de Firefox sur Android.
+
+## Chiffres des stores (`stats.sh`)
+
+`./stats.sh` affiche une ligne par store : Chrome (utilisateurs et note, lus sur la page publique, faute d'API), Firefox (utilisateurs par jour et téléchargements de la semaine, API publique d'AMO), Edge (utilisateurs et note, point d'accès public de sa fiche), Safari (notes des stores fr et us, et premiers téléchargements des 30 derniers jours par les rapports de ventes d'App Store Connect, avec la clé de `publish.sh` et `asc-vendor-number` dans le Trousseau). Environ 30 secondes, à cause des 30 rapports journaliers d'Apple.

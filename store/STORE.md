@@ -156,7 +156,7 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 
 ## Release notes
 
-What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first.
+What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first. The App Store gets its own notes, which never name another platform (Android, Chrome, Firefox, Edge): Apple refused the Mac 1.5 for "Firefox for Android" in What's New (guideline 2.3.10, accurate metadata).
 
 ### 1.5 (EN)
 
@@ -175,6 +175,22 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 - Avec « Tous mes decks », le bilan de chaque deck passe en tête de l'onglet Matchups.
 - Nouveau dans le bandeau du haut : la part des matchs que tu as commencés sur le play, quel que soit le résultat.
 - Le menu Données s'ouvre sous son bouton sur les anciens Safari et sur téléphone, et la popup tient dans l'écran d'un téléphone.
+
+### 1.5 (App Store EN)
+
+- Safari on iPhone: the same extension, in an iPhone app that shows how to turn it on. Matches stay on the device you play on; export a backup and import it on the other to bring them together.
+- Anonymous usage statistics: install, updates and one signal a day, never a match, a deck or a name. Switch them off in the Data menu.
+- With "All my decks" selected, each deck's record now comes first in the Matchups tab.
+- New in the top band: the share of matches you started on the play, whatever the result.
+- The Data menu opens under its button on older versions of Safari.
+
+### 1.5 (App Store FR)
+
+- Safari sur iPhone : la même extension, dans une app iPhone qui montre comment l'activer. Les matchs restent sur l'appareil où tu joues ; exporte une sauvegarde et importe-la sur l'autre pour les réunir.
+- Statistiques d'usage anonymes : installation, mises à jour et un signal par jour, jamais un match, un deck ni un nom. Elles se coupent dans le menu Données.
+- Avec « Tous mes decks », le bilan de chaque deck passe en tête de l'onglet Matchups.
+- Nouveau dans le bandeau du haut : la part des matchs que tu as commencés sur le play, quel que soit le résultat.
+- Le menu Données s'ouvre sous son bouton sur les anciennes versions de Safari.
 
 ### 1.4 (EN)
 
@@ -271,6 +287,18 @@ security add-generic-password -U -s endstep-publish -a <name> -w
 The App Store Connect key file itself goes to `~/.appstoreconnect/private_keys/AuthKey_<asc-key-id>.p8` (it can be downloaded only once).
 
 What each store gets: Chrome, through API v2 (v1.1 stops on 2026-10-15), the zip then a publish that goes live after review; Edge, the zip then a submission with certification notes (their format is not settled in Microsoft's docs: check the first run); Firefox, `web-ext sign` on the listed channel, published after AMO's review; Safari, the app archived and uploaded to App Store Connect. What stays in the dashboards: listing texts and screenshots, the first submission of a store, and for Safari the last step (once the build is processed, select it on the version, fill in "What's new" after the first version, Submit for Review).
+
+## App Store Connect API
+
+The `publish.sh` key (Admin role, `asc-key-id`, `asc-issuer-id` and the `.p8` file) does more than upload builds; for 1.5 it filled the drafts (an ES256 token signed with the key, then plain JSON calls):
+
+- Texts per language: `appStoreVersionLocalizations` (description, whatsNew, keywords, URLs). A first iOS version has no What's New.
+- The build: `appStoreVersions/{id}/relationships/build`. The version's number must equal the build's (the iOS version created as 1.0 had to become 1.5 first).
+- iPhone screenshots: an `appScreenshotSets` of type `APP_IPHONE_67` (it takes the 1320×2868 6.9" images), then for each image an `appScreenshots` reservation, the upload of its parts, and a commit with its MD5. One stuck in `UPLOAD_COMPLETE` for minutes is deleted and uploaded again; the set's order is then set back.
+- Sales reports for `stats.sh`, with the vendor number.
+- Submitting stays in the dashboard (Add for Review, then Submit). The Resolution Center's messages are not in the API: paste them.
+
+Chrome and AMO keys are not in the Keychain: those two stores get their zip by hand; Edge and Safari go through `publish.sh`.
 
 ## Submission checklist
 
