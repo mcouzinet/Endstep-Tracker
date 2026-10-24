@@ -955,5 +955,44 @@
   },
   "info_cards": {
     "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nClick a column head to sort."
+  },
+  "copy_side": {
+    "message": "Copy my side plan"
+  },
+  "export_side_csv": {
+    "message": "Export my side plan (CSV)"
+  },
+  "side_export_needs_deck": {
+    "message": "Pick one of your decks first: a side plan belongs to one deck."
+  },
+  "side_export_none": {
+    "message": "No sideboarding recorded for this deck over this period."
+  },
+  "side_export_title": {
+    "message": "{deck} · {format} · my side plan (Endstep Tracker, {date})"
+  },
+  "side_export_group_one": {
+    "message": "{name} ({n} match with sideboarding)"
+  },
+  "side_export_group_other": {
+    "message": "{name} ({n} matches with sideboarding)"
+  },
+  "side_copied_one": {
+    "message": "Side plan copied ({n} archetype)"
+  },
+  "side_copied_other": {
+    "message": "Side plan copied ({n} archetypes)"
+  },
+  "side_txt_exported_one": {
+    "message": "Side plan saved as text ({n} archetype)"
+  },
+  "side_txt_exported_other": {
+    "message": "Side plan saved as text ({n} archetypes)"
+  },
+  "side_csv_exported_one": {
+    "message": "Side plan exported ({n} archetype)"
+  },
+  "side_csv_exported_other": {
+    "message": "Side plan exported ({n} archetypes)"
   }
 }

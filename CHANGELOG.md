@@ -7,6 +7,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Ajouté
 
+- **Exporter mon plan de side** (1.5.5, menu Données, avec un deck choisi) : « Copier mon plan de side » met dans le presse-papiers un texte à coller dans Discord ou dans ses notes, un bloc par archétype adverse (le plus rencontré d'abord) avec les cartes entrées et sorties (+2 Kor Firewalker, −4 Lava Spike) ; « Exporter mon plan de side (CSV) » donne le même plan pour un tableur, une ligne par carte. Les deux suivent la période et la version de liste affichées.
 - **Colonne « Plus tard » dans « Carte par carte »** (1.5.2) : les games où la carte est arrivée en cours de partie, sans être dans la main de départ. Avec « Main de départ », elle détaille « Piochée » : une carte qui gagne quand elle est là dès le début et perd quand elle arrive tard se lit d'un coup d'œil. Triable comme les autres colonnes.
 
 ### Modifié

@@ -1061,7 +1061,49 @@ async function showTelemetry() {
   btn.querySelector('span').textContent = t(telemetryOn ? 'telemetry_on' : 'telemetry_off');
 }
 
+// My side plan for the deck in view, one entry per opposing archetype that I sided against, the most met first: the
+// matchup panel's plan, over the matches the page shows (period, list version). Null without one deck in view.
+function sidePlans() {
+  const s = activeScope();
+  if (s.deck === null) return null;
+  const by = new Map();
+  for (const m of scoped()) { const [key, , label] = oppKey(m); const e = by.get(key) || { label, list: [] }; e.list.push(m); by.set(key, e); }
+  return { scope: s, plans: [...by.values()].sort((a, b) => b.list.length - a.list.length).map((e) => ({ label: e.label, plan: S.sidePlan(e.list, C) }))
+    .filter((e) => e.plan.matches) };
+}
+function sideReady() {
+  const x = sidePlans();
+  if (!x) { toast(t('side_export_needs_deck')); return null; }
+  if (!x.plans.length) { toast(t('side_export_none')); return null; }
+  return x;
+}
+
 const ACTIONS = {
+  // Text to paste (Discord, notes): one block per archetype, "+2 Card" and "−1 Card" lines. Copied during the click;
+  // where the clipboard refuses, the same text is saved as a file.
+  'copy-side': () => {
+    const x = sideReady();
+    if (!x) return;
+    const line = (xs, sign) => xs.map((c) => `${sign}${c.qty} ${c.name}`).join(', ');
+    const text = [t('side_export_title', { deck: x.scope.deck, format: x.scope.format, date: new Date().toLocaleDateString(locale) }),
+      ...x.plans.map(({ label, plan }) => [tn('side_export_group', plan.matches, { name: label }),
+        ...(plan.in.length || plan.out.length ? [line(plan.in, '+'), line(plan.out, '−')].filter(Boolean) : [t('side_no_change')])].join('\n'))].join('\n\n') + '\n';
+    navigator.clipboard.writeText(text).then(() => toast(tn('side_copied', x.plans.length)), () => {
+      download(`side-plan-${stamp()}.txt`, text, 'text/plain');
+      toast(tn('side_txt_exported', x.plans.length));
+    });
+  },
+  // A spreadsheet: one row per card moved against an archetype.
+  'export-side-csv': () => {
+    const x = sideReady();
+    if (!x) return;
+    const rows = [['deck', 'format', 'opp_archetype', 'matches_with_side', 'direction', 'card', 'usual_qty', 'matches_moved']];
+    for (const { label, plan } of x.plans) {
+      for (const [dir, xs] of [['in', plan.in], ['out', plan.out]]) for (const c of xs) rows.push([x.scope.deck, x.scope.format, label, plan.matches, dir, c.name, c.qty, c.times]);
+    }
+    download(`side-plan-${stamp()}.csv`, '\ufeff' + rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv');
+    toast(tn('side_csv_exported', x.plans.length));
+  },
   telemetry: async () => {
     const on = telemetryOn;
     // Firefox only grants a permission during the click itself: asked before anything is awaited.

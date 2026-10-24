@@ -955,5 +955,44 @@
   },
   "info_cards": {
     "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nClique sur un en-tête de colonne pour trier."
+  },
+  "copy_side": {
+    "message": "Copier mon plan de side"
+  },
+  "export_side_csv": {
+    "message": "Exporter mon plan de side (CSV)"
+  },
+  "side_export_needs_deck": {
+    "message": "Choisis d’abord un de tes decks : un plan de side se lit deck par deck."
+  },
+  "side_export_none": {
+    "message": "Aucun side enregistré pour ce deck sur cette période."
+  },
+  "side_export_title": {
+    "message": "{deck} · {format} · mon plan de side (Endstep Tracker, {date})"
+  },
+  "side_export_group_one": {
+    "message": "{name} ({n} match avec side)"
+  },
+  "side_export_group_other": {
+    "message": "{name} ({n} matchs avec side)"
+  },
+  "side_copied_one": {
+    "message": "Plan de side copié ({n} archétype)"
+  },
+  "side_copied_other": {
+    "message": "Plan de side copié ({n} archétypes)"
+  },
+  "side_txt_exported_one": {
+    "message": "Plan de side enregistré en texte ({n} archétype)"
+  },
+  "side_txt_exported_other": {
+    "message": "Plan de side enregistré en texte ({n} archétypes)"
+  },
+  "side_csv_exported_one": {
+    "message": "Plan de side exporté ({n} archétype)"
+  },
+  "side_csv_exported_other": {
+    "message": "Plan de side exporté ({n} archétypes)"
   }
 }
