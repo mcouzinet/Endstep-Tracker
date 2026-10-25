@@ -942,7 +942,7 @@
     "message": "Expliquer ce tableau"
   },
   "info_glance": {
-    "message": "Tes résultats sur les matchs choisis en haut : deck ou format, et période.\n« Sur le play » et « Sur la draw » se lisent d’après la première game de chaque match. « Part sur le play » : la part des matchs que tu as commencés sur le play, quel que soit le résultat.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
+    "message": "Tes résultats sur les matchs choisis en haut : deck ou format, période, classés ou non.\n« Sur le play » et « Sur la draw » se lisent d’après la première game de chaque match. « Part sur le play » : la part des matchs que tu as commencés sur le play, quel que soit le résultat.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
   },
   "info_decks": {
     "message": "Le bilan en matchs de chacun de tes decks, quand « Tous mes decks » est choisi.\nClique sur un deck pour n’afficher que lui. Deux decks au même nom, dans un même format, comptent comme un seul."
@@ -954,7 +954,7 @@
     "message": "Ton bilan selon la situation de départ : sur le play ou sur la draw, main de 7 gardée ou après un mulligan.\nTout se lit d’après la première game de chaque match."
   },
   "info_cards": {
-    "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nClique sur un en-tête de colonne pour trier."
+    "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nJouée : tu l’as lancée, ou posée pour un terrain. En jeu : elle est arrivée sur ton champ de bataille, même sans être piochée (réanimée, mise en jeu). Ces deux colonnes comptent les games jouées depuis la 1.6.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nSurvole un chiffre pour son détail ; clique sur un en-tête de colonne pour trier."
   },
   "copy_side": {
     "message": "Copier mon plan de side"
@@ -994,5 +994,53 @@
   },
   "side_csv_exported_other": {
     "message": "Plan de side exporté ({n} archétypes)"
+  },
+  "ranked_label": {
+    "message": "Classés ou non"
+  },
+  "ranked_all": {
+    "message": "Tous"
+  },
+  "ranked_only": {
+    "message": "Classés"
+  },
+  "ranked_not": {
+    "message": "Non classés"
+  },
+  "col_played": {
+    "message": "Jouée"
+  },
+  "col_board": {
+    "message": "En jeu"
+  },
+  "played_title": {
+    "message": "Games où je l’ai lancée, ou posée pour un terrain"
+  },
+  "board_title": {
+    "message": "Games où elle est arrivée sur mon champ de bataille, depuis ma main ou non (réanimée, mise en jeu)"
+  },
+  "win_rate_text": {
+    "message": "{pct} de victoires"
+  },
+  "cell_none": {
+    "message": "Aucune game dans ce cas."
+  },
+  "cell_drawn": {
+    "message": "Piochée : {wl} en {n} games où la carte est passée par ta main ; {rate}."
+  },
+  "cell_not_drawn": {
+    "message": "Pas piochée : {wl} en {n} games où elle est restée dans ta bibliothèque ; {rate}."
+  },
+  "cell_opening": {
+    "message": "Main de départ : {wl} en {n} games où elle était dans ta main de départ ; {rate}."
+  },
+  "cell_later": {
+    "message": "Plus tard : {wl} en {n} games où tu l’as piochée en cours de partie ; {rate}."
+  },
+  "cell_played": {
+    "message": "Jouée : {wl} en {n} games où tu l’as lancée ou posée ; {rate}. Jouée dans {p} des {d} games où tu l’avais piochée."
+  },
+  "cell_board": {
+    "message": "En jeu : {wl} en {n} games où elle est arrivée sur ton champ de bataille ; {rate}. Dont {o} sans l’avoir piochée."
   }
 }

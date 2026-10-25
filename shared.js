@@ -21,6 +21,8 @@
     m.games = m.games.filter((g) => g && typeof g === 'object' && Number.isFinite(g.n)).map((g) => ({
       ...g, mulligans: obj(g.mulligans), life: obj(g.life), seen: obj(g.seen), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
       drawn: g.drawn === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.drawn)).filter(([, ids]) => Array.isArray(ids))),
+      played: g.played === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.played)).filter(([, ids]) => Array.isArray(ids))),
+      board: g.board === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.board)).filter(([, ids]) => Array.isArray(ids))),
       openingHand: Array.isArray(g.openingHand) ? g.openingHand.filter((c) => typeof c === 'string') : undefined,
     }));
     if (m.mains !== undefined) {
@@ -373,7 +375,7 @@
   // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
   function cardStats(list, c) {
     const by = new Map();
-    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally() }).get(name);
+    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), board: tally(), boardOnly: tally() }).get(name);
     for (const m of list) {
       for (const g of m.games) {
         const r = gRes(m, g);
@@ -384,7 +386,17 @@
         // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
         const kept = Array.isArray(g.openingHand) ? new Set(g.openingHand) : null;
         for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
-        for (const name of Object.keys(mainOf(m, g.n, c) || {})) if (!drawn.has(name)) row(name).notDrawn[r]++;
+        const main = mainOf(m, g.n, c);
+        for (const name of Object.keys(main || {})) if (!drawn.has(name)) row(name).notDrawn[r]++;
+        // Played and in play, recorded since 1.5.6 (games without the buckets count for neither). A card in play that is
+        // not in my deck for that game (an opponent's card I took) is left out; drawnTracked: the drawn games that could
+        // say whether the card was played, for the ratio.
+        const mine = (name) => !main || name in main || drawn.has(name);
+        if (g.played) {
+          for (const name of drawn) row(name).drawnTracked[r]++;
+          for (const name of Object.keys(g.played)) if (mine(name)) row(name).played[r]++;
+        }
+        if (g.board) for (const name of Object.keys(g.board)) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
       }
     }
     return [...by.values()].filter((x) => !BASIC.test(x.name));

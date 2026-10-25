@@ -41,7 +41,7 @@ const PREFS = 'endstep-tracker.filters';
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
 // tab: the view shown, one of TABS; kept across visits, never reset with the filters.
 const TABS = ['matchups', 'cards', 'history'];
-const state = { q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false };
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
@@ -123,7 +123,7 @@ function activeScope() {
 }
 const sameScope = (a, b) => a.format === b.format && a.deck === b.deck;
 const scopeFor = (s) => (sameScope(s, defaultScope()) ? null : s); // stored as null when it is the default
-const scopeActive = () => !!((state.scope && !sameScope(activeScope(), defaultScope())) || state.version || state.opp || state.period !== 'all');
+const scopeActive = () => !!((state.scope && !sameScope(activeScope(), defaultScope())) || state.version || state.opp || state.period !== 'all' || state.ranked !== 'all');
 function setFilter(patch) { Object.assign(state, patch); savePrefs(); render(); }
 function setTab(tab) {
   if (tab !== 'matchups') drawer = null; // the matchup panel belongs to the matchups
@@ -131,7 +131,7 @@ function setTab(tab) {
 }
 function resetFilters() {
   $('#q').value = '';
-  setFilter({ q: '', scope: null, version: null, compare: false, period: 'all', result: 'all', opp: null });
+  setFilter({ q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null });
 }
 
 // --- list versions: a version is a distinct main deck (sideboard tweaks do not split the stats) ---
@@ -179,13 +179,14 @@ function listDiff(from, to) {
     .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], locale));
 }
 
-// What the stats are about: the scope, its list version, the period, the opponent facet; never a match against the AI,
+// What the stats are about: the scope, its list version, the period, ranked or not, the opponent facet; never a match against the AI,
 // which only the history lists (withAI).
 function scoped(version, withAI = false) {
   const s = activeScope();
   const v = version === undefined ? activeVersion(versionsOf(s)) : version;
   const since = state.period === 'all' ? 0 : Date.now() - Number(state.period) * 864e5;
   return matches.filter((m) => inScope(m, s) && m.startedAt >= since
+    && (state.ranked === 'all' || !!m.ranked === (state.ranked === 'ranked'))
     && (v === 'all' || (v === '?' ? versionKey(m) === null : versionKey(m) === v))
     && (!state.opp || oppKey(m)[0] === state.opp.key)
     && (withAI || !S.vsAI(m)));
@@ -484,6 +485,7 @@ function renderFilters(s, shown, list, vs, v) {
   }
   $('#count').textContent = tn('n_matches', list.length) + (list.length !== shown.length ? t('of_total', { total: shown.length }) : '');
   $('#reset').classList.toggle('off', !scopeActive());
+  $('#f-ranked').hidden = state.ranked === 'all' && !matches.some((m) => m.ranked); // only once a ranked match exists
   $('#facet').hidden = !state.opp;
   if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: state.opp.label });
   for (const seg of document.querySelectorAll('.seg[data-filter]')) {
@@ -560,12 +562,21 @@ function renderCards(s, list) {
   const dir = state.cardRev ? -1 : 1;
   const key = (x) => (by === 'gap' ? x.gap : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
   const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: gap(x) }))
-    .filter((x) => n(x.drawn) || n(x.opening))
+    .filter((x) => n(x.drawn) || n(x.opening) || n(x.board))
     .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
       : (key(a) === null) - (key(b) === null) || dir * ((key(b) || 0) - (key(a) || 0)))
       || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
-  const cells = (x) => [{ key: t('col_not_drawn'), title: t('not_drawn_title'), r: x.notDrawn }, { key: t('col_opening'), title: t('opening_title'), r: x.opening },
-    { key: t('col_later'), title: t('later_title'), r: x.later }];
+  // Played and In play appear once a game records them (since 1.5.6). Each cell says on hover what its numbers count,
+  // since the column names are far up a long list.
+  const tracked = list.some((m) => m.games.some((g) => g.played));
+  const tip = (k, r, vars) => (n(r) ? t(k, { wl: wl(r), n: n(r), rate: n(r) >= MIN_SAMPLE ? t('win_rate_text', { pct: pct(r) }) : t('glance_early'), ...vars }) : t('cell_none'));
+  const cells = (x) => [
+    { key: t('col_not_drawn'), title: tip('cell_not_drawn', x.notDrawn), r: x.notDrawn },
+    { key: t('col_opening'), title: tip('cell_opening', x.opening), r: x.opening },
+    { key: t('col_later'), title: tip('cell_later', x.later), r: x.later },
+    ...(tracked ? [{ key: t('col_played'), title: tip('cell_played', x.played, { p: n(x.played), d: n(x.drawnTracked) }), r: x.played },
+      { key: t('col_board'), title: tip('cell_board', x.board, { o: n(x.boardOnly) }), r: x.board }] : []),
+  ];
   // The head: each column sorts the list; the arrow says which and which way (down: best first, or Z to A).
   const sortBtn = (col, label, title = '') => {
     const on = by === col;
@@ -574,12 +585,13 @@ function renderCards(s, list) {
     return `<button type="button" class="sort" data-card-sort="${col}" aria-pressed="${on}" aria-label="${esc(aria)}"${title ? ` title="${esc(title)}"` : ''}>`
       + `${esc(label)}${on ? `<span class="arrow" aria-hidden="true">${down ? '↓' : '↑'}</span>` : ''}</button>`;
   };
-  const head = `<div class="rec cells head" style="--cells:3"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
+  const head = `<div class="rec cells head" style="--cells:${tracked ? 5 : 3}"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
     + `<span class="main">${sortBtn('drawn', t('col_drawn'))}</span><span>${sortBtn('notDrawn', t('col_not_drawn'), t('not_drawn_title'))}</span>`
-    + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span><span>${sortBtn('later', t('col_later'), t('later_title'))}</span></div>`;
+    + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span><span>${sortBtn('later', t('col_later'), t('later_title'))}</span>`
+    + (tracked ? `<span>${sortBtn('played', t('col_played'), t('played_title'))}</span><span>${sortBtn('board', t('col_board'), t('board_title'))}</span>` : '') + '</div>';
   const row = (x) => {
     const g = x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
-    return rec(cardLink(x.name) + g, x.drawn, { cells: cells(x) });
+    return rec(cardLink(x.name) + g, x.drawn, { cells: cells(x), attrs: `title="${esc(tip('cell_drawn', x.drawn))}"` });
   };
   const recorded = list.some((m) => m.games.some((g) => g.drawn));
   const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>` : head + rows.map(row).join('');
@@ -763,7 +775,7 @@ function showMatch(m) {
   savePrefs();
   if (!listed(scoped()).includes(m)) {
     $('#q').value = '';
-    setFilter({ q: '', result: 'all', period: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
+    setFilter({ q: '', result: 'all', period: 'all', ranked: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
     if (!listed(scoped()).includes(m)) setFilter({ version: 'all' }); // its list is not recorded (yet)
   }
   openId = m.id;

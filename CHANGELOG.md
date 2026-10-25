@@ -7,11 +7,14 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Ajouté
 
+- **Filtre classés / non classés** (1.5.6) : à côté de la période, « Tous », « Classés » ou « Non classés » ; tous les chiffres suivent, anciens matchs compris. Il n'apparaît qu'une fois un match classé enregistré.
+- **Colonnes « Jouée » et « En jeu » dans « Carte par carte »** (1.5.6) : les games où tu as lancé la carte (ou posé le terrain), et celles où elle est arrivée sur ton champ de bataille, même sans être piochée : une créature meulée puis réanimée compte enfin. Au survol de « Jouée », la part des games où tu l'as jouée après l'avoir piochée. Elles comptent les games jouées depuis cette build ; une carte prise à l'adversaire n'y entre pas.
 - **Exporter mon plan de side** (1.5.5, menu Données, avec un deck choisi) : « Copier mon plan de side » met dans le presse-papiers un texte à coller dans Discord ou dans ses notes, un bloc par archétype adverse (le plus rencontré d'abord) avec les cartes entrées et sorties (+2 Kor Firewalker, −4 Lava Spike) ; « Exporter mon plan de side (CSV) » donne le même plan pour un tableur, une ligne par carte. Les deux suivent la période et la version de liste affichées.
 - **Colonne « Plus tard » dans « Carte par carte »** (1.5.2) : les games où la carte est arrivée en cours de partie, sans être dans la main de départ. Avec « Main de départ », elle détaille « Piochée » : une carte qui gagne quand elle est là dès le début et perd quand elle arrive tard se lit d'un coup d'œil. Triable comme les autres colonnes.
 
 ### Modifié
 
+- **Chaque chiffre de « Carte par carte » s'explique au survol** (1.5.6), par exemple « Pas piochée : 60–29 en 89 games où elle est restée dans ta bibliothèque ; 67 % de victoires », et la ligne des noms de colonnes reste en haut de l'écran quand on descend une longue liste.
 - **Le nombre de matchs sur le play et sur la draw** (1.5.4) : dans le bandeau du haut, « Sur le play (7) » et « Sur la draw (18) », sans avoir à additionner le bilan.
 - **Un ⓘ à côté du titre de chaque tableau** (1.5.3) : le bandeau du haut, Mes decks, Par archétype adverse, Selon le contexte et Carte par carte. Un clic, ou un toucher sur téléphone, ouvre une courte explication de ce que compte le tableau (par exemple Piochée = Main de départ + Plus tard) ; un second clic, un clic ailleurs ou Échap la referme. Les phrases grises sous les titres disparaissent, l'explication les remplace.
 - **Toutes les cartes dans « Carte par carte »** (1.5.1) : la liste n'est plus coupée après 15 cartes avec un « N autres cartes » à déplier ; un deck de Duel Commander montre ses 100 cartes, triables par colonne comme avant.

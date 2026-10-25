@@ -101,6 +101,15 @@ assert.deepEqual(stats['Galvanic Blast'].opening, { W: 1, L: 0, D: 0 }, 'in the 
 assert.deepEqual(stats['Myr Enforcer'].later, { W: 1, L: 0, D: 0 }, 'drawn during game 1, not in the kept seven: drawn later');
 assert.deepEqual(stats.Thoughtcast.later, { W: 0, L: 0, D: 0 }, 'in the kept seven: not drawn later');
 assert.ok(!stats.Island, 'basic lands are left out');
+// Played and in play (recorded since 1.5.6): game 2 has the buckets, game 1 (recorded before) does not count for them.
+const pm = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
+Object.assign(pm.games.find((g) => g.n === 2), { played: { Pyroblast: [7] }, board: { 'Myr Enforcer': [4], 'Stolen Thing': [99] } });
+const ps = Object.fromEntries(S.cardStats([pm], C).map((x) => [x.name, x]));
+assert.deepEqual(ps.Pyroblast.played, { W: 0, L: 1, D: 0 });
+assert.deepEqual(ps.Pyroblast.drawnTracked, { W: 0, L: 1, D: 0 }, 'drawn in a game that records plays');
+assert.deepEqual(ps.Thoughtcast.played, { W: 0, L: 0, D: 0 }, 'game 1 has no record of plays');
+assert.deepEqual([ps['Myr Enforcer'].board, ps['Myr Enforcer'].boardOnly], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }], 'in play without being drawn (reanimated)');
+assert.ok(!ps['Stolen Thing'], 'a card in play that is not in my deck is left out');
 assert.ok(!stats['Mulliganed Away']);
 
 // A game recorded before 1.1 (no drawn cards) counts for the opening hand only.

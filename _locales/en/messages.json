@@ -942,7 +942,7 @@
     "message": "Explain this table"
   },
   "info_glance": {
-    "message": "Your results over the matches picked at the top: deck or format, and period.\n\"On the play\" and \"On the draw\" go by the first game of each match. \"Share on the play\": the share of matches you started on the play, whatever the result.\nBefore {n} results, no percentage: too early to tell."
+    "message": "Your results over the matches picked at the top: deck or format, period, ranked or not.\n\"On the play\" and \"On the draw\" go by the first game of each match. \"Share on the play\": the share of matches you started on the play, whatever the result.\nBefore {n} results, no percentage: too early to tell."
   },
   "info_decks": {
     "message": "The match record of each of your decks, when \"All my decks\" is selected.\nClick a deck to show it alone. Two decks with the same name, in the same format, count as one."
@@ -954,7 +954,7 @@
     "message": "Your record by how the match started: on the play or on the draw, seven kept or after a mulligan.\nAll of it goes by the first game of each match."
   },
   "info_cards": {
-    "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nClick a column head to sort."
+    "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nPlayed: you cast it, or played it as a land. In play: it reached your battlefield, even without being drawn (reanimated, put onto the battlefield). Those two columns count the games played since 1.6.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nHover a number for its detail; click a column head to sort."
   },
   "copy_side": {
     "message": "Copy my side plan"
@@ -994,5 +994,53 @@
   },
   "side_csv_exported_other": {
     "message": "Side plan exported ({n} archetypes)"
+  },
+  "ranked_label": {
+    "message": "Ranked or not"
+  },
+  "ranked_all": {
+    "message": "All"
+  },
+  "ranked_only": {
+    "message": "Ranked"
+  },
+  "ranked_not": {
+    "message": "Unranked"
+  },
+  "col_played": {
+    "message": "Played"
+  },
+  "col_board": {
+    "message": "In play"
+  },
+  "played_title": {
+    "message": "Games where I cast it, or played it as a land"
+  },
+  "board_title": {
+    "message": "Games where it reached my battlefield, from my hand or not (reanimated, put onto the battlefield)"
+  },
+  "win_rate_text": {
+    "message": "{pct} wins"
+  },
+  "cell_none": {
+    "message": "No game in this case."
+  },
+  "cell_drawn": {
+    "message": "Drawn: {wl} over {n} games where the card went through your hand; {rate}."
+  },
+  "cell_not_drawn": {
+    "message": "Not drawn: {wl} over {n} games where it stayed in your library; {rate}."
+  },
+  "cell_opening": {
+    "message": "Opening hand: {wl} over {n} games where it was in your opening hand; {rate}."
+  },
+  "cell_later": {
+    "message": "Later: {wl} over {n} games where you drew it during the game; {rate}."
+  },
+  "cell_played": {
+    "message": "Played: {wl} over {n} games where you cast or played it; {rate}. Played in {p} of the {d} games where you drew it."
+  },
+  "cell_board": {
+    "message": "In play: {wl} over {n} games where it reached your battlefield; {rate}. {o} of them without drawing it."
   }
 }

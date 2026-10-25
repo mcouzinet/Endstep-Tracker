@@ -119,7 +119,7 @@
   }
 
   function newGame(rec, n, now) {
-    const g = { n, startedAt: now, mulligans: {}, kept: {}, life: {}, seen: {}, log: [], lastSeq: 0 };
+    const g = { n, startedAt: now, mulligans: {}, kept: {}, life: {}, seen: {}, log: [], lastSeq: 0, played: {}, board: {} };
     rec.games.push(g);
     return g;
   }
@@ -133,6 +133,10 @@
   const see = (g, seat, name, id) => addId((g.seen[seat] = g.seen[seat] || {}), name, id);
   // My cards of a game: in my hand at some point once the hands are kept, or played. What the card stats count as drawn.
   const drew = (g, name, id) => addId((g.drawn = g.drawn || {}), name, id);
+  // Since 1.5.6: my cards cast or played (lands), and my cards that reached my battlefield whatever brought them there
+  // (cast, put from the graveyard or the library): what the card stats count as played and in play.
+  const played = (g, name, id) => addId((g.played = g.played || {}), name, id);
+  const inPlay = (g, name, id) => addId((g.board = g.board || {}), name, id);
 
   // Sideboarding between two games: a card choice whose options are my current main deck (its first mainCount
   // cards) then my sideboard. Commander swaps are not sideboarding.
@@ -228,6 +232,14 @@
           if (c && c.name && c.name !== 'Hidden card' && !c.faceDown && !c.isToken) drew(sg, c.name, c.id);
         }
       }
+      // My cards on my battlefield, as each frame shows it: a reanimated or cheated-in card counts though never drawn.
+      // Tokens, copies and cards I only control (stolen) are not cards of my deck.
+      if (rec.mySeat !== null && sg === current(rec)) {
+        for (const c of (st.players[rec.mySeat] || {}).battlefield || []) {
+          const own = seatOf(c && c.ownerId);
+          if (c && c.name && c.name !== 'Hidden card' && !c.faceDown && !c.isToken && !c.isCopyOfRealCard && (own === null || own === rec.mySeat)) inPlay(sg, c.name, c.id);
+        }
+      }
       // Opening hand: first turn-1 snapshot + whatever I already moved out of my hand this turn.
       if (rt.collectHand && sg === current(rec) && Number(st.turnNumber) >= 1) {
         const mine = st.players[rec.mySeat] || {};
@@ -296,7 +308,11 @@
       case 'CARD_ZONE_CHANGE':
         if (!ev.cardName || owner === null) break;
         if (owner !== rec.mySeat) see(g, owner, ev.cardName, ev.cardId);
-        else if (rt.collectHand && ev.fromZone === 'Hand') rt.handOut.push(ev.cardName);
+        else {
+          if (rt.collectHand && ev.fromZone === 'Hand') rt.handOut.push(ev.cardName);
+          // Between two frames too (in and out at once); from a zone, so not a token being made.
+          if (ev.toZone === 'Battlefield' && ev.fromZone) inPlay(g, ev.cardName, ev.cardId);
+        }
         break;
       case 'CARD_REVEALED':
         if (seat === null || seat === rec.mySeat) break;
@@ -315,6 +331,7 @@
           if (ev.type === 'SPELL_CAST') ((rt.cast = rt.cast || {})[seat] = rt.cast[seat] || new Set()).add(ev.cardName);
         } else if ((ev.type === 'SPELL_CAST' || ev.type === 'LAND_PLAYED') && ev.cardName && seat !== null && seat === rec.mySeat) {
           drew(g, ev.cardName, ev.cardId); // played before any snapshot showed it in my hand
+          played(g, ev.cardName, ev.cardId);
         }
     }
 

@@ -136,6 +136,9 @@ assert.equal(T.seenCards(rec, 0)['Searing Blaze'], undefined);
 const myLands = g2.log.filter((l) => l[2] === 'LAND_PLAYED' && l[1] === 0).map((l) => l[3]);
 assert.deepEqual(myLands, ['Mountain', 'Mountain'], 'duplicate event ignored');
 assert.ok(!g2.log.some((l) => l[2] === 'SPELL_CAST' && l[3] === 'Lightning Bolt'), 'cancelled cast is not a cast');
+assert.deepEqual(Object.keys(g2.played), ['Mountain'], 'played: my land, not the cancelled Lightning Bolt, nothing of the opponent');
+assert.ok(g2.board.Mountain && !g2.board['Goblin Guide'], 'in play: my Mountain, not the opponent\'s creature');
+assert.deepEqual([g1.played, g1.board], [{}, {}], 'G1 recorded with nothing played: empty buckets, not missing ones');
 assert.ok(!g2.log.some((l) => l[2] === 'SHUFFLE' || l[2] === 'TURN_PHASE'), 'noise filtered');
 assert.ok(g1.log.some((l) => l[0] === 1 && l[1] === 1 && l[2] === 'SPELL_CAST' && l[3] === 'Goblin Guide'));
 

@@ -95,6 +95,7 @@
     .panel.cards { padding: 16px 12px 10px; }
     .cards .rec { padding-left: 8px; padding-right: 8px; }
     .cards .rec.cells { --bar: 9rem; --cell: 7.2rem; }
+    .cards .rec.head { position: sticky; top: 0; z-index: 1; padding-top: 8px; background: var(--surface); } /* the column names stay in sight down a 100-card list */
     .cards .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* the gap stays visible */
     .cards-note { margin: 0 8px 10px; font-size: 12px; }
     .rec.head .sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
@@ -498,6 +499,9 @@
       <select id="f-version" hidden data-i18n-attr="aria-label:version_label,title:version_label"></select>
       <div class="seg" role="group" data-i18n-attr="aria-label:period" data-filter="period">
         <button data-value="all" data-i18n="period_all"></button><button data-value="30" data-i18n="period_30"></button><button data-value="7" data-i18n="period_7"></button>
+      </div>
+      <div id="f-ranked" class="seg" role="group" data-i18n-attr="aria-label:ranked_label" data-filter="ranked" hidden>
+        <button data-value="all" data-i18n="ranked_all"></button><button data-value="ranked" data-i18n="ranked_only"></button><button data-value="unranked" data-i18n="ranked_not"></button>
       </div>
       <span id="facet" class="facet" hidden><span id="facet-label"></span><button id="facet-clear" data-i18n-attr="aria-label:remove_filter"><svg class="i"><use href="#i-x"/></svg></button></span>
       <button id="reset" class="link off" data-i18n="reset"></button>
