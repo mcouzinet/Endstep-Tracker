@@ -129,6 +129,24 @@ assert.ok(!cs["Beholder's Sleep Ray"] && !cs['Black Panther, Hope Enduring'], 'n
 assert.deepEqual([cs.Stifle.drawn, cs["King T'Challa"].board], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }]);
 assert.deepEqual([ds["King T'Challa"].drawn, ds["King T'Challa"].board, ds["King T'Challa"].boardOnly], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }, { W: 0, L: 0, D: 0 }], 'drawn once, in play under its front name, drawn before');
 assert.ok(!stats['Mulliganed Away']);
+// The side and the exports name my cards the same way: a printing swapped for another of the same card within a match is
+// no change, and one card sided in under two printings in two matches is one entry of the plan.
+const slC = { ...C, canon: (n) => ({ "Beholder's Sleep Ray": 'Stifle' })[n] || n };
+const swap = withMains({ 1: { ...g1, Stifle: 1 }, 2: { ...g1, "Beholder's Sleep Ray": 1, Pyroblast: 1, 'Galvanic Blast': 1 } });
+assert.deepEqual(S.sideChanges(swap, 2, slC), [['Pyroblast', 1], ['Galvanic Blast', -1]], 'a printing for another: no change');
+assert.deepEqual(S.sideChanges(swap, 2, C), [["Beholder's Sleep Ray", 1], ['Pyroblast', 1], ['Galvanic Blast', -1], ['Stifle', -1]], 'no names known: the site\'s');
+const printings = [withMains({ 1: g1, 2: { ...g1, "Beholder's Sleep Ray": 1, 'Galvanic Blast': 1 } }), withMains({ 1: g1, 2: { ...g1, Stifle: 1, 'Galvanic Blast': 1 } })];
+const one = S.sidePlan(printings, slC);
+assert.deepEqual(one.in, [{ name: 'Stifle', times: 2, qty: 1 }], 'one card, one entry');
+assert.equal(S.sideLine(one.in, 1), '+1 Stifle');
+assert.deepEqual(S.sidePlan(printings, C).in.map((x) => x.name), ["Beholder's Sleep Ray", 'Stifle'], 'no names known: two entries');
+assert.deepEqual(S.canonCounts({ Stifle: 2, "Beholder's Sleep Ray": 1, Island: 4 }, slC), { Stifle: 3, Island: 4 }, 'two printings add up');
+assert.deepEqual(S.canonCounts({ Stifle: 2 }, {}), { Stifle: 2 });
+// A game's cards for the CSV: copies per card, both faces of a card one copy (same id), an unknown id one copy.
+const gc = { drawn: { "King T'Challa": [42], 'Black Panther': [42], "Beholder's Sleep Ray": [3], Stifle: [5], Island: ['?'] }, board: { 'Black Panther': [42] } };
+assert.deepEqual(S.gameCards(gc, 'drawn', slC), { "King T'Challa": 1, Stifle: 2, Island: 1 });
+assert.deepEqual(S.gameCards(gc, 'board', C), { "King T'Challa": 1 }, 'transformed in play: the name it had in my hand');
+assert.deepEqual(S.gameCards(gc, 'played', C), {});
 
 // A game recorded before 1.1 (no drawn cards) counts for the opening hand only.
 const old = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: undefined, games: [{ ...rec.games[0], drawn: undefined }] });

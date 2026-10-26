@@ -27,7 +27,8 @@ async function load() {
 }
 
 function render(d) {
-  const C = { notes: d.notes, decks: d.decks, t };
+  const names = S.savedCardNames(); // my cards' one names as the dashboard looked them up: the popup never asks Scryfall
+  const C = { notes: d.notes, decks: d.decks, t, canon: (n) => names[n] || n };
   const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
   const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= 5 ? ` · ${pct(r)}` : ''}</dd></div>`;

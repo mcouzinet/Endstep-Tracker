@@ -59,12 +59,11 @@ let toastTimer;
 const C = { get notes() { return notes; }, get decks() { return decks; }, t: (k, v) => t(k, v), canon: (name) => cardNames[name] || name };
 
 // A card's one name, as Scryfall knows it: a printing with its own name (Beholder's Sleep Ray is Stifle) and either face
-// of a double-faced card (Black Panther, Hope Enduring is King T'Challa) count as that card in My cards. Asked once per
-// name while My cards is open, then kept in this browser; a name Scryfall does not know stays as it is.
-const CARD_NAMES = 'endstep-tracker.cardNames';
+// of a double-faced card (Black Panther, Hope Enduring is King T'Challa) count as that card wherever my cards show: My
+// cards, the side plans, a match's detail, the exports, the popup. Asked once per name while a view shows it (My cards,
+// a matchup's panel, a match's detail), then kept in this browser; a name Scryfall does not know stays as it is.
 const FRONT_FACE = new Set(['transform', 'modal_dfc', 'flip', 'adventure', 'meld', 'reversible_card']); // named after their front
-let cardNames = {};
-try { cardNames = JSON.parse(localStorage.getItem(CARD_NAMES)) || {}; } catch { /* storage unavailable */ }
+let cardNames = S.savedCardNames();
 let resolving = false;
 // After a failure (offline, or Scryfall's rate limit, whose refusals the browser reports as CORS errors), no request for 5
 // minutes, even across reloads: asking again during a block only makes it last.
@@ -76,7 +75,7 @@ async function resolveNames(names) {
   if (!todo.length || resolving || Date.now() < resolveAfter) return;
   resolving = true;
   const nameOf = (card) => (FRONT_FACE.has(card.layout) && Array.isArray(card.card_faces) && card.card_faces[0].name ? card.card_faces[0].name : card.name);
-  const known = () => { try { localStorage.setItem(CARD_NAMES, JSON.stringify(cardNames)); } catch { /* storage unavailable */ } render(); };
+  const known = () => { try { localStorage.setItem(S.CARD_NAMES, JSON.stringify(cardNames)); } catch { /* storage unavailable */ } render(); };
   // One name a request (the bulk lookup would need a CORS preflight Scryfall does not answer, and misses printed names);
   // the list catches up every 10 names, so a first 100-card deck shows its merges as they come.
   try {
@@ -92,12 +91,17 @@ async function resolveNames(names) {
     resolveAfter = Date.now() + 5 * 60_000;
     try { localStorage.setItem(RESOLVE_AFTER, String(resolveAfter)); } catch { /* storage unavailable */ }
   }
+  resolving = false; // first: the last render may ask for the names a view opened meanwhile
   known();
-  resolving = false;
 }
-// Every name my cards were recorded under in these matches, as the site gave them.
-const rawCardNames = (list) => list.flatMap((m) => m.games.flatMap((g) => [...Object.keys(g.drawn || {}), ...Object.keys(g.played || {}),
-  ...Object.keys(g.board || {}), ...(g.openingHand || []), ...Object.keys(S.mainOf(m, g.n, C) || {})]));
+// Every name my cards were recorded under in these matches, as the site gave them: my list, my main decks after side,
+// my opening hands and the cards I drew, played or had in play.
+const rawCardNames = (list) => list.flatMap((m) => {
+  const d = myDeck(m);
+  return [d && d.cards, m.limitedDeck && m.limitedDeck.deck].flatMap((x) => Object.keys(S.deckCounts(x) || {}))
+    .concat(Object.values(m.mains || {}).flatMap(Object.keys), m.games.flatMap((g) => [...Object.keys(g.drawn || {}), ...Object.keys(g.played || {}),
+      ...Object.keys(g.board || {}), ...(g.openingHand || [])]));
+});
 const { opps, colorsOf, gRes, onPlay, tally, pct } = S;
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
 const archetype = (m) => S.archetype(m, C);
@@ -213,12 +217,17 @@ function activeVersion(vs) {
   const v = state.version;
   return (v === '?' && vs.unknown) || vs.list.some((x) => x.key === v) ? v : 'all';
 }
-// Cards added (+) and cut (−) from one list key to another, additions first.
+// Cards added (+) and cut (−) from one list key to another, additions first, each card under its one name. A list that
+// only swapped a printing for another of the same card shows that swap.
 function listDiff(from, to) {
-  const counts = (key) => Object.fromEntries(key.split('\n').map((l) => [l.slice(l.indexOf(' ') + 1), Number(l.slice(0, l.indexOf(' ')))]));
-  const a = counts(from); const b = counts(to);
-  return [...new Set([...Object.keys(a), ...Object.keys(b)])].map((n) => [n, (b[n] || 0) - (a[n] || 0)]).filter(([, d]) => d)
-    .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], locale));
+  const counts = (key, c) => S.canonCounts(Object.fromEntries(key.split('\n').map((l) => [l.slice(l.indexOf(' ') + 1), Number(l.slice(0, l.indexOf(' ')))])), c);
+  const diff = (c) => {
+    const a = counts(from, c); const b = counts(to, c);
+    return [...new Set([...Object.keys(a), ...Object.keys(b)])].map((n) => [n, (b[n] || 0) - (a[n] || 0)]).filter(([, d]) => d)
+      .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], locale));
+  };
+  const one = diff(C);
+  return one.length ? one : diff(null);
 }
 
 // What the stats are about: the scope, its list version, the period, ranked or not, the opponent facet; never a match against the AI,
@@ -801,6 +810,7 @@ function renderDrawer(s, stats, vs) {
   el.hidden = !drawer;
   document.body.classList.toggle('drawer-open', !!drawer);
   if (!drawer) return;
+  if (s.deck !== null) resolveNames(rawCardNames(list)); // the side plan's names: one deck's cards, as My cards asks for them
   const r = S.records(list);
   const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
   const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {
@@ -932,6 +942,7 @@ function row(m) {
 }
 
 function detail(m) {
+  if (state.tab === 'history') resolveNames(rawCardNames([m])); // the names of my list, hands, side and plays shown here
   const n = notes[m.id] || {};
   const meta = [
     esc(fmt(m)) + (m.gamesPerMatch ? ` · Bo${esc(m.gamesPerMatch)}` : ''),
@@ -1008,14 +1019,8 @@ function renderVersions(cur, prev) {
     + `<button class="link" data-action="compare" aria-pressed="${!!state.compare}">${esc(state.compare ? t('compare_stop') : t('compare_with', { n: prev.n }))}</button>`;
 }
 
-function deckList(list) {
-  const cards = {};
-  for (const c of list || []) {
-    const name = typeof c === 'string' ? c : c.name;
-    cards[name] = (cards[name] || 0) + (typeof c === 'string' ? 1 : c.quantity || 1);
-  }
-  return cardList(cards);
-}
+// My list, each card under its one name.
+const deckList = (list) => cardList(S.canonCounts(S.deckCounts(list) || {}, C));
 
 function gameBlock(m, g) {
   const r = gRes(m, g);
@@ -1027,7 +1032,7 @@ function gameBlock(m, g) {
   const life = Object.entries(g.life).map(([s, v]) => `${esc(nameOf(Number(s)))} ${esc(v)}`).join(' · ');
   const kv = `<dl class="kv"><div><dt>${esc(t('mulligans_label'))}</dt><dd>${mulls}</dd></div>${life ? `<div><dt>${esc(t('final_life'))}</dt><dd>${life}</dd></div>` : ''}${
     g.tossSeat === undefined || g.tossSeat === null ? '' : `<div><dt>${esc(t('play_draw_choice'))}</dt><dd>${esc(nameOf(g.tossSeat))}</dd></div>`}</dl>`;
-  const hand = g.openingHand ? `<div class="hand"><span class="label">${esc(t('opening_hand'))}</span>${g.openingHand.map(cardLink).join('')}</div>` : '';
+  const hand = g.openingHand ? `<div class="hand"><span class="label">${esc(t('opening_hand'))}</span>${g.openingHand.map((c) => cardLink(C.canon(c))).join('')}</div>` : '';
   const changes = S.sideChanges(m, g.n, C);
   const side = changes ? `<p class="side-line"><span class="label">${esc(t('side_label'))}</span>${changes.length
     ? changes.map(([name, d]) => `<span class="chg ${d > 0 ? 'add' : 'cut'}">${d > 0 ? '+' : '−'}${Math.abs(d)} ${cardLink(name)}</span>`).join(', ')
@@ -1038,7 +1043,8 @@ function gameBlock(m, g) {
     if (!PLAYS.has(type) || !c) continue;
     const key = `${tn_}|${s}`;
     if (!turns.has(key)) turns.set(key, { t: tn_, s, cards: [] });
-    turns.get(key).cards.push(type === 'LAND_PLAYED' ? `<span class="land">${cardLink(c)}</span>` : cardLink(c));
+    const link = cardLink(s === m.mySeat ? C.canon(c) : c); // my cards under their one name, the opponent's as seen
+    turns.get(key).cards.push(type === 'LAND_PLAYED' ? `<span class="land">${link}</span>` : link);
   }
   const timeline = turns.size
     ? `<div class="timeline">${[...turns.values()].map((x) => `<span class="t">T${esc(x.t)}</span><span class="who">${esc(nameOf(x.s))}</span><span>${x.cards.join(', ')}</span>`).join('')}</div>` : '';
@@ -1378,7 +1384,7 @@ const ACTIONS = {
           gRes(m, g), g.turns, g.endReason, m.result || m.status, (m.score || []).join('-'),
           opps(m).map((o) => Object.entries((g.seen || {})[o.seat] || {}).map(([c, ids]) => `${ids.length} ${c}`).join('; ')).join(' | '),
           (guessFor(m) || {}).name || '',
-          Object.entries(g.drawn || {}).map(([c, ids]) => `${ids.length} ${c}`).join('; '),
+          Object.entries(S.gameCards(g, 'drawn', C)).map(([c, k]) => `${k} ${c}`).join('; '),
           (S.sideChanges(m, g.n, C) || []).map(([c, d]) => `${d > 0 ? '+' : ''}${d} ${c}`).join('; ')]);
       }
     }
