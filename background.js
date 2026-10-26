@@ -38,6 +38,10 @@ async function attachOpenTabs() {
   }
 }
 chrome.runtime.onInstalled.addListener(attachOpenTabs);
+// Nothing is new to a new user: the dashboard's "What's new" waits for the next release (X.Y).
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install') chrome.storage.local.set({ newsSeen: chrome.runtime.getManifest().version.split('.').slice(0, 2).join('.') });
+});
 // Access to endstep.cc given back (it was set to "on click"): attach to the open tabs too.
 if (chrome.permissions && chrome.permissions.onAdded) {
   chrome.permissions.onAdded.addListener((p) => { if ((p.origins || []).some((o) => o.includes('endstep.cc'))) attachOpenTabs(); });

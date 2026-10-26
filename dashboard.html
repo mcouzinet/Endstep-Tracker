@@ -340,8 +340,15 @@
 
     /* ---- Deck Compare promo: a dashboard panel; Deck Compare shows in its wordmark and a real crop of its page ---- */
     .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .access { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 16px; border-color: var(--danger); color: var(--ink-2); }
+    .access, .review { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 16px; color: var(--ink-2); }
+    .access { border-color: var(--danger); }
     .access b { color: var(--ink); }
+    .review { padding-block: 8px; font-size: 13.5px; } /* a discreet line, not a banner */
+    .review .row { align-items: center; }
+    .news { margin-bottom: 16px; }
+    .news-list { display: grid; gap: 3px; margin: 2px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
+    .news .promo-foot a { color: var(--gold); text-decoration-color: var(--line-strong); } /* the extension's own gold, not Deck Compare's blue */
+    .news .promo-foot a:hover { color: var(--gold-hi); text-decoration-color: currentColor; }
     .promos { display: flex; flex-wrap: wrap; gap: 16px; }
     .promos:has(.promo:not([hidden])) { margin-bottom: 16px; }
     .promos > .promo { flex: 1 1 360px; min-width: 0; }
@@ -474,8 +481,19 @@
 
     <div id="access" class="panel access" role="alert" hidden><p><b data-i18n="access_title"></b> <span data-i18n="access_text"></span></p><button class="btn primary" data-action="access" data-i18n="access_btn"></button></div>
 
+    <aside id="news" class="panel promo news" aria-labelledby="news-title" hidden>
+      <img src="icons/icon-128.png" alt="">
+      <div class="promo-body">
+        <h2 id="news-title" class="promo-title"></h2>
+        <ul id="news-list" class="news-list"></ul>
+        <p class="promo-foot"><a href="https://github.com/mcouzinet/Endstep-Tracker/blob/main/CHANGELOG.md" target="_blank" rel="noopener"><span data-i18n="news_all"></span><span class="vh" data-i18n="new_tab"></span><svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a></p>
+      </div>
+      <button id="news-close" class="promo-close" data-i18n-attr="title:news_close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </aside>
+    <div id="review" class="panel review" hidden><p data-i18n="review_text"></p><span class="row"><a id="review-link" class="btn" target="_blank" rel="noopener"><span data-i18n="review_cta"></span><span class="vh" data-i18n="new_tab"></span><svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a><button id="review-no" class="link" data-i18n="review_no"></button></span></div>
+
     <div id="promos" class="promos">
-    <aside id="promo" class="panel promo" aria-labelledby="promo-title" hidden>
+    <aside id="promo"class="panel promo" aria-labelledby="promo-title" hidden>
       <img src="icons/deckcompare-128.png" alt="">
       <div class="promo-body">
         <h2 id="promo-title" class="promo-title"><b>Deck</b><b>Compare</b></h2>

@@ -362,6 +362,39 @@
   "step2_b": {
     "message": "Start a game."
   },
+  "news_title": {
+    "message": "New in {v}"
+  },
+  "news_16_ranked": {
+    "message": "A “Ranked / Unranked” filter beside the period."
+  },
+  "news_16_cards": {
+    "message": "“Played” and “In play” columns in My cards (a reanimated creature counts at last), and every number there explains itself on hover."
+  },
+  "news_16_info": {
+    "message": "An ⓘ button beside each table's title says what it counts."
+  },
+  "news_16_side": {
+    "message": "Copy or export your side plan (Data menu)."
+  },
+  "news_16_names": {
+    "message": "One card, one name: printed names (Secret Lair, Universes Beyond) and double-faced cards count as one card."
+  },
+  "news_all": {
+    "message": "Full changelog (in French)"
+  },
+  "news_close": {
+    "message": "Close"
+  },
+  "review_text": {
+    "message": "Is the extension useful to you? A review on the store helps a lot."
+  },
+  "review_cta": {
+    "message": "Leave a review"
+  },
+  "review_no": {
+    "message": "No thanks"
+  },
   "step2": {
     "message": "During the match, the extension icon shows"
   },
