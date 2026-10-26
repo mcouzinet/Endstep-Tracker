@@ -158,6 +158,40 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first. The App Store gets its own notes, which never name another platform (Android, Chrome, Firefox, Edge): Apple refused the Mac 1.5 for "Firefox for Android" in What's New (guideline 2.3.10, accurate metadata).
 
+### 1.6 (EN)
+
+- A "Ranked / Unranked" filter beside the period.
+- My cards: every card of your deck (a 100-card deck included), new "Later", "Played" and "In play" columns (a reanimated creature counts at last), and every number explains itself on hover.
+- In a matchup's panel: your record in game 1 and after sideboarding.
+- Share an image of your stats, ready to paste on Discord, and copy or export your side plan (Data menu).
+- One card, one name: printed names (Secret Lair, Universes Beyond) and double-faced cards count as one card everywhere, and another printing no longer starts a new list version.
+- An info button beside each table, the number of matches on the play and on the draw, the version at the bottom of the popup.
+
+### 1.6 (FR)
+
+- Un filtre « Classés / Non classés » à côté de la période.
+- Mes cartes : toutes les cartes de ton deck (un deck de 100 cartes compris), de nouvelles colonnes « Plus tard », « Jouée » et « En jeu » (une créature réanimée compte enfin), et chaque chiffre s'explique au survol.
+- Dans le panneau d'un matchup : ton bilan à la game 1 et après side.
+- Partage une image de tes stats, à coller sur Discord, et copie ou exporte ton plan de side (menu Données).
+- Une carte, un nom : les noms imprimés (Secret Lair, Universes Beyond) et les cartes à deux faces comptent comme une seule carte partout, et une autre impression ne crée plus une nouvelle version de liste.
+- Un bouton ⓘ à côté de chaque tableau, le nombre de matchs sur le play et sur la draw, la version en bas de la popup.
+
+### 1.6 (App Store EN)
+
+- A "Ranked / Unranked" filter beside the period.
+- My cards: every card of your deck, new "Later", "Played" and "In play" columns (a reanimated creature counts at last), and every number explains itself on hover.
+- In a matchup's panel: your record in game 1 and after sideboarding.
+- Share an image of your stats and copy or export your side plan (Data menu).
+- One card, one name: printed names and double-faced cards count as one card everywhere.
+
+### 1.6 (App Store FR)
+
+- Un filtre « Classés / Non classés » à côté de la période.
+- Mes cartes : toutes les cartes de ton deck, de nouvelles colonnes « Plus tard », « Jouée » et « En jeu » (une créature réanimée compte enfin), et chaque chiffre s'explique au survol.
+- Dans le panneau d'un matchup : ton bilan à la game 1 et après side.
+- Partage une image de tes stats et copie ou exporte ton plan de side (menu Données).
+- Une carte, un nom : les noms imprimés et les cartes à deux faces comptent comme une seule carte partout.
+
 ### 1.5 (EN)
 
 - Safari on iPhone: the same extension, in an iPhone app that shows how to turn it on. Matches stay on the device you play on; export a backup and import it on the other to bring them together.

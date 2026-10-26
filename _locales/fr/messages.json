@@ -371,11 +371,14 @@
   "news_16_cards": {
     "message": "Colonnes « Jouée » et « En jeu » dans Mes cartes (une créature réanimée compte enfin), et chaque chiffre s’y explique au survol."
   },
-  "news_16_info": {
-    "message": "Un bouton ⓘ à côté du titre de chaque tableau dit ce qu’il compte."
-  },
   "news_16_side": {
     "message": "Copie ou exporte ton plan de side (menu Données)."
+  },
+  "news_16_games": {
+    "message": "Dans le panneau d’un matchup : ton bilan à la game 1 et après side."
+  },
+  "news_16_share": {
+    "message": "Partage une image de tes stats, à coller sur Discord (menu Données)."
   },
   "news_16_names": {
     "message": "Une carte, un nom : les noms imprimés (Secret Lair, Universes Beyond) et les cartes à deux faces comptent comme une seule carte."

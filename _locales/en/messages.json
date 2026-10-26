@@ -371,11 +371,14 @@
   "news_16_cards": {
     "message": "“Played” and “In play” columns in My cards (a reanimated creature counts at last), and every number there explains itself on hover."
   },
-  "news_16_info": {
-    "message": "An ⓘ button beside each table's title says what it counts."
-  },
   "news_16_side": {
     "message": "Copy or export your side plan (Data menu)."
+  },
+  "news_16_games": {
+    "message": "In a matchup's panel: your record in game 1 and after sideboarding."
+  },
+  "news_16_share": {
+    "message": "Share an image of your stats, ready to paste on Discord (Data menu)."
   },
   "news_16_names": {
     "message": "One card, one name: printed names (Secret Lair, Universes Beyond) and double-faced cards count as one card."
