@@ -291,6 +291,7 @@ async function load() {
     chrome.storage.local.remove([...twins].map((id) => 'match:' + id));
   }
   if (addon) addon.load(all);
+  showNews(all.newsSeen, all.reviewClosed);
   showPromo(all.promoClosed, all.whozicClosed);
   refresh();
 }
@@ -312,6 +313,8 @@ function placePromos() {
   $('#promo').hidden = !(has && promoOn);
   $('#promo-wz').hidden = !(has && whozicOn);
   $('#promos').classList.toggle('both', promoOn && whozicOn);
+  $('#news').hidden = !(has && newsAt);
+  $('#review').hidden = !(reviewOn && recorded() >= REVIEW_AFTER);
   if (WHOZIC) $('#promo-wz-link').href = `${WHOZIC}${locale === 'en' ? '/en' : ''}?utm_source=endstep-tracker`; // where the visit comes from, nothing else
 }
 async function showPromo(closed, whozicClosed) {
@@ -339,6 +342,44 @@ $('#promo-wz-close').addEventListener('click', () => {
   placePromos();
   chrome.storage.local.set({ whozicClosed: { at: RELEASE } });
 });
+
+// What's new after an update to a release, on every browser, until closed. A release adds its entry here (message
+// keys, both languages in _locales); only the newest unseen one shows (S.newsDue).
+const NEWS = { '1.6': ['news_16_ranked', 'news_16_cards', 'news_16_info', 'news_16_side', 'news_16_names'] };
+let newsAt = null; // the release whose news is shown
+// A store review, asked once enough matches are recorded (not imported, not against the AI, not live), until answered,
+// and never on the page load that shows the news. Not on Safari: Apple forbids custom review prompts (guideline 5.6.1).
+const REVIEW_AFTER = 30;
+const CWS_REVIEWS = 'https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho/reviews';
+const REVIEW = { Chrome: CWS_REVIEWS, Brave: CWS_REVIEWS, Opera: CWS_REVIEWS,
+  Edge: 'https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp',
+  Firefox: 'https://addons.mozilla.org/firefox/addon/endstep-tracker/', // rated on the add-on page; AMO adds the browser's language
+}[S.browserName(chrome.runtime.getManifest(), navigator)] || null;
+let reviewOn = false;
+const recorded = () => { const r = S.records(matches.filter((m) => m.source !== 'history')).m; return r.W + r.L + r.D; };
+function showNews(seen, reviewClosed) {
+  newsAt = S.newsDue(Object.keys(NEWS), seen, RELEASE);
+  if (newsAt) {
+    $('#news-title').textContent = t('news_title', { v: newsAt });
+    $('#news-list').innerHTML = NEWS[newsAt].map((k) => `<li>${esc(t(k))}</li>`).join('');
+  }
+  reviewOn = !!REVIEW && !reviewClosed && !newsAt;
+  if (reviewOn) $('#review-link').href = REVIEW;
+  placePromos();
+}
+$('#news-close').addEventListener('click', () => {
+  newsAt = null;
+  placePromos();
+  chrome.storage.local.set({ newsSeen: RELEASE });
+});
+// The link opens the store in a new tab by itself; either answer hides the line for good.
+for (const id of ['#review-link', '#review-no']) {
+  $(id).addEventListener('click', () => {
+    reviewOn = false;
+    placePromos();
+    chrome.storage.local.set({ reviewClosed: true });
+  });
+}
 
 // Apply a chrome.storage change set in place: no full reload while a match is being written every second.
 function applyChanges(changes) {

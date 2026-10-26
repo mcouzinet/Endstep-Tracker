@@ -311,6 +311,12 @@
     if (safari) for (const el of document.querySelectorAll('.bmc')) el.remove();
   }
 
+  // "What's new": the newest of `releases` (X.Y) after the one last seen and up to the running one, else null. Nothing
+  // seen means an update from before the panel existed: background.js marks a fresh install's release as seen.
+  const byRelease = (a, b) => a.localeCompare(b, 'en', { numeric: true }); // 1.10 after 1.9
+  const newsDue = (releases, seen, running) => releases.filter((r) => byRelease(r, seen || '0') > 0 && byRelease(r, running) <= 0)
+    .sort(byRelease).pop() || null;
+
   // All of chrome.storage but the decision logs (dec:*), the bulk of it: those load one match at a time.
   async function loadStore() {
     const keys = (await chrome.storage.local.getKeys()).filter((k) => !k.startsWith('dec:'));
@@ -424,7 +430,7 @@
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
-    loadI18n, browserI18n, translator, loadStore, dropTipLinks, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
+    loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;

@@ -362,6 +362,39 @@
   "step2_b": {
     "message": "Lance une partie."
   },
+  "news_title": {
+    "message": "Nouveautés de la {v}"
+  },
+  "news_16_ranked": {
+    "message": "Un filtre « Classés / Non classés » à côté de la période."
+  },
+  "news_16_cards": {
+    "message": "Colonnes « Jouée » et « En jeu » dans Mes cartes (une créature réanimée compte enfin), et chaque chiffre s’y explique au survol."
+  },
+  "news_16_info": {
+    "message": "Un bouton ⓘ à côté du titre de chaque tableau dit ce qu’il compte."
+  },
+  "news_16_side": {
+    "message": "Copie ou exporte ton plan de side (menu Données)."
+  },
+  "news_16_names": {
+    "message": "Une carte, un nom : les noms imprimés (Secret Lair, Universes Beyond) et les cartes à deux faces comptent comme une seule carte."
+  },
+  "news_all": {
+    "message": "Toutes les modifications"
+  },
+  "news_close": {
+    "message": "Fermer"
+  },
+  "review_text": {
+    "message": "L’extension te sert ? Un avis sur le store aide beaucoup."
+  },
+  "review_cta": {
+    "message": "Laisser un avis"
+  },
+  "review_no": {
+    "message": "Non merci"
+  },
   "step2": {
     "message": "Pendant le match, l’icône de l’extension affiche"
   },
