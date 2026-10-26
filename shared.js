@@ -335,17 +335,51 @@
     const d = myDeck(m, c);
     return deckCounts((d && d.cards) || (m.limitedDeck && m.limitedDeck.deck));
   }
-  // What game n's main deck changes from game 1's: [name, +in / -out], additions first. null when not recorded.
+  // A card's one name (c.canon, which the dashboard and the popup take from Scryfall): Beholder's Sleep Ray is Stifle.
+  // Without it, the site's names. Applied when showing or exporting, never stored.
+  const canonOf = (c) => (c && c.canon) || ((name) => name);
+  // The names the dashboard looked up, kept in localStorage: read by the extension's pages (the in-page panel cannot
+  // reach it), and only the dashboard asks Scryfall.
+  const CARD_NAMES = 'endstep-tracker.cardNames';
+  function savedCardNames() { try { return JSON.parse(localStorage.getItem(CARD_NAMES)) || {}; } catch { return {}; } }
+  // A decklist { name: copies } under each card's one name: two printings of one card add up.
+  function canonCounts(counts, c) {
+    const canon = canonOf(c);
+    const out = {};
+    for (const [name, k] of Object.entries(counts)) out[canon(name)] = (out[canon(name)] || 0) + k;
+    return out;
+  }
+  // My cards of one bucket of game g (key: drawn, played or board) as { name: copies }, one name per card: a transformed
+  // double-faced card shows its other face (King T'Challa becomes Black Panther) under the same id within the game, and
+  // the name it was first recorded under, in my hand, wins; then its one name (c.canon).
+  function gameCards(g, key, c) {
+    const canon = canonOf(c);
+    const alias = new Map(); // card id -> name
+    for (const bucket of [g.drawn, g.played, g.board]) {
+      for (const [name, ids] of Object.entries(bucket || {})) for (const id of ids) if (id !== '?' && !alias.has(id)) alias.set(id, name);
+    }
+    const copies = new Map(); // name -> distinct copies (an unknown id is one copy of the name it was recorded under)
+    for (const [name, ids] of Object.entries(g[key] || {})) {
+      for (const id of ids) {
+        const one = canon(alias.get(id) || name);
+        (copies.get(one) || copies.set(one, new Set()).get(one)).add(id === '?' ? `?${name}` : id);
+      }
+    }
+    return Object.fromEntries([...copies].map(([name, s]) => [name, s.size]));
+  }
+  // What game n's main deck changes from game 1's: [name, +in / -out], additions first. null when not recorded. Each card
+  // under its one name: a printing swapped for another of the same card is no change.
   function sideChanges(m, n, c) {
-    const to = n >= 2 && m.mains && m.mains[n];
-    const from = to && mainOf(m, 1, c);
-    if (!from) return null;
+    const sided = n >= 2 && m.mains && m.mains[n];
+    const before = sided && mainOf(m, 1, c);
+    if (!before) return null;
+    const [from, to] = [before, sided].map((x) => canonCounts(x, c));
     return [...new Set([...Object.keys(from), ...Object.keys(to)])].map((name) => [name, (to[name] || 0) - (from[name] || 0)])
       .filter(([, d]) => d).sort((a, b) => Math.sign(b[1]) - Math.sign(a[1]) || Math.abs(b[1]) - Math.abs(a[1]) || a[0].localeCompare(b[0]));
   }
   // My usual sideboarding in these matches: each card that went in (or out) after game 1, in how many of the matches
   // whose sideboarding was recorded, with its usual number of copies. { matches, in: [...], out: [...] },
-  // entries { name, qty, times }, most frequent first.
+  // entries { name, qty, times }, most frequent first; a card is one entry whatever printing each match used (sideChanges).
   function sidePlan(list, c) {
     const moves = new Map(); // name -> { times, qty: Map(copies -> matches) } for additions (> 0) and cuts (< 0) apart
     let n = 0;
@@ -375,7 +409,7 @@
   // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
   function cardStats(list, c) {
     const by = new Map();
-    const canon = c.canon || ((name) => name); // a card's one name (dashboard.js asks Scryfall): Beholder's Sleep Ray is Stifle
+    const canon = canonOf(c);
     const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), board: tally(), boardOnly: tally() }).get(name);
     for (const m of list) {
       for (const g of m.games) {
@@ -383,13 +417,7 @@
         if (!r) continue;
         if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand.map(canon))) row(name).opening[r]++;
         if (!g.drawn) continue;
-        // One card, one name: a transformed double-faced card shows its other face (King T'Challa becomes Black Panther)
-        // under the same id within the game; the name it was first recorded under, in my hand, wins.
-        const alias = new Map(); // card id -> name
-        for (const bucket of [g.drawn, g.played, g.board]) {
-          for (const [name, ids] of Object.entries(bucket || {})) for (const id of ids) if (id !== '?' && !alias.has(id)) alias.set(id, name);
-        }
-        const names = (bucket) => new Set(Object.entries(bucket).map(([name, ids]) => canon(ids.map((id) => alias.get(id)).find(Boolean) || name)));
+        const names = (key) => new Set(Object.keys(gameCards(g, key, c))); // one card, one name
         // Only cards of my deck: its main for that game, its sideboard (a companion, a wish target) and its commanders; an
         // opponent's card that went through my hand, or that I cast or took, is not one (unknown main: all count).
         const main = mainOf(m, g.n, c);
@@ -398,7 +426,7 @@
         const inMain = main && new Set(Object.keys(main).map(canon));
         const inDeck = inMain && new Set([...inMain, ...extra.map(canon)]);
         const mine = (name) => !inDeck || inDeck.has(name);
-        const drawn = new Set([...names(g.drawn)].filter(mine));
+        const drawn = new Set([...names('drawn')].filter(mine));
         // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
         const kept = Array.isArray(g.openingHand) ? new Set(g.openingHand.map(canon)) : null;
         for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
@@ -407,9 +435,9 @@
         // games that could say whether the card was played, for the ratio.
         if (g.played) {
           for (const name of drawn) row(name).drawnTracked[r]++;
-          for (const name of names(g.played)) if (mine(name)) row(name).played[r]++;
+          for (const name of names('played')) if (mine(name)) row(name).played[r]++;
         }
-        if (g.board) for (const name of names(g.board)) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
+        if (g.board) for (const name of names('board')) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
       }
     }
     return [...by.values()].filter((x) => !BASIC.test(x.name));
@@ -423,7 +451,7 @@
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
-    deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
+    deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

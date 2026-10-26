@@ -23,7 +23,7 @@ Desktop browsers only: Chrome on Android has no extensions.
 
 ## Privacy
 
-Everything is stored locally (`chrome.storage.local`). Nothing about your matches leaves the browser; the extension only sends anonymous usage statistics (install, update, one signal a day, uninstall), which can be switched off in the dashboard's Data menu. The only network requests are endstep's public metagame API (archetype recognition), Scryfall card images when you hover a card in the dashboard, and the card names of "My cards" looked up once on Scryfall (a printing with its own name, the other face of a card), and your own endstep history pages when you import them. The feedback form opens only when you click it. The extension never plays or clicks for you. Details in [PRIVACY.md](PRIVACY.md).
+Everything is stored locally (`chrome.storage.local`). Nothing about your matches leaves the browser; the extension only sends anonymous usage statistics (install, update, one signal a day, uninstall), which can be switched off in the dashboard's Data menu. The only network requests are endstep's public metagame API (archetype recognition), Scryfall card images when you hover a card in the dashboard, and the names of your deck's cards looked up once on Scryfall (a printing with its own name, the other face of a card), and your own endstep history pages when you import them. The feedback form opens only when you click it. The extension never plays or clicks for you. Details in [PRIVACY.md](PRIVACY.md).
 
 ## How it works
 
