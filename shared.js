@@ -254,6 +254,17 @@
     }
     return r;
   }
+  // The one record counted in games: game 1, played with the main deck, against the games after sideboarding (2 and 3),
+  // to tell whether my sideboarding works. Games whose winner is known, in the matches records() counts; a Bo1 has
+  // game 1 only. { g1, post }
+  function sideRecords(list, now = Date.now()) {
+    const r = { g1: tally(), post: tally() };
+    for (const m of list) {
+      if (isLive(m, now) || vsAI(m) || !m.result) continue;
+      for (const g of m.games) { const x = gRes(m, g); if (x) r[g.n === 1 ? 'g1' : 'post'][x]++; }
+    }
+    return r;
+  }
 
   // Strings. Extension pages read _locales themselves so the language picked in the dashboard wins over the browser's;
   // content scripts cannot fetch extension files and use the browser's lookup, in the browser's language.
@@ -422,7 +433,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records,
+    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
     deckCounts, mainOf, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

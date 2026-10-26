@@ -602,6 +602,18 @@
   "sort_worst": {
     "message": "Pire d’abord"
   },
+  "side_games": {
+    "message": "Avant et après side"
+  },
+  "side_g1": {
+    "message": "Game 1"
+  },
+  "side_post": {
+    "message": "Après side"
+  },
+  "info_side_games": {
+    "message": "Compté en games, pas en matchs : la game 1 se joue avec ton deck de départ, les games 2 et 3 après ton side.\nSi tu gagnes plus souvent après side, ton side marche sans doute contre ce deck. Un match en Bo1 ne compte que pour la game 1.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
+  },
   "sort_best": {
     "message": "Meilleur d’abord"
   },

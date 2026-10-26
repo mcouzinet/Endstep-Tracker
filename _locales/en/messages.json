@@ -602,6 +602,18 @@
   "sort_worst": {
     "message": "Worst first"
   },
+  "side_games": {
+    "message": "Before and after sideboarding"
+  },
+  "side_g1": {
+    "message": "Game 1"
+  },
+  "side_post": {
+    "message": "After sideboarding"
+  },
+  "info_side_games": {
+    "message": "Counted in games, not matches: game 1 is played with your starting deck, games 2 and 3 after your sideboarding.\nIf you win more often after sideboarding, your sideboarding likely works against this deck. A Bo1 match counts for game 1 only.\nBefore {n} results, no percentage: too early to tell."
+  },
   "sort_best": {
     "message": "Best first"
   },

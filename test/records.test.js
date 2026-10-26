@@ -19,6 +19,15 @@ assert.deepEqual(r.draw, { W: 1, L: 0, D: 0 }, 'game 1 decides the play/draw of 
 assert.deepEqual(r.play, { W: 0, L: 1, D: 0 });
 assert.equal('g' in r, false, 'no game record');
 
+// Before and after sideboarding: the one record in games. A Bo1 has game 1 only; a match against the AI, one without its
+// games (imported from the site's history) and an unfinished one count nowhere.
+const bo1 = match('e', 'W', [g(1, 0, 0)]);
+const bot = Object.assign(match('f', 'W', [g(1, 0, 0), g(2, 1, 0)]), { participants: [{ username: 'me' }, { username: 'Forge AI', isBot: true }] });
+const imported = Object.assign(match('h', 'L', []), { source: 'history' });
+const sr = S.sideRecords([a, b, c, bo1, bot, imported], 10);
+assert.deepEqual(sr.g1, { W: 2, L: 1, D: 0 }, 'game 1 of a, b and the Bo1');
+assert.deepEqual(sr.post, { W: 1, L: 2, D: 0 }, 'games 2 and 3 of a, game 2 of b');
+
 // A deck renamed on the site: its matches take the current name, and group with the newer ones.
 const C = (decks) => ({ notes: {}, decks, t: (k) => k });
 const old = Object.assign(match('d', 'W', []), { myDeck: { id: 'deck-1', name: '[DC] - Yoshi Esper' } });

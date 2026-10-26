@@ -771,6 +771,11 @@ function renderDrawer(s, stats, vs) {
   const ver = vs.list.find((x) => x.key === activeVersion(vs));
   // My usual sideboarding here, with the deck in view: across decks it would mean nothing.
   const side = s.deck === null ? `<p class="muted">${esc(t('side_needs_deck'))}</p>` : sidePlanBlock(S.sidePlan(list, C));
+  // Whether that sideboarding works: game 1 against the games after it, in games. Shown once a game after side exists
+  // (a Bo1 has none).
+  const sr = S.sideRecords(list);
+  const sided = sr.post.W + sr.post.L + sr.post.D ? `<section><h3>${esc(t('side_games'))}${infoBtn('info_side_games')}</h3>`
+    + `${rec(esc(t('side_g1')), sr.g1)}${rec(esc(t('side_post')), sr.post)}</section>` : '';
   // An archetype (not a colour group) can be renamed on every match filed under it: tagged by hand, recognized, or a
   // commander. A name already used merges the two.
   const name = drawer.key.startsWith('a:') ? drawer.key.slice(2) : null;
@@ -782,6 +787,7 @@ function renderDrawer(s, stats, vs) {
     <p class="muted drawer-scope">${esc(where)}${ver ? ` · ${esc(t('version_n', { n: ver.n }))}` : ''}</p>
     <dl class="drawer-stats">${stat(t('matches'), r.m)}${stat(t('on_play'), r.play)}${stat(t('on_draw'), r.draw)}</dl>
     <section><h3>${esc(t('side_plan'))}</h3>${side}</section>
+    ${sided}
     ${byVersion ? `<section><h3>${esc(t('by_version'))}</h3><ul class="versions-list">${byVersion}</ul></section>` : ''}
     ${cards ? `<section><h3>${esc(t('cards_seen_there'))}</h3><ul class="seen-list">${cards}</ul></section>` : ''}
     <section><h3>${esc(t('matches_vs'))}</h3><ul class="drawer-matches">${list.map((m) => `<li><button class="drawer-match" data-show="${esc(m.id)}">${resultBadge(m)}`
