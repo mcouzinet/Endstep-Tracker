@@ -19,7 +19,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Modifié
 
-- **Chaque chiffre de « Carte par carte » s'explique au survol** (1.5.6), par exemple « Pas piochée : 60–29 en 89 games où elle est restée dans ta bibliothèque ; 67 % de victoires », et la ligne des noms de colonnes reste en haut de l'écran quand on descend une longue liste.
+- **Chaque chiffre de « Carte par carte » s'explique au survol** (1.5.6), par exemple « Pas piochée : 60-29 en 89 games où elle est restée dans ta bibliothèque ; 67 % de victoires », et la ligne des noms de colonnes reste en haut de l'écran quand on descend une longue liste.
 - **Le nombre de matchs sur le play et sur la draw** (1.5.4) : dans le bandeau du haut, « Sur le play (7) » et « Sur la draw (18) », sans avoir à additionner le bilan.
 - **Un ⓘ à côté du titre de chaque tableau** (1.5.3) : le bandeau du haut, Mes decks, Par archétype adverse, Selon le contexte et Carte par carte. Un clic, ou un toucher sur téléphone, ouvre une courte explication de ce que compte le tableau (par exemple Piochée = Main de départ + Plus tard) ; un second clic, un clic ailleurs ou Échap la referme. Les phrases grises sous les titres disparaissent, l'explication les remplace.
 - **Toutes les cartes dans « Carte par carte »** (1.5.1) : la liste n'est plus coupée après 15 cartes avec un « N autres cartes » à déplier ; un deck de Duel Commander montre ses 100 cartes, triables par colonne comme avant.
