@@ -590,6 +590,12 @@ function renderOverview(list) {
 // have MIN_SAMPLE results: a link between drawing the card and winning, not proof that the card wins. A click on a
 // column's head sorts by it instead (best first, the names from A), again reverses it; a rate under MIN_SAMPLE games
 // never ranks before one that has them. Every card is listed: a 100-card Duel Commander deck as much as a 60-card one.
+const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
+function cardGap(x) { // in points, null until both sides have MIN_SAMPLE games (also on the stats image)
+  const n = (r) => r.W + r.L + r.D;
+  return n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
+    ? Math.round(100 * winRate(x.drawn)) - Math.round(100 * winRate(x.notDrawn)) : null;
+}
 function renderCards(s, list) {
   const el = $('#cards-panel');
   if (s.deck === null) { // a card's results only mean something within one deck
@@ -598,13 +604,10 @@ function renderCards(s, list) {
   }
   if (state.tab === 'cards') resolveNames(rawCardNames(list));
   const n = (r) => r.W + r.L + r.D;
-  const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
-  const gap = (x) => (n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
-    ? Math.round(100 * winRate(x.drawn)) - Math.round(100 * winRate(x.notDrawn)) : null);
   const by = state.cardSort;
   const dir = state.cardRev ? -1 : 1;
   const key = (x) => (by === 'gap' ? x.gap : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
-  const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: gap(x) }))
+  const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: cardGap(x) }))
     .filter((x) => n(x.drawn) || n(x.opening) || n(x.board))
     .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
       : (key(a) === null) - (key(b) === null) || dir * ((key(b) || 0) - (key(a) || 0)))
@@ -1089,13 +1092,13 @@ function hidePreview() { clearTimeout(hoverTimer); previewName = null; preview.h
 // Safari on iPhone and iPad can't download from an extension page (it opens the file's blob: address and fails): the
 // file goes to the share sheet instead (Save to Files, AirDrop, Mail…). An iPad says it's a Mac; its touch screen doesn't.
 const SHARE_FILES = S.browserName(chrome.runtime.getManifest(), navigator) === 'Safari' && navigator.maxTouchPoints > 1;
-function download(name, text, type) {
+function download(name, data, type) { // data: text, or a Blob (the stats image)
   if (SHARE_FILES) {
-    navigator.share({ files: [new File([text], name, { type })] }).catch((e) => e.name === 'AbortError' || console.warn('[endstep-tracker] share', e));
+    navigator.share({ files: [new File([data], name, { type })] }).catch((e) => e.name === 'AbortError' || console.warn('[endstep-tracker] share', e));
     return;
   }
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.href = URL.createObjectURL(new Blob([data], { type }));
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -1133,7 +1136,146 @@ function sideReady() {
   return x;
 }
 
+// The stats image, to paste on Discord: the deck in view over the page's matches (period, ranked or not, list version),
+// its record, on the play and on the draw, its most played matchups, and the cards whose draw moves the result most.
+// Drawn in the page's palette (theme.css, read here so the image follows it) and system font, at twice its size for
+// sharp text. A Promise of the PNG: the clipboard is asked during the click, before it is drawn.
+const IMG_W = 1200;
+const IMG_H = 675;
+async function statsImage(s, list) {
+  const icon = new Image();
+  icon.src = 'icons/icon-128.png';
+  await icon.decode().catch(() => {}); // drawn without it if need be
+  const c = Object.assign(document.createElement('canvas'), { width: IMG_W * 2, height: IMG_H * 2 });
+  const g = c.getContext('2d');
+  g.scale(2, 2);
+  const css = getComputedStyle(document.documentElement);
+  const col = (k) => css.getPropertyValue('--' + k).trim();
+  const family = getComputedStyle(document.body).fontFamily;
+  const RES = { W: col('win'), L: col('loss'), D: col('draw') };
+  const n = (r) => r.W + r.L + r.D;
+  const rec = (r) => [r.W, r.L, ...(r.D ? [r.D] : [])].join('-'); // a plain hyphen: 4-3
+  const rate = (r) => (n(r) >= MIN_SAMPLE && r.W + r.L ? pct(r) : null);
+  const width = (str, size = 20, weight = 400) => { g.font = `${weight} ${size}px ${family}`; return g.measureText(str).width; };
+  // Text cut with an ellipsis to fit max; returns its width.
+  const text = (str, x, y, { size = 20, weight = 400, color = col('ink'), align = 'left', max = Infinity } = {}) => {
+    width('', size, weight);
+    g.fillStyle = color;
+    g.textAlign = align;
+    let out = String(str);
+    if (g.measureText(out).width > max) { while (out && g.measureText(out + '…').width > max) out = out.slice(0, -1); out = out.trimEnd() + '…'; }
+    g.fillText(out, x, y);
+    return g.measureText(out).width;
+  };
+  const line = (y) => { g.fillStyle = col('line'); g.fillRect(56, y, IMG_W - 112, 1); };
+  // A record as the dashboard draws it: a bar split by result with its 50 % tick, or one dot per result under MIN_SAMPLE.
+  const marks = (r, x, y, w, h = 10) => {
+    if (n(r) < MIN_SAMPLE) {
+      [...'W'.repeat(r.W), ...'D'.repeat(r.D), ...'L'.repeat(r.L)].forEach((k, i) => {
+        g.fillStyle = RES[k];
+        g.beginPath();
+        g.arc(x + h / 2 + i * (h + 6), y, h / 2, 0, 2 * Math.PI);
+        g.fill();
+      });
+      return;
+    }
+    g.save();
+    g.beginPath();
+    g.roundRect(x, y - h / 2, w, h, h / 2);
+    g.clip();
+    g.fillStyle = col('surface-3');
+    g.fillRect(x, y - h / 2, w, h);
+    const parts = [['W', r.W], ['D', r.D], ['L', r.L]].filter(([, v]) => v);
+    const unit = (w - 2 * (parts.length - 1)) / n(r);
+    let at = x;
+    for (const [k, v] of parts) { g.fillStyle = RES[k]; g.fillRect(at, y - h / 2, unit * v, h); at += unit * v + 2; }
+    g.restore();
+    g.globalAlpha = 0.55;
+    g.fillStyle = col('ink-3');
+    g.fillRect(x + w / 2 - 0.5, y - h / 2 - 3, 1, h + 6);
+    g.globalAlpha = 1;
+  };
+  // label · marks · rate (or "too early") · record, on one line centred on y.
+  const row = (label, r, x, y, w) => {
+    const base = y + 7;
+    text(label, x, base, { max: w - 296 });
+    marks(r, x + w - 280, y, 120);
+    if (n(r)) text(rate(r) || t('too_early'), x + w - 72, base, rate(r) ? { weight: 700, align: 'right' } : { size: 16, color: col('ink-3'), align: 'right' });
+    text(rec(r), x + w, base, { size: 18, color: col('ink-3'), align: 'right' });
+  };
+
+  const r = S.records(list);
+  const groups = new Map();
+  for (const m of list) { const [key, , label] = oppKey(m); const e = groups.get(key) || { label, list: [] }; e.list.push(m); groups.set(key, e); }
+  const matchups = [...groups.values()].map((e) => ({ label: e.label, r: S.records(e.list).m })).filter((e) => n(e.r))
+    .sort((a, b) => n(b.r) - n(a.r) || a.label.localeCompare(b.label, locale)).slice(0, 5);
+  const gaps = S.cardStats(list, C).map((x) => ({ name: x.name, gap: cardGap(x) })).filter((x) => x.gap);
+  const up = gaps.filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).slice(0, 3);
+  const down = gaps.filter((x) => x.gap < 0).sort((a, b) => a.gap - b.gap).slice(0, 3);
+  const vs = versionsOf(s);
+  const v = activeVersion(vs);
+  const ver = v === '?' ? t('version_unknown') : v === 'all' ? '' : t('version_n', { n: vs.list.find((x) => x.key === v).n });
+  const sub = [s.format, state.period === 'all' ? '' : t('period_' + state.period), { ranked: t('ranked_only'), unranked: t('ranked_not') }[state.ranked],
+    ver, state.opp ? t('opponent_facet', { label: state.opp.label }) : ''].filter(Boolean).join(' · ');
+
+  g.fillStyle = col('bg');
+  g.fillRect(0, 0, IMG_W, IMG_H);
+  text(s.deck, 56, 104, { size: 46, weight: 700, max: IMG_W - 112 });
+  text(sub, 56, 142, { color: col('ink-2'), max: IMG_W - 360 });
+  text(new Date().toLocaleDateString(locale, { dateStyle: 'long' }), IMG_W - 56, 142, { size: 18, color: col('ink-3'), align: 'right' });
+  line(176);
+  const top = up.length || down.length ? 0 : 60; // without the cards, the rest sits lower
+  // Left: the win rate in matches (its record under MIN_SAMPLE), its bar, then on the play and on the draw.
+  const hero = rate(r.m) || rec(r.m);
+  const heroW = text(hero, 56, 300 + top, { size: 96, weight: 700 });
+  text(t(rate(r.m) ? 'glance_rate' : 'glance_early'), 56 + heroW + 22, 254 + top, { size: 22, color: col('ink-2') });
+  text(tn('glance_over', n(r.m)) + (rate(r.m) ? ` · ${rec(r.m)}` : ''), 56 + heroW + 22, 290 + top, { color: col('ink-3') });
+  marks(r.m, 56, 338 + top, 488, 14);
+  row(`${t('on_play')} (${n(r.play)})`, r.play, 56, 400 + top, 488);
+  row(`${t('on_draw')} (${n(r.draw)})`, r.draw, 56, 452 + top, 488);
+  // Right: the most played matchups.
+  text(t('share_matchups'), 600, 222 + top, { size: 17, weight: 600, color: col('ink-3') });
+  matchups.forEach((e, i) => row(e.label, e.r, 600, 262 + top + i * 52, IMG_W - 56 - 600));
+  // Below: the cards whose draw goes with more wins, and with fewer, by their gap in points (My cards).
+  const cards = (title, xs, x, w) => {
+    if (!xs.length) return;
+    text(title, x, 548, { size: 17, weight: 600, color: col('ink-3'), max: w });
+    let at = x;
+    for (const [i, e] of xs.entries()) {
+      const num = `${e.gap > 0 ? '+' : '−'}${Math.abs(e.gap)} `;
+      if (i && at + width(num, 20, 700) + width(e.name) > x + w) break; // only the first one is ever cut short
+      at += text(num, at, 584, { weight: 700, color: e.gap > 0 ? RES.W : RES.L });
+      at += text(e.name, at, 584, { max: x + w - at }) + 26;
+    }
+  };
+  if (!top) line(508);
+  cards(t('share_cards_up'), up, 56, 488);
+  cards(t('share_cards_down'), down, 600, IMG_W - 56 - 600);
+  // Footer: where it comes from.
+  line(612);
+  let brand = 56;
+  if (icon.naturalWidth) { g.drawImage(icon, 56, 628, 28, 28); brand += 38; }
+  text('Endstep Tracker', brand, 650, { size: 18, weight: 700 });
+  text('endstep-tracker.tolarianstudio.com', IMG_W - 56, 650, { size: 18, color: col('ink-3'), align: 'right' });
+  return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('no image'))), 'image/png'));
+}
+
 const ACTIONS = {
+  // The stats image, copied to paste on Discord; where the clipboard refuses, saved as a file (the share sheet on an iPhone).
+  'share-stats': () => {
+    const s = activeScope();
+    if (s.deck === null) { toast(t('share_needs_deck')); return; }
+    const list = scoped();
+    const r = S.records(list).m;
+    if (!(r.W + r.L + r.D)) { toast(t('no_finished_selection')); return; }
+    const png = statsImage(s, list);
+    const save = () => png.then((blob) => { download(`endstep-stats-${stamp()}.png`, blob, 'image/png'); toast(t('share_saved')); })
+      .catch((e) => console.warn('[endstep-tracker] stats image', e));
+    // Asked during the click, the image still to come: Safari refuses a clipboard write that follows an await.
+    let copied;
+    try { copied = navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]); } catch (e) { copied = Promise.reject(e); }
+    copied.then(() => toast(t('share_copied')), save);
+  },
   // Text to paste (Discord, notes): one block per archetype, "+2 Card" and "−1 Card" lines. Copied during the click;
   // where the clipboard refuses, the same text is saved as a file.
   'copy-side': () => {
