@@ -1,6 +1,6 @@
 // Builds demo data for dashboard QA from the real replayed Bo3 plus variations.
 const fs = require('fs');
-const P = '/Users/mickaelcouzinet/Developer/Endstep-tracker';
+const P = require('path').resolve(__dirname, '../..'); // this checkout's root, a git worktree included
 const T = require(P + '/tracker.js');
 const orig = T.handle; let store;
 T.handle = (s, ...a) => { store = s; return orig(s, ...a); };
