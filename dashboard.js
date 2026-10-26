@@ -364,7 +364,7 @@ function showNews(seen, reviewClosed) {
     $('#news-list').innerHTML = NEWS[newsAt].map((k) => `<li>${esc(t(k))}</li>`).join('');
   }
   reviewOn = !!REVIEW && !reviewClosed && !newsAt;
-  if (reviewOn) $('#review-link').href = REVIEW;
+  if (reviewOn && $('#review-link')) $('#review-link').href = REVIEW;
   placePromos();
 }
 $('#news-close').addEventListener('click', () => {
