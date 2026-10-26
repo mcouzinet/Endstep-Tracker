@@ -46,7 +46,7 @@ Dans le tableau de bord (clic sur l'icône) :
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, mon side pour chaque game après la première, cartes jouées tour par tour, journal, archétype adverse et notes ;
 - menu « Données » : export JSON (sauvegarde), export CSV (une ligne par game, avec mes cartes piochées et mon side), import, tout effacer.
 
-Seules les informations publiques (visibles en jeu) sont enregistrées. Tout reste en local (`chrome.storage.local`) ; seul l'aperçu au survol charge l'image de la carte depuis Scryfall.
+Seules les informations publiques (visibles en jeu) sont enregistrées. Tout reste en local (`chrome.storage.local`) ; seuls l'aperçu au survol (l'image de la carte) et « Mes cartes » (le nom de chaque carte, une fois, gardé dans `localStorage` sous `endstep-tracker.cardNames`) interrogent Scryfall.
 
 ## Pendant la partie
 

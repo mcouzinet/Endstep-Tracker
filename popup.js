@@ -77,6 +77,7 @@ function render(d) {
   S.dropTipLinks();
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   $('#feedback').href = S.feedbackLink(I18N.locale);
+  $('#version').textContent = t('app_version', { v: chrome.runtime.getManifest().version });
   const access = async () => { $('#access').hidden = await S.hasSiteAccess(); };
   access();
   $('#access-btn').addEventListener('click', () => S.askSiteAccess().then(access));

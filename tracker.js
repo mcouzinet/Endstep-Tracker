@@ -229,7 +229,8 @@
       // Only into the game being played: the score can still name the previous one after the next has begun.
       if (rec.mySeat !== null && sg === current(rec) && Number(st.turnNumber) >= 1) {
         for (const c of (st.players[rec.mySeat] || {}).hand || []) {
-          if (c && c.name && c.name !== 'Hidden card' && !c.faceDown && !c.isToken) drew(sg, c.name, c.id);
+          const own = seatOf(c && c.ownerId); // an opponent's card in my hand (taken, exchanged) is not a card of my deck
+          if (c && c.name && c.name !== 'Hidden card' && !c.faceDown && !c.isToken && (own === null || own === rec.mySeat)) drew(sg, c.name, c.id);
         }
       }
       // My cards on my battlefield, as each frame shows it: a reanimated or cheated-in card counts though never drawn.

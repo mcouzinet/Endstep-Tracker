@@ -48,6 +48,7 @@
     .menu button:hover, .menu button:focus-visible { background: var(--surface-3); outline: none; }
     .menu button.danger { color: var(--danger); }
     .menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 4px; }
+    .menu-version { margin: 4px 10px 2px; font-size: 11px; } /* which build is loaded, at a glance */
 
     /* ---- filters ---- */
     .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
@@ -465,6 +466,7 @@
         <button data-action="telemetry" id="telemetry-btn" role="menuitemcheckbox" aria-checked="true"><svg class="i"><use href="#i-table"/></svg><span></span></button>
         <hr>
         <button data-action="clear" class="danger"><svg class="i"><use href="#i-trash"/></svg><span data-i18n="clear_all"></span></button>
+        <p id="version" class="menu-version muted"></p>
       </div>
       <input id="import" type="file" accept="application/json,.json" hidden>
     </header>

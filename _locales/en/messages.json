@@ -1042,5 +1042,8 @@
   },
   "cell_board": {
     "message": "In play: {wl} over {n} games where it reached your battlefield; {rate}. {o} of them without drawing it."
+  },
+  "app_version": {
+    "message": "Endstep Tracker {v}"
   }
 }

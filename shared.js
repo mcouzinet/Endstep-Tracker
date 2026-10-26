@@ -375,28 +375,41 @@
   // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
   function cardStats(list, c) {
     const by = new Map();
+    const canon = c.canon || ((name) => name); // a card's one name (dashboard.js asks Scryfall): Beholder's Sleep Ray is Stifle
     const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), board: tally(), boardOnly: tally() }).get(name);
     for (const m of list) {
       for (const g of m.games) {
         const r = gRes(m, g);
         if (!r) continue;
-        if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand)) row(name).opening[r]++;
+        if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand.map(canon))) row(name).opening[r]++;
         if (!g.drawn) continue;
-        const drawn = new Set(Object.keys(g.drawn));
-        // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
-        const kept = Array.isArray(g.openingHand) ? new Set(g.openingHand) : null;
-        for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
+        // One card, one name: a transformed double-faced card shows its other face (King T'Challa becomes Black Panther)
+        // under the same id within the game; the name it was first recorded under, in my hand, wins.
+        const alias = new Map(); // card id -> name
+        for (const bucket of [g.drawn, g.played, g.board]) {
+          for (const [name, ids] of Object.entries(bucket || {})) for (const id of ids) if (id !== '?' && !alias.has(id)) alias.set(id, name);
+        }
+        const names = (bucket) => new Set(Object.entries(bucket).map(([name, ids]) => canon(ids.map((id) => alias.get(id)).find(Boolean) || name)));
+        // Only cards of my deck: its main for that game, its sideboard (a companion, a wish target) and its commanders; an
+        // opponent's card that went through my hand, or that I cast or took, is not one (unknown main: all count).
         const main = mainOf(m, g.n, c);
-        for (const name of Object.keys(main || {})) if (!drawn.has(name)) row(name).notDrawn[r]++;
-        // Played and in play, recorded since 1.5.6 (games without the buckets count for neither). A card in play that is
-        // not in my deck for that game (an opponent's card I took) is left out; drawnTracked: the drawn games that could
-        // say whether the card was played, for the ratio.
-        const mine = (name) => !main || name in main || drawn.has(name);
+        const d = myDeck(m, c);
+        const extra = [...Object.keys(deckCounts(d && d.sideboard) || {}), ...Object.keys(deckCounts(d && (obj(c.decks)[d.id] || {}).commanders) || {})];
+        const inMain = main && new Set(Object.keys(main).map(canon));
+        const inDeck = inMain && new Set([...inMain, ...extra.map(canon)]);
+        const mine = (name) => !inDeck || inDeck.has(name);
+        const drawn = new Set([...names(g.drawn)].filter(mine));
+        // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
+        const kept = Array.isArray(g.openingHand) ? new Set(g.openingHand.map(canon)) : null;
+        for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
+        for (const name of inMain || []) if (!drawn.has(name)) row(name).notDrawn[r]++;
+        // Played and in play, recorded since 1.5.6 (games without the buckets count for neither); drawnTracked: the drawn
+        // games that could say whether the card was played, for the ratio.
         if (g.played) {
           for (const name of drawn) row(name).drawnTracked[r]++;
-          for (const name of Object.keys(g.played)) if (mine(name)) row(name).played[r]++;
+          for (const name of names(g.played)) if (mine(name)) row(name).played[r]++;
         }
-        if (g.board) for (const name of Object.keys(g.board)) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
+        if (g.board) for (const name of names(g.board)) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
       }
     }
     return [...by.values()].filter((x) => !BASIC.test(x.name));

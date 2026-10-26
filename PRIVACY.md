@@ -1,6 +1,6 @@
 # Privacy policy — Endstep Tracker
 
-*Last updated: 2026-10-16. Version française ci-dessous.*
+*Last updated: 2026-10-26. Version française ci-dessous.*
 
 Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no account, and your matches never leave your browser. The only thing sent to the author's server is anonymous usage statistics, which you can switch off (see below).
 
@@ -28,7 +28,7 @@ Everything stays in your browser, in the extension's local storage (`chrome.stor
 
 - **endstep.cc**: the extension only observes the traffic the site already exchanges with your browser. To recognise the opponent's archetype it also reads the site's public metagame API (`/api/metagame/v1`), which involves no personal data. It never plays for you, and sends nothing to endstep.cc on your behalf, with one exception you start yourself: when you import your past matches, it loads the next pages of your match history, one a second, with the same request the site makes for its first page (your sign-in stays in the endstep.cc page; the extension never stores or sends it anywhere else).
 - **Feedback** (`tally.so`): "Give feedback", in the dashboard's Data menu or the popup, opens a Tally form in a new tab, only when you click it. The link tells the form the extension's version, your browser's name and the interface language, so that a report says what it is about; what you then type in the form goes to Tally and to the author. The extension itself sends nothing.
-- **Scryfall** (`api.scryfall.com`): when you hover a card name in the dashboard, the card image is fetched from Scryfall. The request contains only the card name.
+- **Scryfall** (`api.scryfall.com`): when you hover a card name in the dashboard, the card image is fetched from Scryfall. When you open "My cards", the names of your deck's cards are looked up once on Scryfall, so that a card printed under another name (Secret Lair, Universes Beyond) or the other face of a double-faced card counts as the same card; the answers are kept in your browser. These requests contain only card names.
 - **Deck Compare** (another extension by the same author): the dashboard asks it, inside your browser, whether it is installed, to stop showing its promotion if so. The message says only that; nothing else is exchanged and nothing leaves your browser. The store link in that promotion opens only if you click it.
 - **Whozic** (`whozic.party`, the author's music party game): the dashboard shows a small promotion for it. Its link opens whozic.party only if you click it; the address only says the visit comes from Endstep Tracker (`utm_source`). Not shown in the Safari version.
 
@@ -75,7 +75,7 @@ Tout reste dans ton navigateur (`chrome.storage.local`). Le panneau affiché sur
 
 - **endstep.cc** : l'extension observe seulement le trafic que le site échange déjà avec ton navigateur. Pour reconnaître l'archétype adverse, elle lit l'API métagame publique du site (`/api/metagame/v1`), sans donnée personnelle. Elle ne joue jamais à ta place et n'envoie rien à endstep.cc en ton nom, à une exception près, que tu déclenches toi-même : quand tu importes tes anciens matchs, elle charge les pages suivantes de ton historique, une par seconde, avec la même requête que celle du site pour la première page (ta connexion reste dans la page endstep.cc ; l'extension ne la stocke ni ne l'envoie nulle part ailleurs).
 - **Avis** (`tally.so`) : « Donner un avis », dans le menu Données du tableau de bord ou dans la popup, ouvre un formulaire Tally dans un nouvel onglet, uniquement sur clic. Le lien indique au formulaire la version de l'extension, le nom de ton navigateur et la langue de l'interface, pour qu'un retour dise de quoi il parle ; ce que tu écris ensuite dans le formulaire va à Tally et à l'auteur. L'extension elle-même n'envoie rien.
-- **Scryfall** : au survol d'un nom de carte dans le tableau de bord, l'image est chargée depuis Scryfall. La requête ne contient que le nom de la carte.
+- **Scryfall** : au survol d'un nom de carte dans le tableau de bord, l'image est chargée depuis Scryfall. Quand tu ouvres « Mes cartes », les noms des cartes de ton deck sont cherchés une fois sur Scryfall, pour qu'une carte imprimée sous un autre nom (Secret Lair, Universes Beyond) ou l'autre face d'une carte à deux faces compte comme la même carte ; les réponses restent dans ton navigateur. Ces requêtes ne contiennent que des noms de cartes.
 - **Deck Compare** (une autre extension du même auteur) : le tableau de bord lui demande, dans ton navigateur, si elle est installée, pour ne plus afficher sa promotion le cas échéant. Le message ne dit que ça ; rien d'autre n'est échangé et rien ne sort du navigateur. Le lien vers sa fiche ne s'ouvre que si tu cliques dessus.
 - **Whozic** (`whozic.party`, le jeu de soirée musical de l'auteur) : le tableau de bord en affiche une petite promotion. Son lien n'ouvre whozic.party que si tu cliques dessus ; l'adresse dit seulement que la visite vient d'Endstep Tracker (`utm_source`). Absente de la version Safari.
 

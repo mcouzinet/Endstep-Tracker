@@ -110,6 +110,24 @@ assert.deepEqual(ps.Pyroblast.drawnTracked, { W: 0, L: 1, D: 0 }, 'drawn in a ga
 assert.deepEqual(ps.Thoughtcast.played, { W: 0, L: 0, D: 0 }, 'game 1 has no record of plays');
 assert.deepEqual([ps['Myr Enforcer'].board, ps['Myr Enforcer'].boardOnly], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }], 'in play without being drawn (reanimated)');
 assert.ok(!ps['Stolen Thing'], 'a card in play that is not in my deck is left out');
+const stolen = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
+Object.assign(stolen.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "Mishra's Bauble": [55] } });
+assert.ok(!S.cardStats([stolen], C).some((x) => x.name === "Mishra's Bauble"), 'an opponent\'s card that went through my hand is not drawn');
+// A double-faced card transformed on the battlefield keeps the name it had in my hand (same id within the game).
+const dfc = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
+Object.assign(dfc.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "King T'Challa": [42], 'Black Panther': [42] }, played: { "King T'Challa": [42] }, board: { 'Black Panther': [42] } });
+dfc.mains[2] = { ...dfc.mains[2], "King T'Challa": 1 }; // in my deck, under its front name
+const ds = Object.fromEntries(S.cardStats([dfc], C).map((x) => [x.name, x]));
+assert.ok(!ds['Black Panther'], 'the back face is not a card of its own');
+// Names as Scryfall knows them (C.canon): a printing with its own name and the other face of a card count as that card.
+const cn = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
+Object.assign(cn.games.find((g) => g.n === 2), { drawn: { "Beholder's Sleep Ray": [3], 'Black Panther, Hope Enduring': [8] }, played: {}, board: { 'Black Panther, Hope Enduring': [8] } });
+cn.mains[2] = { ...cn.mains[2], "Beholder's Sleep Ray": 1, "King T'Challa": 1 }; // the deck list as the site gives it
+const canonC = { ...C, canon: (n) => ({ "Beholder's Sleep Ray": 'Stifle', 'Black Panther, Hope Enduring': "King T'Challa" })[n] || n };
+const cs = Object.fromEntries(S.cardStats([cn], canonC).map((x) => [x.name, x]));
+assert.ok(!cs["Beholder's Sleep Ray"] && !cs['Black Panther, Hope Enduring'], 'no row under the printed or back-face name');
+assert.deepEqual([cs.Stifle.drawn, cs["King T'Challa"].board], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }]);
+assert.deepEqual([ds["King T'Challa"].drawn, ds["King T'Challa"].board, ds["King T'Challa"].boardOnly], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }, { W: 0, L: 0, D: 0 }], 'drawn once, in play under its front name, drawn before');
 assert.ok(!stats['Mulliganed Away']);
 
 // A game recorded before 1.1 (no drawn cards) counts for the opening hand only.

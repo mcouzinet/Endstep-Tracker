@@ -7,6 +7,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Ajouté
 
+- **Le numéro de version** (1.5.9) : en bas de la popup et du menu Données, pour savoir d'un coup d'œil quelle version est installée.
 - **Filtre classés / non classés** (1.5.6) : à côté de la période, « Tous », « Classés » ou « Non classés » ; tous les chiffres suivent, anciens matchs compris. Il n'apparaît qu'une fois un match classé enregistré.
 - **Colonnes « Jouée » et « En jeu » dans « Carte par carte »** (1.5.6) : les games où tu as lancé la carte (ou posé le terrain), et celles où elle est arrivée sur ton champ de bataille, même sans être piochée : une créature meulée puis réanimée compte enfin. Au survol de « Jouée », la part des games où tu l'as jouée après l'avoir piochée. Elles comptent les games jouées depuis cette build ; une carte prise à l'adversaire n'y entre pas.
 - **Exporter mon plan de side** (1.5.5, menu Données, avec un deck choisi) : « Copier mon plan de side » met dans le presse-papiers un texte à coller dans Discord ou dans ses notes, un bloc par archétype adverse (le plus rencontré d'abord) avec les cartes entrées et sorties (+2 Kor Firewalker, −4 Lava Spike) ; « Exporter mon plan de side (CSV) » donne le même plan pour un tableur, une ligne par carte. Les deux suivent la période et la version de liste affichées.
@@ -18,6 +19,12 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Le nombre de matchs sur le play et sur la draw** (1.5.4) : dans le bandeau du haut, « Sur le play (7) » et « Sur la draw (18) », sans avoir à additionner le bilan.
 - **Un ⓘ à côté du titre de chaque tableau** (1.5.3) : le bandeau du haut, Mes decks, Par archétype adverse, Selon le contexte et Carte par carte. Un clic, ou un toucher sur téléphone, ouvre une courte explication de ce que compte le tableau (par exemple Piochée = Main de départ + Plus tard) ; un second clic, un clic ailleurs ou Échap la referme. Les phrases grises sous les titres disparaissent, l'explication les remplace.
 - **Toutes les cartes dans « Carte par carte »** (1.5.1) : la liste n'est plus coupée après 15 cartes avec un « N autres cartes » à déplier ; un deck de Duel Commander montre ses 100 cartes, triables par colonne comme avant.
+
+### Corrigé
+
+- **Seules les cartes de ton deck dans « Carte par carte »** (1.5.11) : une carte de l'adversaire passée par ta main (prise, échangée) ou lancée par toi n'y apparaît plus, y compris dans les games déjà enregistrées. Comptent les cartes du deck joué dans la game, de sa réserve (compagnon, cible d'un souhait) et ses commandants.
+- **Une carte, un nom dans « Carte par carte »** (1.5.8) : une carte imprimée sous un autre nom (Beholder's Sleep Ray est Stifle, versions Secret Lair et Universes Beyond) et l'autre face d'une carte à deux faces (Black Panther, Hope Enduring est King T'Challa) comptent comme la même carte, sous son nom de référence. Les noms sont demandés une fois à Scryfall quand on ouvre « Mes cartes » (la liste se met à jour au fil des réponses), puis gardés dans le navigateur ; hors connexion ou si Scryfall refuse, les noms restent ceux du site, sans nouvel essai avant 5 minutes (1.5.10). Politique de confidentialité mise à jour.
+- **Les cartes à deux faces comptent pour une seule carte** (1.5.7) : une carte transformée sur le champ de bataille prend le nom de son autre face (King T'Challa devient Black Panther) ; « Carte par carte » la range sous le nom qu'elle avait dans ta main, grâce à son identifiant dans la game. Vaut aussi pour les games déjà enregistrées, quand la carte y a été vue sous ses deux noms.
 
 ## [1.5] (2026-10-21)
 

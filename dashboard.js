@@ -23,6 +23,7 @@ async function initI18n() {
     for (const pair of el.dataset.i18nAttr.split(',')) { const [attr, key] = pair.split(':'); el.setAttribute(attr, t(key)); }
   }
   showTelemetry();
+  $('#version').textContent = t('app_version', { v: chrome.runtime.getManifest().version });
 }
 
 const RESULT = { W: 'win', L: 'loss', D: 'draw' }; // message keys
@@ -55,7 +56,48 @@ let toastTimer;
 
 // --- data helpers ---
 // Context for shared.js: my notes and decks as currently loaded, and the translator.
-const C = { get notes() { return notes; }, get decks() { return decks; }, t: (k, v) => t(k, v) };
+const C = { get notes() { return notes; }, get decks() { return decks; }, t: (k, v) => t(k, v), canon: (name) => cardNames[name] || name };
+
+// A card's one name, as Scryfall knows it: a printing with its own name (Beholder's Sleep Ray is Stifle) and either face
+// of a double-faced card (Black Panther, Hope Enduring is King T'Challa) count as that card in My cards. Asked once per
+// name while My cards is open, then kept in this browser; a name Scryfall does not know stays as it is.
+const CARD_NAMES = 'endstep-tracker.cardNames';
+const FRONT_FACE = new Set(['transform', 'modal_dfc', 'flip', 'adventure', 'meld', 'reversible_card']); // named after their front
+let cardNames = {};
+try { cardNames = JSON.parse(localStorage.getItem(CARD_NAMES)) || {}; } catch { /* storage unavailable */ }
+let resolving = false;
+// After a failure (offline, or Scryfall's rate limit, whose refusals the browser reports as CORS errors), no request for 5
+// minutes, even across reloads: asking again during a block only makes it last.
+const RESOLVE_AFTER = 'endstep-tracker.cardNamesRetry';
+let resolveAfter = 0;
+try { resolveAfter = Number(localStorage.getItem(RESOLVE_AFTER)) || 0; } catch { /* storage unavailable */ }
+async function resolveNames(names) {
+  const todo = [...new Set(names)].filter((n) => !(n in cardNames) && !S.BASIC.test(n));
+  if (!todo.length || resolving || Date.now() < resolveAfter) return;
+  resolving = true;
+  const nameOf = (card) => (FRONT_FACE.has(card.layout) && Array.isArray(card.card_faces) && card.card_faces[0].name ? card.card_faces[0].name : card.name);
+  const known = () => { try { localStorage.setItem(CARD_NAMES, JSON.stringify(cardNames)); } catch { /* storage unavailable */ } render(); };
+  // One name a request (the bulk lookup would need a CORS preflight Scryfall does not answer, and misses printed names);
+  // the list catches up every 10 names, so a first 100-card deck shows its merges as they come.
+  try {
+    for (const [i, name] of todo.entries()) {
+      const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`, { headers: { Accept: 'application/json' } });
+      if (r.status === 404) cardNames[name] = name;
+      else if (!r.ok) throw new Error(String(r.status)); // 429: Scryfall asks to wait
+      else cardNames[name] = nameOf(await r.json());
+      if (i % 10 === 9) known();
+      await new Promise((res) => setTimeout(res, 120)); // Scryfall asks for 10 requests a second at most
+    }
+  } catch { // offline or refused: the site's names until then
+    resolveAfter = Date.now() + 5 * 60_000;
+    try { localStorage.setItem(RESOLVE_AFTER, String(resolveAfter)); } catch { /* storage unavailable */ }
+  }
+  known();
+  resolving = false;
+}
+// Every name my cards were recorded under in these matches, as the site gave them.
+const rawCardNames = (list) => list.flatMap((m) => m.games.flatMap((g) => [...Object.keys(g.drawn || {}), ...Object.keys(g.played || {}),
+  ...Object.keys(g.board || {}), ...(g.openingHand || []), ...Object.keys(S.mainOf(m, g.n, C) || {})]));
 const { opps, colorsOf, gRes, onPlay, tally, pct } = S;
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
 const archetype = (m) => S.archetype(m, C);
@@ -554,6 +596,7 @@ function renderCards(s, list) {
     el.innerHTML = `<p class="muted cards-note">${esc(t('cards_needs_deck'))}</p>`;
     return;
   }
+  if (state.tab === 'cards') resolveNames(rawCardNames(list));
   const n = (r) => r.W + r.L + r.D;
   const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
   const gap = (x) => (n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null

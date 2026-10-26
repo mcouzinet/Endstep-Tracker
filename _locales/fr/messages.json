@@ -1042,5 +1042,8 @@
   },
   "cell_board": {
     "message": "En jeu : {wl} en {n} games où elle est arrivée sur ton champ de bataille ; {rate}. Dont {o} sans l’avoir piochée."
+  },
+  "app_version": {
+    "message": "Endstep Tracker {v}"
   }
 }
