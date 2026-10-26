@@ -314,7 +314,7 @@ function placePromos() {
   $('#promo-wz').hidden = !(has && whozicOn);
   $('#promos').classList.toggle('both', promoOn && whozicOn);
   $('#news').hidden = !(has && newsAt);
-  $('#review').hidden = !(reviewOn && recorded() >= REVIEW_AFTER);
+  if ($('#review')) $('#review').hidden = !(reviewOn && recorded() >= REVIEW_AFTER); // not in the Safari build (release.sh)
   if (WHOZIC) $('#promo-wz-link').href = `${WHOZIC}${locale === 'en' ? '/en' : ''}?utm_source=endstep-tracker`; // where the visit comes from, nothing else
 }
 async function showPromo(closed, whozicClosed) {
@@ -374,7 +374,7 @@ $('#news-close').addEventListener('click', () => {
 });
 // The link opens the store in a new tab by itself; either answer hides the line for good.
 for (const id of ['#review-link', '#review-no']) {
-  $(id).addEventListener('click', () => {
+  $(id)?.addEventListener('click', () => {
     reviewOn = false;
     placePromos();
     chrome.storage.local.set({ reviewClosed: true });

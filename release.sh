@@ -47,6 +47,9 @@ if [ "$target" = safari ]; then
   # No tip link in the App Store builds (guideline 3.1.1): the "Buy me a coffee" pill leaves the HTML here, instead of
   # being removed by a script once the page has loaded (Apple refused the Mac 1.5 for it), and nothing may still point there.
   perl -0pi -e 's#\s*<a class="bmc"[^>]*>.*?</a>##gs' "$stage/dashboard.html" "$stage/popup.html"
+  # Nor a store review prompt of our own (guideline 5.6.1): the review line leaves the dashboard too.
+  perl -0pi -e 's#\s*<div id="review"[^>]*>.*?</span></div>##s' "$stage/dashboard.html"
+  if grep -q 'id="review"' "$stage/dashboard.html"; then echo "review prompt left in the Safari dashboard"; exit 1; fi
   if grep -ril buymeacoffee "$stage" >/dev/null; then echo "tip link left in: $(grep -ril buymeacoffee "$stage" | tr '\n' ' ')"; exit 1; fi
   # The App Store reads the apps' version from the Xcode projects (Mac in safari/, iPhone in safari-ios/): keep it on the manifest's.
   for x in safari safari-ios; do sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $v;/" "$x/Endstep Tracker/Endstep Tracker.xcodeproj/project.pbxproj"; done
