@@ -46,7 +46,7 @@ Dans le tableau de bord (clic sur l'icône) :
 - détail de chaque match : cartes adverses vues (aperçu de la carte au survol), main de départ, mon side pour chaque game après la première, cartes jouées tour par tour, journal, archétype adverse et notes ;
 - menu « Données » : export JSON (sauvegarde), export CSV (une ligne par game, avec mes cartes piochées et mon side), import, tout effacer.
 
-Seules les informations publiques (visibles en jeu) sont enregistrées. Tout reste en local (`chrome.storage.local`) ; seuls l'aperçu au survol (l'image de la carte) et le nom de référence de mes cartes (demandé une fois par nom quand « Mes cartes », le panneau d'un matchup ou le détail d'un match le montre, gardé dans `localStorage` sous `endstep-tracker.cardNames`) interrogent Scryfall. Ce nom sert partout où le tableau de bord et la popup montrent ou exportent mes cartes (la popup lit le cache sans rien demander) ; le panneau sur endstep.cc, qui ne peut pas lire ce `localStorage`, garde les noms du site.
+Seules les informations publiques (visibles en jeu) sont enregistrées. Tout reste en local (`chrome.storage.local`) ; seuls l'aperçu au survol (l'image de la carte) et le nom de référence de mes cartes (demandé une fois par nom quand « Mes cartes », le panneau d'un matchup, le détail d'un match ou les versions de liste le montrent (une version se compte par nom de référence : une autre impression ne fait pas une nouvelle liste), gardé dans `localStorage` sous `endstep-tracker.cardNames`) interrogent Scryfall. Ce nom sert partout où le tableau de bord et la popup montrent ou exportent mes cartes (la popup lit le cache sans rien demander) ; le panneau sur endstep.cc, qui ne peut pas lire ce `localStorage`, garde les noms du site.
 
 ## Pendant la partie
 

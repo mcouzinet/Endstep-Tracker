@@ -181,11 +181,14 @@ function resetFilters() {
 }
 
 // --- list versions: a version is a distinct main deck (sideboard tweaks do not split the stats) ---
+// Cards go by their one name (C.canon): another printing of the same card (Beholder's Sleep Ray for Stifle) is the same
+// list, not a new version. Until Scryfall has answered, the site's names are used, so two versions may merge then.
 function listKey(cards) {
   if (!Array.isArray(cards)) return null;
   const c = {};
   for (const x of cards) {
-    const name = typeof x === 'string' ? x : x && x.name;
+    const raw = typeof x === 'string' ? x : x && x.name;
+    const name = raw && C.canon(raw);
     if (name) c[name] = (c[name] || 0) + (typeof x === 'string' ? 1 : x.quantity || 1);
   }
   const names = Object.keys(c).sort();
@@ -529,6 +532,7 @@ function render() {
   if (!has) { $('#matches').innerHTML = onboarding(); return; }
   const s = activeScope();
   const vs = versionsOf(s);
+  if (vs.list.length > 1) resolveNames(rawCardNames(scoped('all', true))); // versions go by each card's one name
   const v = activeVersion(vs);
   const stats = scoped(v);
   const shown = scoped(v, true); // the history also lists the matches against the AI
