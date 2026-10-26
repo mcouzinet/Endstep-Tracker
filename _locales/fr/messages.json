@@ -612,7 +612,7 @@
     "message": "Après side"
   },
   "info_side_games": {
-    "message": "Compté en games, pas en matchs : la game 1 se joue avec ton deck de départ, les games 2 et 3 après ton side.\nSi tu gagnes plus souvent après side, ton side marche sans doute contre ce deck. Un match en Bo1 ne compte que pour la game 1.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
+    "message": "Compté en games, pas en matchs : la game 1 se joue avec ton deck de départ, les games 2 et 3 après ton side.\nSi tu gagnes plus souvent après side, ton side marche sans doute contre ce deck (à nuancer : en games 2 et 3, celui qui a perdu la game d’avant commence en général). Un match en Bo1 ne compte que pour la game 1.\nAvant {n} résultats, pas de pourcentage : c’est trop tôt pour conclure."
   },
   "sort_best": {
     "message": "Meilleur d’abord"

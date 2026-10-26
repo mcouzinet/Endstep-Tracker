@@ -612,7 +612,7 @@
     "message": "After sideboarding"
   },
   "info_side_games": {
-    "message": "Counted in games, not matches: game 1 is played with your starting deck, games 2 and 3 after your sideboarding.\nIf you win more often after sideboarding, your sideboarding likely works against this deck. A Bo1 match counts for game 1 only.\nBefore {n} results, no percentage: too early to tell."
+    "message": "Counted in games, not matches: game 1 is played with your starting deck, games 2 and 3 after your sideboarding.\nIf you win more often after sideboarding, your sideboarding likely works against this deck (with a grain of salt: in games 2 and 3, the loser of the previous game usually starts). A Bo1 match counts for game 1 only.\nBefore {n} results, no percentage: too early to tell."
   },
   "sort_best": {
     "message": "Best first"
