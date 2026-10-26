@@ -887,6 +887,27 @@
   "gap_sort_title": {
     "message": "Écart de taux de victoire entre les games où je l’ai piochée et les autres"
   },
+  "share_stats": {
+    "message": "Partager mes stats"
+  },
+  "share_needs_deck": {
+    "message": "Choisis d’abord un de tes decks : l’image résume un deck."
+  },
+  "share_copied": {
+    "message": "Image de tes stats copiée : colle-la sur Discord"
+  },
+  "share_saved": {
+    "message": "Image de tes stats enregistrée"
+  },
+  "share_matchups": {
+    "message": "Matchups les plus joués"
+  },
+  "share_cards_up": {
+    "message": "Je gagne plus quand je la pioche (écart en points)"
+  },
+  "share_cards_down": {
+    "message": "Je gagne moins quand je la pioche (écart en points)"
+  },
   "sort_by": {
     "message": "Trier par {col}"
   },

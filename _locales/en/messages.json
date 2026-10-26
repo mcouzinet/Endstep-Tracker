@@ -887,6 +887,27 @@
   "gap_sort_title": {
     "message": "Win rate gap between the games where I drew it and the others"
   },
+  "share_stats": {
+    "message": "Share my stats"
+  },
+  "share_needs_deck": {
+    "message": "Pick one of your decks first: the image sums up one deck."
+  },
+  "share_copied": {
+    "message": "Image of your stats copied: paste it on Discord"
+  },
+  "share_saved": {
+    "message": "Image of your stats saved"
+  },
+  "share_matchups": {
+    "message": "Most played matchups"
+  },
+  "share_cards_up": {
+    "message": "I win more when I draw it (gap in points)"
+  },
+  "share_cards_down": {
+    "message": "I win less when I draw it (gap in points)"
+  },
   "sort_by": {
     "message": "Sort by {col}"
   },
