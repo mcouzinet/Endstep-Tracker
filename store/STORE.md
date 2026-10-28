@@ -21,9 +21,9 @@ The dashboard opens on the deck you play most:
 
 • At a glance: your win rate, your records on the play and on the draw, and your latest results.
 
-• Matchups: record in matches, on the play and on the draw.
+• Matchups: record in matches, on the play and on the draw, ranked or not; in a matchup, game 1 against the games after sideboarding.
 
-• My cards: for each card of your deck, the win rate of the games where you drew it, next to the games where it stayed in your library and the games where it was in your opening hand.
+• My cards: for each card of your deck, the win rate of the games where you drew it, next to the games where it stayed in your library, where it was in your opening hand, where you drew it later, cast it, or where it reached the battlefield (a reanimated creature counts). Every number explains itself on hover.
 
 • Your sideboarding: what you bring in and take out between games is recorded, shown for each matchup and recalled between two games against the same kind of deck.
 
@@ -38,6 +38,8 @@ The dashboard opens on the deck you play most:
 • Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 5 results.
 
 • Search the history: opponent, archetype, card seen, note.
+
+• Share an image of your stats, copy or export your side plan, file the matches with no deck in one go, merge two decks.
 
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
@@ -55,9 +57,9 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • En un coup d'œil : ton taux de victoire, tes bilans sur le play et sur la draw, et tes derniers résultats.
 
-• Matchups : bilan en matchs, sur le play et sur la draw.
+• Matchups : bilan en matchs, sur le play et sur la draw, classés ou non ; dans un matchup, la game 1 face aux games après side.
 
-• Mes cartes : pour chaque carte de ton deck, le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque et de celles où elle était dans ta main de départ.
+• Mes cartes : pour chaque carte de ton deck, le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque, où elle était dans ta main de départ, où tu l'as piochée plus tard, lancée, ou où elle est arrivée en jeu (une créature réanimée compte). Chaque chiffre s'explique au survol.
 
 • Ton side : ce que tu fais entrer et sortir entre les games est enregistré, montré pour chaque matchup et rappelé entre deux games contre le même type de deck.
 
@@ -72,6 +74,8 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 • Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 5 résultats.
 
 • Recherche dans l’historique : adversaire, archétype, carte vue, note.
+
+• Partage une image de tes stats, copie ou exporte ton plan de side, range d'un coup les matchs sans deck, fusionne deux decks.
 
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 

@@ -3,7 +3,7 @@
 Scripts Puppeteer utilisés pendant le développement. Ils supposent Chrome for Testing et puppeteer-core
 aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écrivent leurs captures dans ce dossier.
 
-- `gen-demo.js` : génère des données de démo + les pages `harness-*.html` (dashboard réel avec `chrome.storage` simulé et le métagame Modern servi depuis `meta-Modern.json`).
+- `gen-demo.js` : génère des données de démo + les pages `harness-*.html` (dashboard réel avec `chrome.storage` simulé et le métagame Modern servi depuis `meta-Modern.json`). La racine du dépôt est prise depuis le dossier du script : une copie de travail (worktree) teste son propre code. Les pages exposent les globales du tableau de bord (`matches`, `render`, `S`, `state`, `cardNames`) à `page.evaluate`.
 - `shots.js` : captures du tableau de bord (large, étroit, détail, menu, vide, filtres, anglais).
 - `qa-live.js` : mise à jour en direct (journal conservé, report pendant saisie/sélection, suppression, import invalide).
 - `qa-popup.js` : la popup dans la vraie extension (profil jetable, données de démo), en français et en anglais, interrupteur du panneau, ouverture du tableau de bord.
@@ -21,3 +21,5 @@ aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écriv
 - `fetch-meta.js <Format>` : instantané du métagame d'un format (`meta-<Format>.json`).
 
 Lancer depuis ce dossier : `node gen-demo.js && node shots.js`.
+
+Ne jamais laisser un script appeler le vrai Scryfall (il limite puis bloque la machine) : intercepter `api.scryfall.com` avec `page.setRequestInterception` et répondre une carte factice, ou lancer Chrome avec `--host-resolver-rules=MAP * ~NOTFOUND`. Dans le dossier principal, les erreurs vers `127.0.0.1:8765` viennent du Coach de développement.

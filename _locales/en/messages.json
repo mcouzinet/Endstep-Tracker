@@ -125,9 +125,6 @@
   "only_show": {
     "message": "Show only: {label}"
   },
-  "games_record": {
-    "message": "games {w}–{l}"
-  },
   "untagged": {
     "message": "untagged"
   },
@@ -493,9 +490,6 @@
   },
   "guess_unavailable": {
     "message": "Deck recognition unavailable (endstep.cc metagame not reachable)."
-  },
-  "guessed_marker": {
-    "message": "recognized"
   },
   "decisions_title": {
     "message": "My decisions ({n})"

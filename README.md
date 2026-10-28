@@ -6,19 +6,21 @@ A browser extension that records the Magic: The Gathering matches you play on [e
 
 ## Install
 
-[Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (also Brave, Opera) · [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/) · [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp) · [Safari on Mac](https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12)
+[Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (also Brave, Opera) · [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/) · [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp) · [Safari on Mac](https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12) (iPhone coming)
 
-Desktop browsers only: Chrome on Android has no extensions.
+On Android, Firefox runs it; Chrome and Brave on Android have no extensions.
 
 ## Features
 
 - **Every match recorded**: format, Bo1/Bo3, score, play/draw, mulligans, opening hand, turns, life totals, length, full game log.
 - **The opponent's archetype**, recognized from the cards you saw against endstep's own metagame (Pauper, Modern, Premodern, Legacy, Vintage), named after the commander in Duel Commander, and correctable by hand.
-- **Win rates** by deck and by matchup, on the play and on the draw, per version of your list.
-- **My cards**: for each card, your win rate in the games where you drew it, where you didn't, and when it was in your opening hand.
-- **Your sideboarding**, recorded between games: your usual plan against each archetype.
+- **Win rates** by deck and by matchup, on the play and on the draw, per version of your list, ranked or not; in a matchup, game 1 against after sideboarding.
+- **My cards**: for each card of your deck, your win rate in the games where you drew it, where you didn't, in your opening hand, drawn later, played, and in play (a reanimated creature counts). A card has one name: printed names (Secret Lair, Universes Beyond) and both faces of a card count as one card.
+- **Your sideboarding**, recorded between games: your usual plan against each archetype, to copy or export.
 - **A small panel on endstep.cc**: your record in the matchup, your usual sideboarding between games, opponents you met before.
 - **Your past matches**, imported from your endstep history when you ask for it.
+- **Your decks, your way**: file the matches the site gave no deck for in one go, merge a deck split under several names.
+- **Share an image of your stats**, ready to paste on Discord.
 - CSV and JSON export, backups, English and French.
 
 ## Privacy
@@ -36,7 +38,7 @@ Plain JavaScript, Manifest V3, no dependencies and no build step: the code in th
 | `overlay.js` | The panel on endstep.cc (closed shadow root, never takes the keyboard from the game) |
 | `dashboard.*`, `popup.*` | The dashboard and the toolbar popup |
 | `shared.js`, `meta.js` | Records, archetype recognition, endstep's metagame |
-| `background.js` | Badge, and re-attaching open endstep.cc tabs after an update |
+| `background.js`, `telemetry.js` | Badge, re-attaching open endstep.cc tabs after an update, anonymous usage statistics |
 
 ## Development
 
