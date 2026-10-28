@@ -1148,6 +1148,12 @@
   "deck_merged": {
     "message": "\"{from}\" unito a \"{to}\""
   },
+  "deck_move_confirm_one": {
+    "message": "Spostare \"{from}\" in \"{to}\"? Il suo match verrà contato in quel deck e formato. Potrai separarli in seguito."
+  },
+  "deck_move_confirm_other": {
+    "message": "Spostare \"{from}\" in \"{to}\"? I suoi {n} match verranno contati in quel deck e formato. Potrai separarli in seguito."
+  },
   "deck_includes": {
     "message": "Include anche: {list}"
   },

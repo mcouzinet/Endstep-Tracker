@@ -181,18 +181,23 @@
     const d = myDeck(m, c);
     return d ? (obj(c.decks)[d.id] || {}).name || d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
   }
-  // The format alone (the site's formatId, else its game kind; constructed without a banlist is "no banlist").
-  // When the site's match details were missed (no formatId), the deck I played tells it, if its format fits the game (a
-  // Duel Commander deck does not name a constructed game); otherwise the format is unknown, never "no banlist".
-  function formatOf(m, c) {
-    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-    if (m.formatId && m.formatId !== 'casual') return cap(m.formatId);
-    if (duelCommander(m)) return cap('duel-commander'); // match details missed: the game itself says so
-    if (m.format && m.format !== 'constructed') return cap(m.format);
-    if (m.formatId === 'casual') return c.t('casual');
-    const deckFormat = deckFormatOf(m, c);
-    return deckFormat ? cap(deckFormat) : c.t('format_unknown');
+  // The format alone, as the site names it: the one I moved the match to (note.formatId, the dashboard's deck tools),
+  // else the site's formatId, else its game kind ('casual' is constructed without a banlist). When the site's match
+  // details were missed (no formatId), the deck I played tells it, if its format fits the game (a Duel Commander deck
+  // does not name a constructed game); otherwise the format is unknown (null), never "no banlist".
+  function formatKey(m, c) {
+    const picked = c.notes[m.id] && c.notes[m.id].formatId;
+    if (picked) return picked;
+    if (m.formatId && m.formatId !== 'casual') return m.formatId;
+    if (duelCommander(m)) return 'duel-commander'; // match details missed: the game itself says so
+    if (m.format && m.format !== 'constructed') return m.format;
+    if (m.formatId === 'casual') return 'casual';
+    return deckFormatOf(m, c);
   }
+  function formatLabel(key, c) {
+    return key === 'casual' ? c.t('casual') : key ? key.charAt(0).toUpperCase() + key.slice(1) : c.t('format_unknown');
+  }
+  const formatOf = (m, c) => formatLabel(formatKey(m, c), c);
   // The format of the deck I played, when it fits the game (a Duel Commander deck does not name a constructed game).
   function deckFormatOf(m, c) {
     const d = myDeck(m, c);
@@ -223,6 +228,8 @@
   // them: each format costs endstep.cc about a hundred requests to load.
   function metaFormat(m, c, formats) {
     if (!Array.isArray(formats) || NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)) return null;
+    const picked = c.notes[m.id] && c.notes[m.id].formatId; // moved by hand to another format
+    if (formats.includes(picked)) return picked;
     if (formats.includes(m.formatId)) return m.formatId;
     const f = deckFormatOf(m, c);
     return formats.includes(f) ? f : null;
@@ -479,7 +486,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, mergedInto, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
+    myDeck, mergedInto, deckName, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
     deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

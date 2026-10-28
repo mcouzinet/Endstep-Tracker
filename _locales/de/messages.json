@@ -1148,6 +1148,12 @@
   "deck_merged": {
     "message": "„{from}“ mit „{to}“ zusammengeführt"
   },
+  "deck_move_confirm_one": {
+    "message": "„{from}“ nach „{to}“ verschieben? Sein Match zählt dann unter diesem Deck und Format. Du kannst sie später wieder trennen."
+  },
+  "deck_move_confirm_other": {
+    "message": "„{from}“ nach „{to}“ verschieben? Seine {n} Matches zählen dann unter diesem Deck und Format. Du kannst sie später wieder trennen."
+  },
   "deck_includes": {
     "message": "Enthält auch: {list}"
   },

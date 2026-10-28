@@ -1148,6 +1148,12 @@
   "deck_merged": {
     "message": "\"{from}\" merged with \"{to}\""
   },
+  "deck_move_confirm_one": {
+    "message": "Move \"{from}\" to \"{to}\"? Its match will count under that deck and format. You can split them later."
+  },
+  "deck_move_confirm_other": {
+    "message": "Move \"{from}\" to \"{to}\"? Its {n} matches will count under that deck and format. You can split them later."
+  },
   "deck_includes": {
     "message": "Also includes: {list}"
   },

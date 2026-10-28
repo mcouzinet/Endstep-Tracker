@@ -1148,6 +1148,12 @@
   "deck_merged": {
     "message": "« {from} » fusionné avec « {to} »"
   },
+  "deck_move_confirm_one": {
+    "message": "Déplacer « {from} » vers « {to} » ? Son match comptera sous ce deck et ce format. Tu pourras les séparer ensuite."
+  },
+  "deck_move_confirm_other": {
+    "message": "Déplacer « {from} » vers « {to} » ? Ses {n} matchs compteront sous ce deck et ce format. Tu pourras les séparer ensuite."
+  },
   "deck_includes": {
     "message": "Comprend aussi : {list}"
   },

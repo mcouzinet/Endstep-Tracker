@@ -18,6 +18,14 @@ assert.equal(S.formatOf(m({ gameType: 'DuelCommander', myDeck: deck('dc') }), C)
 assert.equal(S.formatOf(m({ gameType: 'Constructed', myDeck: null }), C), 'Format inconnu', 'no deck, no format');
 assert.equal(S.formatOf(m({ gameType: 'Constructed' }), { ...C, notes: { m: { deckId: 'pauper' } } }), 'Pauper', 'a deck picked by hand counts');
 
+// Moved by hand to another format (the dashboard's deck tools): that format wins, the site's is kept underneath.
+const moved = { ...C, notes: { m: { formatId: 'canlander' } } };
+assert.equal(S.formatOf(m({ formatId: 'casual', format: 'constructed' }), moved), 'Canlander', 'moved out of no banlist');
+assert.equal(S.formatKey(m({ formatId: 'casual', format: 'constructed' }), moved), 'canlander');
+assert.equal(S.formatOf(m({ formatId: 'Pauper' }), { ...C, notes: { m: { formatId: 'casual' } } }), 'Sans banlist', 'moved into no banlist');
+assert.equal(S.formatLabel(null, C), 'Format inconnu');
+assert.equal(S.metaFormat(m({ formatId: 'casual', format: 'constructed', myDeck: deck('dc') }), { ...C, notes: { m: { formatId: 'Pauper' } } }, ['Pauper']), 'Pauper', 'a moved match is compared with its new format');
+
 // The one metagame format a match is compared with: the match's, else my deck's for a casual game, never all of them.
 const tracked = ['Pauper', 'Modern', 'Legacy', 'duel-commander'];
 assert.equal(S.metaFormat(m({ formatId: 'Modern', myDeck: deck('pauper') }), C, tracked), 'Modern', 'the match format wins');
