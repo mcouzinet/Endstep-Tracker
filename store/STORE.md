@@ -7,7 +7,7 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 - **Name**: Endstep Tracker
 - **Summary** (≤ 132 chars, same as the manifest): Records your endstep.cc matches: opponent cards, play/draw, mulligans, results and cards played.
 - **Category**: Productivity (Tools)
-- **Languages**: English, French (the extension follows Chrome's language; both are in `_locales`)
+- **Languages**: English, French, Spanish, German, Italian, Brazilian Portuguese (the extension follows the browser's language; all are in `_locales`, Portuguese as `pt_BR`)
 - **Homepage / support**: https://github.com/mcouzinet/Endstep-Tracker
 - **Privacy policy URL**: https://github.com/mcouzinet/Endstep-Tracker/blob/main/PRIVACY.md
 

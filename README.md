@@ -21,7 +21,8 @@ On Android, Firefox runs it; Chrome and Brave on Android have no extensions.
 - **Your past matches**, imported from your endstep history when you ask for it.
 - **Your decks, your way**: file the matches the site gave no deck for in one go, merge a deck split under several names.
 - **Share an image of your stats**, ready to paste on Discord.
-- CSV and JSON export, backups, English and French.
+- CSV and JSON export, backups.
+- In English, French, Spanish, German, Italian and Brazilian Portuguese.
 
 ## Privacy
 

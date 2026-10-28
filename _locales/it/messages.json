@@ -1,0 +1,1160 @@
+{
+  "ext_description": {
+    "message": "Registra i tuoi match su endstep.cc: carte avversarie, play/draw, mulligan, risultati e carte giocate."
+  },
+  "action_title": {
+    "message": "Endstep Tracker: apri la dashboard"
+  },
+  "tagline": {
+    "message": "I tuoi match su endstep.cc, registrati automaticamente"
+  },
+  "summary_one": {
+    "message": "{n} match registrato · ultimo {ago}"
+  },
+  "summary_other": {
+    "message": "{n} match registrati · ultimo {ago}"
+  },
+  "live_pill": {
+    "message": "Match in corso · contro {opp}"
+  },
+  "language": {
+    "message": "Lingua"
+  },
+  "data_menu": {
+    "message": "Dati"
+  },
+  "export_json": {
+    "message": "Esporta un backup (JSON)"
+  },
+  "export_csv": {
+    "message": "Esporta le partite (CSV)"
+  },
+  "import_backup": {
+    "message": "Importa un backup…"
+  },
+  "clear_all": {
+    "message": "Elimina tutto…"
+  },
+  "search_placeholder": {
+    "message": "Avversario, archetipo, carta vista, nota…"
+  },
+  "search": {
+    "message": "Cerca"
+  },
+  "format": {
+    "message": "Formato"
+  },
+  "my_deck": {
+    "message": "Il mio deck"
+  },
+  "period": {
+    "message": "Periodo"
+  },
+  "period_all": {
+    "message": "Tutto"
+  },
+  "period_30": {
+    "message": "30 giorni"
+  },
+  "period_7": {
+    "message": "7 giorni"
+  },
+  "result": {
+    "message": "Risultato"
+  },
+  "result_all": {
+    "message": "Tutti"
+  },
+  "result_wins": {
+    "message": "Vittorie"
+  },
+  "result_losses": {
+    "message": "Sconfitte"
+  },
+  "remove_filter": {
+    "message": "Rimuovi questo filtro"
+  },
+  "reset": {
+    "message": "Reimposta"
+  },
+  "reset_filters": {
+    "message": "Reimposta i filtri"
+  },
+  "n_matches_one": {
+    "message": "{n} match"
+  },
+  "n_matches_other": {
+    "message": "{n} match"
+  },
+  "of_total": {
+    "message": " su {total}"
+  },
+  "opponent_facet": {
+    "message": "Avversario: {label}"
+  },
+  "matches": {
+    "message": "Match"
+  },
+  "by_context": {
+    "message": "Per contesto"
+  },
+  "on_play": {
+    "message": "On the play"
+  },
+  "on_draw": {
+    "message": "On the draw"
+  },
+  "kept_seven": {
+    "message": "Mano da 7 tenuta"
+  },
+  "after_mulligan": {
+    "message": "Dopo un mulligan"
+  },
+  "min": {
+    "message": "min"
+  },
+  "my_decks": {
+    "message": "I miei deck"
+  },
+  "no_finished_all": {
+    "message": "Ancora nessun match concluso."
+  },
+  "no_finished_selection": {
+    "message": "Nessun match concluso in questa selezione."
+  },
+  "only_show": {
+    "message": "Mostra solo: {label}"
+  },
+  "untagged": {
+    "message": "senza tag"
+  },
+  "unknown": {
+    "message": "Sconosciuto"
+  },
+  "colors_label": {
+    "message": "colori {c}"
+  },
+  "unknown_deck": {
+    "message": "deck sconosciuto"
+  },
+  "wins_one": {
+    "message": "{n} vittoria"
+  },
+  "wins_other": {
+    "message": "{n} vittorie"
+  },
+  "losses_one": {
+    "message": "{n} sconfitta"
+  },
+  "losses_other": {
+    "message": "{n} sconfitte"
+  },
+  "draws_one": {
+    "message": "{n} pareggio"
+  },
+  "draws_other": {
+    "message": "{n} pareggi"
+  },
+  "no_data": {
+    "message": "nessun dato"
+  },
+  "col_result": {
+    "message": "Risultato"
+  },
+  "col_opponent": {
+    "message": "Avversario"
+  },
+  "col_score": {
+    "message": "Punteggio"
+  },
+  "col_games": {
+    "message": "Partite"
+  },
+  "col_my_deck": {
+    "message": "Il mio deck"
+  },
+  "col_format": {
+    "message": "Formato"
+  },
+  "col_date": {
+    "message": "Data"
+  },
+  "legend_aria": {
+    "message": "Legenda delle partite"
+  },
+  "win": {
+    "message": "Vittoria"
+  },
+  "loss": {
+    "message": "Sconfitta"
+  },
+  "draw": {
+    "message": "Pareggio"
+  },
+  "colon": {
+    "message": ": "
+  },
+  "legend_play": {
+    "message": "inizi tu"
+  },
+  "legend_draw": {
+    "message": "inizia l’avversario"
+  },
+  "legend_mull": {
+    "message": "1 mulligan"
+  },
+  "hint_hover": {
+    "message": "Passa il mouse su una carta per vederla"
+  },
+  "hint_search": {
+    "message": "per cercare"
+  },
+  "ongoing": {
+    "message": "In corso"
+  },
+  "unfinished": {
+    "message": "Non concluso"
+  },
+  "game_n": {
+    "message": "Partita {n}"
+  },
+  "on_play_l": {
+    "message": "on the play"
+  },
+  "on_draw_l": {
+    "message": "on the draw"
+  },
+  "pos_unknown": {
+    "message": "play/draw sconosciuto"
+  },
+  "mulligans_one": {
+    "message": "{n} mulligan"
+  },
+  "mulligans_other": {
+    "message": "{n} mulligan"
+  },
+  "seen_at": {
+    "message": "Carte viste di {name}"
+  },
+  "opp_archetype": {
+    "message": "Archetipo dell’avversario"
+  },
+  "archetype_placeholder": {
+    "message": "es. Mono-Red Burn"
+  },
+  "notes": {
+    "message": "Note"
+  },
+  "notes_placeholder": {
+    "message": "Cosa ha funzionato, cosa cambieresti…"
+  },
+  "my_list": {
+    "message": "La mia lista: {deck}"
+  },
+  "my_limited_deck": {
+    "message": "Il mio deck limited"
+  },
+  "delete_match": {
+    "message": "Elimina questo match"
+  },
+  "no_games": {
+    "message": "Nessuna partita registrata per questo match."
+  },
+  "imported_no_games": {
+    "message": "Importato dalla tua cronologia di endstep.cc, che non conserva i dettagli delle partite."
+  },
+  "no_cards_seen": {
+    "message": "Ancora nessuna carta vista."
+  },
+  "basic_lands": {
+    "message": "Terre base"
+  },
+  "me": {
+    "message": "Io"
+  },
+  "opp_short": {
+    "message": "Avv."
+  },
+  "turns_one": {
+    "message": "{n} turno"
+  },
+  "turns_other": {
+    "message": "{n} turni"
+  },
+  "mulligans_label": {
+    "message": "Mulligan"
+  },
+  "final_life": {
+    "message": "Punti vita finali"
+  },
+  "play_draw_choice": {
+    "message": "Scelta play/draw"
+  },
+  "opening_hand": {
+    "message": "Mano iniziale"
+  },
+  "full_log": {
+    "message": "Log completo ({n})"
+  },
+  "minutes": {
+    "message": "{n} min"
+  },
+  "end_concede": {
+    "message": "concessione"
+  },
+  "end_life": {
+    "message": "punti vita a 0"
+  },
+  "end_decked": {
+    "message": "grimorio vuoto"
+  },
+  "end_poison": {
+    "message": "veleno"
+  },
+  "end_timeout": {
+    "message": "tempo scaduto"
+  },
+  "end_draw": {
+    "message": "pareggio"
+  },
+  "color_W": {
+    "message": "bianco"
+  },
+  "color_U": {
+    "message": "blu"
+  },
+  "color_B": {
+    "message": "nero"
+  },
+  "color_R": {
+    "message": "rosso"
+  },
+  "color_G": {
+    "message": "verde"
+  },
+  "limited_deck": {
+    "message": "Deck limited"
+  },
+  "casual": {
+    "message": "Senza banlist"
+  },
+  "ranked_suffix": {
+    "message": " (ranked)"
+  },
+  "just_now": {
+    "message": "poco fa"
+  },
+  "onboard_title": {
+    "message": "Il tuo primo match ti aspetta"
+  },
+  "onboard_intro": {
+    "message": "Gioca su endstep.cc come al solito: ogni match viene registrato automaticamente."
+  },
+  "step1_b": {
+    "message": "Apri endstep.cc."
+  },
+  "step1": {
+    "message": "Se la scheda era già aperta prima dell’installazione, ricaricala."
+  },
+  "step2_b": {
+    "message": "Avvia una partita."
+  },
+  "news_title": {
+    "message": "Novità della {v}"
+  },
+  "news_16_ranked": {
+    "message": "Un filtro “Ranked / Unranked” accanto al periodo."
+  },
+  "news_16_cards": {
+    "message": "Colonne “Giocata” e “In gioco” in Le mie carte (finalmente conta anche una creatura rianimata), e lì ogni numero si spiega al passaggio del mouse."
+  },
+  "news_16_side": {
+    "message": "Copia o esporta il tuo piano di side (menu Dati)."
+  },
+  "news_16_games": {
+    "message": "Nel pannello di un matchup: il tuo bilancio in partita 1 e dopo il side."
+  },
+  "news_16_share": {
+    "message": "Condividi un’immagine delle tue statistiche, pronta da incollare su Discord (menu Dati)."
+  },
+  "news_16_names": {
+    "message": "Una carta, un nome: i nomi stampati (Secret Lair, Universes Beyond) e le carte bifronte contano come una sola carta."
+  },
+  "news_all": {
+    "message": "Changelog completo (in francese)"
+  },
+  "news_close": {
+    "message": "Chiudi"
+  },
+  "review_text": {
+    "message": "L’estensione ti è utile? Una recensione sullo store aiuta molto."
+  },
+  "review_cta": {
+    "message": "Lascia una recensione"
+  },
+  "review_no": {
+    "message": "No, grazie"
+  },
+  "step2": {
+    "message": "Durante il match, l’icona dell’estensione mostra"
+  },
+  "step3_b": {
+    "message": "Torna qui."
+  },
+  "step3": {
+    "message": "Il match compare con play/draw, mulligan, risultato e le carte viste dell’avversario."
+  },
+  "open_endstep": {
+    "message": "Apri endstep.cc"
+  },
+  "import_backup_btn": {
+    "message": "Importa un backup"
+  },
+  "no_match_filters": {
+    "message": "Nessun match trovato"
+  },
+  "no_match_filters_hint": {
+    "message": "Allarga il periodo o rimuovi un filtro per ritrovare i tuoi match."
+  },
+  "exported_one": {
+    "message": "Backup esportato ({n} match)"
+  },
+  "exported_other": {
+    "message": "Backup esportato ({n} match)"
+  },
+  "csv_exported_one": {
+    "message": "CSV esportato ({n} partita)"
+  },
+  "csv_exported_other": {
+    "message": "CSV esportato ({n} partite)"
+  },
+  "confirm_clear": {
+    "message": "Eliminare definitivamente tutti i match registrati? Prima esporta un backup."
+  },
+  "all_deleted": {
+    "message": "Tutti i match sono stati eliminati"
+  },
+  "imported_one": {
+    "message": "{n} match importato"
+  },
+  "imported_other": {
+    "message": "{n} match importati"
+  },
+  "skipped_one": {
+    "message": " ({n} illeggibile ignorato)"
+  },
+  "skipped_other": {
+    "message": " ({n} illeggibili ignorati)"
+  },
+  "import_empty": {
+    "message": "Nessun match leggibile in questo file"
+  },
+  "import_failed": {
+    "message": "Importazione non riuscita: questo file non è un backup di Endstep Tracker (JSON)."
+  },
+  "confirm_delete_match": {
+    "message": "Rimuovere questo match dalla cronologia?"
+  },
+  "match_deleted": {
+    "message": "Match eliminato"
+  },
+  "archetype_saved": {
+    "message": "Archetipo salvato"
+  },
+  "notes_saved": {
+    "message": "Note salvate"
+  },
+  "deck_saved": {
+    "message": "Deck salvato"
+  },
+  "deck_auto": {
+    "message": "Automatico: {deck}"
+  },
+  "guess_tag_title": {
+    "message": "Deck riconosciuto dalle carte viste ({p} %): {cards}"
+  },
+  "guess_suggestion": {
+    "message": "Deck riconosciuto"
+  },
+  "guess_confidence": {
+    "message": "sicuro al {p} %"
+  },
+  "guess_from": {
+    "message": "in base a {cards}"
+  },
+  "use_guess": {
+    "message": "Usa"
+  },
+  "guess_loading": {
+    "message": "Caricamento del metagame {format} da endstep.cc…"
+  },
+  "guess_unavailable": {
+    "message": "Riconoscimento dei deck non disponibile (metagame di endstep.cc non raggiungibile)."
+  },
+  "decisions_title": {
+    "message": "Le mie decisioni ({n})"
+  },
+  "act_play": {
+    "message": "gioca"
+  },
+  "act_pass": {
+    "message": "passa"
+  },
+  "act_keep": {
+    "message": "tiene la mano"
+  },
+  "act_mulligan": {
+    "message": "fa mulligan"
+  },
+  "act_attack": {
+    "message": "attacca con"
+  },
+  "act_block": {
+    "message": "blocca"
+  },
+  "act_target": {
+    "message": "bersaglia"
+  },
+  "act_choose": {
+    "message": "sceglie"
+  },
+  "act_mode": {
+    "message": "modalità"
+  },
+  "act_ability": {
+    "message": "abilità"
+  },
+  "act_number": {
+    "message": "numero"
+  },
+  "act_yes": {
+    "message": "sì"
+  },
+  "act_no": {
+    "message": "no"
+  },
+  "act_decline": {
+    "message": "rifiuta"
+  },
+  "act_cancel": {
+    "message": "annulla"
+  },
+  "scope_label": {
+    "message": "Deck analizzato"
+  },
+  "scope_all": {
+    "message": "Tutti i miei deck · tutti i formati"
+  },
+  "scope_all_format": {
+    "message": "Tutti i miei deck · {format}"
+  },
+  "scope_deck": {
+    "message": "{deck} · {format}"
+  },
+  "matchups": {
+    "message": "Matchup"
+  },
+  "history": {
+    "message": "Cronologia"
+  },
+  "too_early": {
+    "message": "troppo presto"
+  },
+  "too_early_title": {
+    "message": "Meno di {n} risultati: troppo presto per dirlo"
+  },
+  "others_one": {
+    "message": "Altri · {n} archetipo"
+  },
+  "others_other": {
+    "message": "Altri · {n} archetipi"
+  },
+  "col_archetype": {
+    "message": "Archetipo"
+  },
+  "col_deck": {
+    "message": "Deck"
+  },
+  "version_label": {
+    "message": "Versione della lista"
+  },
+  "version_n": {
+    "message": "v{n}"
+  },
+  "version_current": {
+    "message": "v{n} · attuale"
+  },
+  "versions_all": {
+    "message": "Tutte le versioni"
+  },
+  "version_unknown": {
+    "message": "Nessuna lista registrata"
+  },
+  "version_since": {
+    "message": "v{n} dal {date}"
+  },
+  "version_first": {
+    "message": "prima lista registrata"
+  },
+  "version_more": {
+    "message": "e altre {n}"
+  },
+  "compare_with": {
+    "message": "Confronta con v{n}"
+  },
+  "compare_stop": {
+    "message": "Interrompi il confronto"
+  },
+  "cmp_title": {
+    "message": "Bilancio con {v}, in match"
+  },
+  "session_now": {
+    "message": "Sessione in corso"
+  },
+  "session_last": {
+    "message": "Ultima sessione · {when}"
+  },
+  "confirm_guess": {
+    "message": "Conferma {name}"
+  },
+  "col_play": {
+    "message": "Play"
+  },
+  "col_draw": {
+    "message": "Draw"
+  },
+  "sort_label": {
+    "message": "Ordina i matchup"
+  },
+  "sort_n": {
+    "message": "Più incontrati"
+  },
+  "sort_worst": {
+    "message": "Peggiori prima"
+  },
+  "side_games": {
+    "message": "Prima e dopo il side"
+  },
+  "side_g1": {
+    "message": "Partita 1"
+  },
+  "side_post": {
+    "message": "Dopo il side"
+  },
+  "info_side_games": {
+    "message": "Conteggio in partite, non in match: la partita 1 si gioca con il deck di partenza, le partite 2 e 3 dopo il tuo side.\nSe vinci più spesso dopo il side, probabilmente il tuo side funziona contro questo deck (da prendere con le pinze: nelle partite 2 e 3 di solito inizia chi ha perso la partita precedente). Un match Bo1 conta solo per la partita 1.\nSotto i {n} risultati, nessuna percentuale: troppo presto per dirlo."
+  },
+  "sort_best": {
+    "message": "Migliori prima"
+  },
+  "open_matchup": {
+    "message": "Apri il matchup {label}"
+  },
+  "drawer_close": {
+    "message": "Chiudi"
+  },
+  "by_version": {
+    "message": "Per versione della lista"
+  },
+  "cards_seen_there": {
+    "message": "Le loro carte che ho visto"
+  },
+  "seen_in": {
+    "message": "{n} su {total}"
+  },
+  "matches_vs": {
+    "message": "Match contro di loro"
+  },
+  "filter_matchup": {
+    "message": "Filtra la pagina su questo matchup"
+  },
+  "hint_browse": {
+    "message": "per scorrere"
+  },
+  "open_dashboard": {
+    "message": "Apri la dashboard"
+  },
+  "buy_coffee": {
+    "message": "Offrimi un caffè"
+  },
+  "feedback": {
+    "message": "Lascia un feedback, segnala un bug"
+  },
+  "access_title": {
+    "message": "L’estensione non sempre vede endstep.cc."
+  },
+  "access_text": {
+    "message": "Si attiva solo dopo un clic sulla sua icona, e allora registra i tuoi match solo in parte (niente formato, niente deck)."
+  },
+  "access_btn": {
+    "message": "Consenti su endstep.cc"
+  },
+  "ov_import_completed": {
+    "message": "Completati"
+  },
+  "history_filled": {
+    "message": "completato dalla tua cronologia di endstep"
+  },
+  "popup_live": {
+    "message": "In corso contro {opp}"
+  },
+  "popup_vs_record": {
+    "message": "Contro di loro con {deck}"
+  },
+  "popup_first_time": {
+    "message": "Primo match contro di loro con questo deck."
+  },
+  "popup_unknown_opp": {
+    "message": "Non ancora riconosciuto: servono due carte viste dell’avversario."
+  },
+  "popup_empty": {
+    "message": "Ancora nessun match registrato. Gioca su endstep.cc: durante un match l’icona mostra REC."
+  },
+  "overlay_toggle": {
+    "message": "Pannello su endstep.cc durante i match"
+  },
+  "recognized_pct": {
+    "message": "riconosciuto al {p} %"
+  },
+  "ov_session": {
+    "message": "sessione {wl}"
+  },
+  "ov_collapse": {
+    "message": "Comprimi"
+  },
+  "ov_expand": {
+    "message": "Mostra il matchup"
+  },
+  "ov_against": {
+    "message": "Contro {opp}"
+  },
+  "ov_result_W": {
+    "message": "Vinto {score} contro {opp}"
+  },
+  "ov_result_L": {
+    "message": "Perso {score} contro {opp}"
+  },
+  "ov_result_D": {
+    "message": "Pareggio {score} contro {opp}"
+  },
+  "ov_move": {
+    "message": "Trascina per spostare"
+  },
+  "ov_edit_archetype": {
+    "message": "Cambia l’archetipo"
+  },
+  "ov_save": {
+    "message": "Salva"
+  },
+  "ov_cancel": {
+    "message": "Annulla"
+  },
+  "rename_archetype": {
+    "message": "Rinomina questo archetipo"
+  },
+  "rename_save": {
+    "message": "Rinomina"
+  },
+  "confirm_rename_one": {
+    "message": "Rinominare “{from}” in “{to}” su {n} match?"
+  },
+  "confirm_rename_other": {
+    "message": "Rinominare “{from}” in “{to}” su {n} match, in tutti i deck e formati?"
+  },
+  "archetype_renamed_one": {
+    "message": "“{to}”: {n} match rinominato."
+  },
+  "archetype_renamed_other": {
+    "message": "“{to}”: {n} match rinominati."
+  },
+  "ov_met": {
+    "message": "Già incontrato"
+  },
+  "ov_last_arch": {
+    "message": "L’ultima volta: {arch}, {when}"
+  },
+  "ov_last": {
+    "message": "L’ultima volta: {when}"
+  },
+  "import_history": {
+    "message": "Importa i miei match passati"
+  },
+  "ov_import_title": {
+    "message": "Importazione della tua cronologia"
+  },
+  "ov_import_read": {
+    "message": "Letti"
+  },
+  "ov_import_added": {
+    "message": "Aggiunti"
+  },
+  "ov_import_hint": {
+    "message": "Le pagine successive si caricano da sole, una al secondo."
+  },
+  "ov_import_all": {
+    "message": "Tutta la tua cronologia è stata importata."
+  },
+  "ov_import_failed": {
+    "message": "Interrotto: endstep.cc non ha risposto. Ricarica la pagina per riprendere."
+  },
+  "ov_import_done": {
+    "message": "Fatto"
+  },
+  "promo_by": {
+    "message": "Stesso autore, nessun account, nessun dato raccolto"
+  },
+  "promo_close": {
+    "message": "Nascondi fino alla prossima versione"
+  },
+  "promo_news": {
+    "message": "Novità: confronta la tua lista con più deck alla volta, e ManaBox è supportato."
+  },
+  "promo_lead": {
+    "message": "Confronta due decklist direttamente sulla pagina del deck (Moxfield, Archidekt, MTGGoldfish…): carte in comune, esclusive e differenze di quantità."
+  },
+  "promo_cta_chrome": {
+    "message": "Vedilo sul Chrome Web Store"
+  },
+  "promo_cta_edge": {
+    "message": "Vedilo su Edge Add-ons"
+  },
+  "new_tab": {
+    "message": " (nuova scheda)"
+  },
+  "promo_shot_alt": {
+    "message": "Anteprima di Deck Compare: due liste confrontate, simili all’82 %"
+  },
+  "promo_same_author": {
+    "message": "Dallo stesso autore"
+  },
+  "wz_lead": {
+    "message": "Il party game musicale: ognuno aggiunge canzoni su temi personali, e tutto il tavolo indovina chi ha scelto cosa. Niente account, niente installazione, sui vostri telefoni."
+  },
+  "wz_cta": {
+    "message": "Gioca su whozic.party"
+  },
+  "ai_tag": {
+    "message": "IA"
+  },
+  "ai_tag_title": {
+    "message": "Contro l’IA: escluso da tutti i bilanci"
+  },
+  "per_match": {
+    "message": "per match"
+  },
+  "glance_rate": {
+    "message": "di vittorie"
+  },
+  "glance_early": {
+    "message": "troppo presto per una percentuale"
+  },
+  "glance_over_one": {
+    "message": "su {n} match"
+  },
+  "glance_over_other": {
+    "message": "su {n} match"
+  },
+  "fact_mulligans": {
+    "message": "Mulligan"
+  },
+  "fact_duration": {
+    "message": "Durata"
+  },
+  "recent_form": {
+    "message": "Gli ultimi {n} match"
+  },
+  "format_unknown": {
+    "message": "Formato sconosciuto"
+  },
+  "my_cards": {
+    "message": "Le mie carte"
+  },
+  "cards_since": {
+    "message": "Le carte pescate sono registrate dalla 1.1: Pescata e Non pescata si riempiono con le tue prossime partite."
+  },
+  "cards_none": {
+    "message": "Ancora nessuna partita conclusa con questo deck."
+  },
+  "col_card": {
+    "message": "Carta"
+  },
+  "col_gap": {
+    "message": "Scarto"
+  },
+  "gap_sort_title": {
+    "message": "Scarto di win rate tra le partite in cui l’ho pescata e le altre"
+  },
+  "share_stats": {
+    "message": "Condividi le mie statistiche"
+  },
+  "share_needs_deck": {
+    "message": "Prima scegli uno dei tuoi deck: l’immagine riassume un solo deck."
+  },
+  "share_copied": {
+    "message": "Immagine delle tue statistiche copiata: incollala su Discord"
+  },
+  "share_saved": {
+    "message": "Immagine delle tue statistiche salvata"
+  },
+  "share_matchups": {
+    "message": "Matchup più giocati"
+  },
+  "share_cards_up": {
+    "message": "Vinco di più quando la pesco (scarto in punti)"
+  },
+  "share_cards_down": {
+    "message": "Vinco di meno quando la pesco (scarto in punti)"
+  },
+  "sort_by": {
+    "message": "Ordina per {col}"
+  },
+  "sort_asc": {
+    "message": "crescente"
+  },
+  "sort_desc": {
+    "message": "decrescente"
+  },
+  "col_drawn": {
+    "message": "Pescata"
+  },
+  "col_not_drawn": {
+    "message": "Non pescata"
+  },
+  "not_drawn_title": {
+    "message": "Partite in cui la carta è rimasta nel mio grimorio"
+  },
+  "col_opening": {
+    "message": "Mano iniziale"
+  },
+  "opening_title": {
+    "message": "Partite in cui la carta era nella mia mano iniziale"
+  },
+  "gap_title": {
+    "message": "{d} punti di win rate tra le partite in cui l’ho pescata e le altre"
+  },
+  "side_plan": {
+    "message": "Il mio side dopo la partita 1"
+  },
+  "side_in": {
+    "message": "Entrano"
+  },
+  "side_out": {
+    "message": "Escono"
+  },
+  "side_none": {
+    "message": "Ancora nessun side registrato contro di loro. Viene registrato ogni volta che fai side, dalla 1.1."
+  },
+  "side_needs_deck": {
+    "message": "Scegli uno dei tuoi deck per vedere il tuo side."
+  },
+  "side_no_change": {
+    "message": "nessuna modifica"
+  },
+  "side_over_one": {
+    "message": "Su {n} match con side registrato"
+  },
+  "side_over_other": {
+    "message": "Su {n} match con side registrato"
+  },
+  "side_label": {
+    "message": "Side"
+  },
+  "ov_side": {
+    "message": "Il mio side abituale"
+  },
+  "views": {
+    "message": "Viste"
+  },
+  "cards_needs_deck": {
+    "message": "Scegli uno dei tuoi deck per vederne le carte."
+  },
+  "by_archetype": {
+    "message": "Per archetipo avversario"
+  },
+  "by_card": {
+    "message": "Carta per carta"
+  },
+  "telemetry_on": {
+    "message": "Statistiche d’uso anonime: attive"
+  },
+  "telemetry_off": {
+    "message": "Statistiche d’uso anonime: disattivate"
+  },
+  "telemetry_now_on": {
+    "message": "Statistiche d’uso anonime attivate. Grazie!"
+  },
+  "telemetry_now_off": {
+    "message": "Statistiche d’uso anonime disattivate: l’estensione non invia più nulla."
+  },
+  "fact_play_share": {
+    "message": "Quota on the play"
+  },
+  "of_matches": {
+    "message": "dei match"
+  },
+  "play_share_hint": {
+    "message": "{play} match su {n} iniziati on the play (prima partita)"
+  },
+  "col_later": {
+    "message": "Dopo"
+  },
+  "later_title": {
+    "message": "Partite in cui l’ho pescata nel corso della partita, non in mano iniziale"
+  },
+  "info_label": {
+    "message": "Spiega questa tabella"
+  },
+  "info_glance": {
+    "message": "I tuoi risultati sui match scelti in alto: deck o formato, periodo, ranked o no.\n\"On the play\" e \"On the draw\" si basano sulla prima partita di ogni match. \"Quota on the play\": la quota di match che hai iniziato on the play, qualunque sia il risultato.\nSotto i {n} risultati, nessuna percentuale: troppo presto per dirlo."
+  },
+  "info_decks": {
+    "message": "Il bilancio in match di ciascuno dei tuoi deck, quando è selezionato \"Tutti i miei deck\".\nClicca su un deck per mostrare solo quello. Due deck con lo stesso nome, nello stesso formato, contano come uno solo."
+  },
+  "info_archetypes": {
+    "message": "Il tuo bilancio in match contro ogni archetipo avversario, riconosciuto dalle carte che hai visto o corretto a mano.\nPlay e Draw: in base a chi ha iniziato la prima partita. Clicca su una riga per il matchup in dettaglio e il tuo side abituale contro quell’archetipo."
+  },
+  "info_context": {
+    "message": "Il tuo bilancio in base a come è iniziato il match: on the play o on the draw, mano da 7 tenuta o dopo un mulligan.\nTutto si basa sulla prima partita di ogni match."
+  },
+  "info_cards": {
+    "message": "Conteggio in partite, per ogni carta del tuo deck.\nPescata: la carta è stata nella tua mano durante la partita, cioè Mano iniziale + Dopo. Non pescata: è rimasta nel tuo grimorio.\nGiocata: l’hai lanciata, o giocata come terra. In gioco: è arrivata sul tuo campo di battaglia, anche senza essere pescata (rianimata, messa sul campo di battaglia). Queste due colonne contano le partite giocate dalla 1.6.\nLo scarto accanto al nome = Pescata meno Non pescata, in punti. Un legame con la vittoria, non la prova che la carta fa vincere.\nPassa il mouse su un numero per il dettaglio; clicca sull’intestazione di una colonna per ordinare."
+  },
+  "copy_side": {
+    "message": "Copia il mio piano di side"
+  },
+  "export_side_csv": {
+    "message": "Esporta il mio piano di side (CSV)"
+  },
+  "side_export_needs_deck": {
+    "message": "Prima scegli uno dei tuoi deck: un piano di side riguarda un solo deck."
+  },
+  "side_export_none": {
+    "message": "Nessun side registrato per questo deck in questo periodo."
+  },
+  "side_export_title": {
+    "message": "{deck} · {format} · il mio piano di side (Endstep Tracker, {date})"
+  },
+  "side_export_group_one": {
+    "message": "{name} ({n} match con side)"
+  },
+  "side_export_group_other": {
+    "message": "{name} ({n} match con side)"
+  },
+  "side_copied_one": {
+    "message": "Piano di side copiato ({n} archetipo)"
+  },
+  "side_copied_other": {
+    "message": "Piano di side copiato ({n} archetipi)"
+  },
+  "side_txt_exported_one": {
+    "message": "Piano di side salvato come testo ({n} archetipo)"
+  },
+  "side_txt_exported_other": {
+    "message": "Piano di side salvato come testo ({n} archetipi)"
+  },
+  "side_csv_exported_one": {
+    "message": "Piano di side esportato ({n} archetipo)"
+  },
+  "side_csv_exported_other": {
+    "message": "Piano di side esportato ({n} archetipi)"
+  },
+  "ranked_label": {
+    "message": "Ranked o no"
+  },
+  "ranked_all": {
+    "message": "Tutti"
+  },
+  "ranked_only": {
+    "message": "Ranked"
+  },
+  "ranked_not": {
+    "message": "Unranked"
+  },
+  "col_played": {
+    "message": "Giocata"
+  },
+  "col_board": {
+    "message": "In gioco"
+  },
+  "played_title": {
+    "message": "Partite in cui l’ho lanciata, o giocata come terra"
+  },
+  "board_title": {
+    "message": "Partite in cui è arrivata sul mio campo di battaglia, dalla mano o no (rianimata, messa sul campo di battaglia)"
+  },
+  "win_rate_text": {
+    "message": "{pct} di vittorie"
+  },
+  "cell_none": {
+    "message": "Nessuna partita in questo caso."
+  },
+  "cell_drawn": {
+    "message": "Pescata: {wl} su {n} partite in cui la carta è passata dalla tua mano; {rate}."
+  },
+  "cell_not_drawn": {
+    "message": "Non pescata: {wl} su {n} partite in cui è rimasta nel tuo grimorio; {rate}."
+  },
+  "cell_opening": {
+    "message": "Mano iniziale: {wl} su {n} partite in cui era nella tua mano iniziale; {rate}."
+  },
+  "cell_later": {
+    "message": "Dopo: {wl} su {n} partite in cui l’hai pescata nel corso della partita; {rate}."
+  },
+  "cell_played": {
+    "message": "Giocata: {wl} su {n} partite in cui l’hai lanciata o giocata; {rate}. Giocata in {p} delle {d} partite in cui l’hai pescata."
+  },
+  "cell_board": {
+    "message": "In gioco: {wl} su {n} partite in cui è arrivata sul tuo campo di battaglia; {rate}. Di cui {o} senza averla pescata."
+  },
+  "app_version": {
+    "message": "Endstep Tracker {v}"
+  },
+  "unfiled_matches_one": {
+    "message": "1 match senza deck riconosciuto:"
+  },
+  "unfiled_matches_other": {
+    "message": "{n} match senza deck riconosciuto:"
+  },
+  "deck_choose": {
+    "message": "Scegli uno dei tuoi deck"
+  },
+  "deck_other_formats": {
+    "message": "Altri formati"
+  },
+  "deck_assign": {
+    "message": "Assegna a questo deck"
+  },
+  "unfiled_done_one": {
+    "message": "1 match assegnato a \"{deck}\""
+  },
+  "unfiled_done_other": {
+    "message": "{n} match assegnati a \"{deck}\""
+  },
+  "deck_merge": {
+    "message": "Unisci con un altro deck…"
+  },
+  "deck_merge_into": {
+    "message": "Unisci \"{deck}\" con:"
+  },
+  "deck_merge_go": {
+    "message": "Unisci"
+  },
+  "deck_merge_confirm_one": {
+    "message": "Unire \"{from}\" con \"{to}\"? Il suo match verrà contato in \"{to}\", come i prossimi. Potrai separare i due deck in seguito."
+  },
+  "deck_merge_confirm_other": {
+    "message": "Unire \"{from}\" con \"{to}\"? I suoi {n} match verranno contati in \"{to}\", come i prossimi. Potrai separare i due deck in seguito."
+  },
+  "deck_merged": {
+    "message": "\"{from}\" unito a \"{to}\""
+  },
+  "deck_includes": {
+    "message": "Include anche: {list}"
+  },
+  "deck_split": {
+    "message": "Separa"
+  },
+  "deck_split_done": {
+    "message": "Deck separati"
+  }
+}

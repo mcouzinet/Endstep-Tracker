@@ -70,7 +70,7 @@ En développement seulement, l'extension enregistre aussi chacune de mes décisi
 
 ## Langues
 
-L'interface existe en français et en anglais : elle suit la langue de Chrome, et un sélecteur dans l'en-tête permet de forcer l'une ou l'autre. Les textes sont dans `_locales/en/messages.json` et `_locales/fr/messages.json` (le manifest utilise les mêmes fichiers). Pour ajouter une langue : copier `_locales/en`, traduire, puis l'ajouter à `LANGS` dans `shared.js`.
+L'interface existe en anglais, français, espagnol, allemand, italien et portugais du Brésil : elle suit la langue du navigateur, et un sélecteur dans l'en-tête permet d'en forcer une. Les textes sont dans `_locales/<langue>/messages.json` (le manifest utilise les mêmes fichiers) ; l'anglais comble toute clé absente. Pour ajouter une langue : copier `_locales/en`, traduire, l'ajouter à `LANGS` dans `shared.js` (et à `LOCALE_DIR` si son dossier porte une région, comme `pt_BR` pour `pt`, Chrome n'acceptant pas `pt` seul), puis au sélecteur de `dashboard.html`. Le Coach (`coach-ui.js`) n'existe qu'en français et en anglais, les autres langues y voient l'anglais.
 
 ## Fonctionnement
 

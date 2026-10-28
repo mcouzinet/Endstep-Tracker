@@ -329,7 +329,7 @@ function placePromos() {
   $('#promos').classList.toggle('both', promoOn && whozicOn);
   $('#news').hidden = !(has && newsAt);
   if ($('#review')) $('#review').hidden = !(reviewOn && recorded() >= REVIEW_AFTER); // not in the Safari build (release.sh)
-  if (WHOZIC) $('#promo-wz-link').href = `${WHOZIC}${locale === 'en' ? '/en' : ''}?utm_source=endstep-tracker`; // where the visit comes from, nothing else
+  if (WHOZIC) $('#promo-wz-link').href = `${WHOZIC}${locale === 'fr' ? '' : '/en'}?utm_source=endstep-tracker`; // where the visit comes from, nothing else
 }
 async function showPromo(closed, whozicClosed) {
   closed = obj(closed);
@@ -1015,7 +1015,8 @@ function chip(m, g) {
   const r = gRes(m, g);
   const p = onPlay(m, g);
   const k = g.mulligans[m.mySeat] || 0;
-  const label = `${t('game_n', { n: g.n })}${t('colon')}${(r ? resultLabel(r) : t('ongoing')).toLowerCase()}, ${
+  const res = r ? resultLabel(r) : t('ongoing');
+  const label = `${t('game_n', { n: g.n })}${t('colon')}${locale === 'de' ? res : res.toLowerCase()}, ${ // German nouns keep their capital
     p === null ? t('pos_unknown') : p ? t('on_play_l') : t('on_draw_l')}${k ? `, ${tn('mulligans', k)}` : ''}`;
   const icon = r ? `<svg class="i"><use href="#${RESULT_ICON[r]}"/></svg>` : '';
   return `<span class="g ${r || 'open'}" role="img" aria-label="${esc(label)}" title="${esc(label)}"><span class="g-res">${icon}</span>`

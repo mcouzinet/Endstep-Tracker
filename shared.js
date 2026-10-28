@@ -279,7 +279,8 @@
 
   // Strings. Extension pages read _locales themselves so the language picked in the dashboard wins over the browser's;
   // content scripts cannot fetch extension files and use the browser's lookup, in the browser's language.
-  const LANGS = ['en', 'fr'];
+  const LANGS = ['en', 'fr', 'es', 'de', 'it', 'pt'];
+  const LOCALE_DIR = { pt: 'pt_BR' }; // Chrome has no plain pt folder
   const LANG_PREF = 'endstep-tracker.lang';
   const baseLang = (l) => String(l || '').toLowerCase().split('-')[0];
   function translator(locale, lookup) {
@@ -295,7 +296,7 @@
     let saved = null;
     try { saved = localStorage.getItem(LANG_PREF); } catch { /* storage unavailable */ }
     const locale = [saved, navigator.language].map(baseLang).find((l) => LANGS.includes(l)) || 'en';
-    const read = async (lang) => { try { return await (await fetch(`_locales/${lang}/messages.json`)).json(); } catch { return {}; } };
+    const read = async (lang) => { try { return await (await fetch(`_locales/${LOCALE_DIR[lang] || lang}/messages.json`)).json(); } catch { return {}; } };
     const messages = Object.assign(await read('en'), locale === 'en' ? {} : await read(locale)); // English fills any gap
     return translator(locale, (k) => messages[k] && messages[k].message);
   }
