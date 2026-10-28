@@ -1114,5 +1114,53 @@
   },
   "app_version": {
     "message": "Endstep Tracker {v}"
+  },
+  "unfiled_matches_one": {
+    "message": "1 match with no deck recognized:"
+  },
+  "unfiled_matches_other": {
+    "message": "{n} matches with no deck recognized:"
+  },
+  "deck_choose": {
+    "message": "Pick one of your decks"
+  },
+  "deck_other_formats": {
+    "message": "Other formats"
+  },
+  "deck_assign": {
+    "message": "File under this deck"
+  },
+  "unfiled_done_one": {
+    "message": "1 match filed under \"{deck}\""
+  },
+  "unfiled_done_other": {
+    "message": "{n} matches filed under \"{deck}\""
+  },
+  "deck_merge": {
+    "message": "Merge with another deck…"
+  },
+  "deck_merge_into": {
+    "message": "Merge \"{deck}\" with:"
+  },
+  "deck_merge_go": {
+    "message": "Merge"
+  },
+  "deck_merge_confirm_one": {
+    "message": "Merge \"{from}\" with \"{to}\"? Its match will count under \"{to}\", like the next ones. You can split the two decks later."
+  },
+  "deck_merge_confirm_other": {
+    "message": "Merge \"{from}\" with \"{to}\"? Its {n} matches will count under \"{to}\", like the next ones. You can split the two decks later."
+  },
+  "deck_merged": {
+    "message": "\"{from}\" merged with \"{to}\""
+  },
+  "deck_includes": {
+    "message": "Also includes: {list}"
+  },
+  "deck_split": {
+    "message": "Split"
+  },
+  "deck_split_done": {
+    "message": "Decks split"
   }
 }

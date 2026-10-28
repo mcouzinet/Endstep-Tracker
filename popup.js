@@ -16,7 +16,7 @@ async function openDashboard() {
 
 async function load() {
   const all = await S.loadStore();
-  const d = { matches: [], notes: {}, decks: S.obj(all.decks), settings: S.obj(all.settings) };
+  const d = { matches: [], notes: {}, decks: S.obj(all.decks), merges: S.obj(all.deckMerges), settings: S.obj(all.settings) };
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) { const m = S.normalizeMatch(v); if (m) d.matches.push(m); }
     else if (k.startsWith('note:')) d.notes[k.slice(5)] = S.obj(v);
@@ -28,7 +28,7 @@ async function load() {
 
 function render(d) {
   const names = S.savedCardNames(); // my cards' one names as the dashboard looked them up: the popup never asks Scryfall
-  const C = { notes: d.notes, decks: d.decks, t, canon: (n) => names[n] || n };
+  const C = { notes: d.notes, decks: d.decks, merges: d.merges, t, canon: (n) => names[n] || n };
   const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
   const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= 5 ? ` · ${pct(r)}` : ''}</dd></div>`;

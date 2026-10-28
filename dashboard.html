@@ -48,6 +48,10 @@
     .menu button:hover, .menu button:focus-visible { background: var(--surface-3); outline: none; }
     .menu button.danger { color: var(--danger); }
     .menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 4px; }
+    .deck-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: -4px 0 14px; font-size: 13px; color: var(--ink-2); } /* file or merge the deck in view */
+    .deck-tools select { max-width: 100%; }
+    .deck-tools .link { color: var(--ink-3); } /* always there under a deck: quiet until needed */
+    .deck-tools .link:hover { color: var(--gold-hi); }
     .menu-version { margin: 4px 10px 2px; font-size: 11px; } /* which build is loaded, at a glance */
 
     /* ---- filters ---- */
@@ -529,6 +533,7 @@
       <span id="facet" class="facet" hidden><span id="facet-label"></span><button id="facet-clear" data-i18n-attr="aria-label:remove_filter"><svg class="i"><use href="#i-x"/></svg></button></span>
       <button id="reset" class="link off" data-i18n="reset"></button>
     </div>
+    <div id="deck-tools" class="deck-tools" hidden></div>
 
     <section id="glance" class="panel glance" hidden></section>
 

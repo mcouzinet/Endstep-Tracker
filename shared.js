@@ -159,11 +159,22 @@
   }
 
   // A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
+  // A deck merged into another (the dashboard's deck tools, c.merges: { deckId: { id, name, from } }) counts as that one;
+  // each match keeps its own list, so the merged deck's lists show as versions. A merge of a merge is followed.
+  function mergedInto(id, c) {
+    let to = null;
+    for (let hop = 0, at = id; hop < 5 && at && obj(c.merges)[at]; hop++) { to = obj(c.merges)[at]; at = to.id; }
+    return to;
+  }
   function myDeck(m, c) {
     const id = c.notes[m.id] && c.notes[m.id].deckId;
-    if (!id) return m.myDeck;
+    if (!id) {
+      const to = m.myDeck && mergedInto(m.myDeck.id, c);
+      return to ? { ...m.myDeck, id: to.id, name: to.name, source: 'merged' } : m.myDeck;
+    }
     const d = c.decks[id] || {};
-    return { id, name: d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
+    const to = mergedInto(id, c);
+    return { id: to ? to.id : id, name: (to && to.name) || d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
   }
   // The deck's current name on the site, else the one it had during the match: a deck renamed there keeps its matches.
   function deckName(m, c) {
@@ -467,7 +478,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
+    myDeck, mergedInto, deckName, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
     deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

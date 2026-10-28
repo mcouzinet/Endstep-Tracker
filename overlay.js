@@ -136,7 +136,7 @@
     if (choice && choice.key !== phaseKey) choice = null;
     const open = choice ? choice.open : phase !== 'game'; // folded while a game is played, unfolded around it
 
-    const C = { notes: data.notes, decks: data.decks, t };
+    const C = { notes: data.notes, decks: data.decks, merges: data.merges, t };
     const guess = (x) => (S.archetype(x, C) ? null : S.recognize(x, C, data.meta, Meta, T));
     const keyOf = (x) => S.oppKey(x, C, (guess(x) || {}).name);
     const session = S.records(S.lastSession(list), now).m;
@@ -282,6 +282,7 @@
     if (k.startsWith('match:')) { const m = v === undefined ? null : S.normalizeMatch(v); if (m) data.matches.set(m.id, m); else data.matches.delete(k.slice(6)); }
     else if (k.startsWith('note:')) { if (v === undefined) delete data.notes[k.slice(5)]; else data.notes[k.slice(5)] = S.obj(v); }
     else if (k === 'decks') data.decks = S.obj(v);
+    else if (k === 'deckMerges') data.merges = S.obj(v); // decks merged in the dashboard
     else if (k === 'historyImport') data.historyImport = v || null;
     else if (k === 'meta') data.meta = v ? { formats: v.formats, byFormat: S.obj(v.byFormat) } : null;
     else if (k === 'settings') {
@@ -297,7 +298,7 @@
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local' || orphaned()) return;
     let touched = false;
-    for (const [k, c] of Object.entries(changes)) if (/^(match|note):|^(decks|meta|settings|historyImport)$/.test(k)) { apply(k, c.newValue); touched = true; }
+    for (const [k, c] of Object.entries(changes)) if (/^(match|note):|^(decks|deckMerges|meta|settings|historyImport)$/.test(k)) { apply(k, c.newValue); touched = true; }
     if (touched && !typing()) render();
   });
   const tick = setInterval(() => { if (orphaned()) { clearInterval(tick); host.remove(); } else if (shown && !typing()) render(); }, 30e3); // the end card expires

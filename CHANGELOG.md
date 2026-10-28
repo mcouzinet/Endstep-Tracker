@@ -3,6 +3,13 @@
 Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
+## Non publié
+
+### Ajouté
+
+- **Ranger d'un coup les matchs sans deck** (1.6.1) : sous les filtres, quand « Inconnu » est choisi (des matchs importés de l'historique dont le site ne donnait pas le deck), choisis un de tes decks et tous ces matchs passent sous lui, comme avec le sélecteur « Mon deck » de chaque match.
+- **Fusionner deux decks** (1.6.1) : sous les filtres, « Fusionner avec un autre deck… » range tous les matchs du deck affiché sous un autre deck du même format, les prochains compris ; chaque match garde sa liste, qui apparaît comme une version. Pratique pour un deck recréé sous un autre nom ou supprimé du site. « Séparer » défait la fusion. Les fusions sont dans les sauvegardes.
+
 ## [1.6] (2026-10-26)
 
 Filtre classés / non classés, « Jouée » et « En jeu » dans Mes cartes, avant et après side, une image de tes stats à partager, ton plan de side à copier, une carte un nom partout, et les nouveautés affichées après une mise à jour.

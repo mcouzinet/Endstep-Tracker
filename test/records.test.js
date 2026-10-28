@@ -34,4 +34,19 @@ const old = Object.assign(match('d', 'W', []), { myDeck: { id: 'deck-1', name: '
 assert.equal(S.deckName(old, C({ 'deck-1': { name: '[DC] Yoshi Esper' } })), '[DC] Yoshi Esper');
 assert.equal(S.deckName(old, C({})), '[DC] - Yoshi Esper', 'a deck the site no longer lists keeps the name it had');
 
+// Decks merged in the dashboard: a match of the merged deck counts under the other one, with its own list.
+{
+  const mk = (id, deck) => S.normalizeMatch({ id, startedAt: 1, players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'opp' }], mySeat: 0, games: [], formatId: 'pauper', myDeck: { id: deck, name: deck === 'd-old' ? 'Asmoranom' : 'Asmo', cards: [{ name: deck, quantity: 1 }] } });
+  const old = mk('m1', 'd-old'), cur = mk('m2', 'd-new');
+  const ctx = { notes: {}, decks: { 'd-new': { name: 'Asmo' } }, t: (k) => k, merges: { 'd-old': { id: 'd-new', name: 'Asmo', from: 'Asmoranom' } } };
+  assert.equal(S.deckName(old, ctx), 'Asmo', 'the merged deck takes the other name');
+  assert.deepEqual(S.myDeck(old, ctx).cards, [{ name: 'd-old', quantity: 1 }], 'its own list stays');
+  assert.equal(S.deckName(cur, ctx), 'Asmo');
+  assert.equal(S.deckName(old, { ...ctx, merges: {} }), 'Asmoranom', 'split again: back to its own name');
+  const chain = { ...ctx, merges: { a: { id: 'b', name: 'B' }, b: { id: 'c', name: 'C' } } };
+  assert.equal(S.mergedInto('a', chain).name, 'C', 'a merge of a merge is followed');
+  const picked = { ...ctx, notes: { m2: { deckId: 'd-old' } }, decks: { 'd-old': { name: 'Asmoranom' } } };
+  assert.equal(S.deckName(cur, picked), 'Asmo', 'a deck picked by hand that was merged counts as the other one');
+}
+
 console.log('records: ok');

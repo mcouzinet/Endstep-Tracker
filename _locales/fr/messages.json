@@ -1114,5 +1114,53 @@
   },
   "app_version": {
     "message": "Endstep Tracker {v}"
+  },
+  "unfiled_matches_one": {
+    "message": "1 match sans deck reconnu :"
+  },
+  "unfiled_matches_other": {
+    "message": "{n} matchs sans deck reconnu :"
+  },
+  "deck_choose": {
+    "message": "Choisis un de tes decks"
+  },
+  "deck_other_formats": {
+    "message": "Autres formats"
+  },
+  "deck_assign": {
+    "message": "Ranger sous ce deck"
+  },
+  "unfiled_done_one": {
+    "message": "1 match rangé sous « {deck} »"
+  },
+  "unfiled_done_other": {
+    "message": "{n} matchs rangés sous « {deck} »"
+  },
+  "deck_merge": {
+    "message": "Fusionner avec un autre deck…"
+  },
+  "deck_merge_into": {
+    "message": "Fusionner « {deck} » avec :"
+  },
+  "deck_merge_go": {
+    "message": "Fusionner"
+  },
+  "deck_merge_confirm_one": {
+    "message": "Fusionner « {from} » avec « {to} » ? Son match comptera sous « {to} », comme les prochains. Tu pourras séparer les deux decks ensuite."
+  },
+  "deck_merge_confirm_other": {
+    "message": "Fusionner « {from} » avec « {to} » ? Ses {n} matchs compteront sous « {to} », comme les prochains. Tu pourras séparer les deux decks ensuite."
+  },
+  "deck_merged": {
+    "message": "« {from} » fusionné avec « {to} »"
+  },
+  "deck_includes": {
+    "message": "Comprend aussi : {list}"
+  },
+  "deck_split": {
+    "message": "Séparer"
+  },
+  "deck_split_done": {
+    "message": "Decks séparés"
   }
 }

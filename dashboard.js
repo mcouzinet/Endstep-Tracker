@@ -46,6 +46,7 @@ const state = { q: '', scope: null, version: null, compare: false, period: 'all'
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
+let merges = {}; // deckId -> { id, name, from }: decks merged into another one (deck tools, under the filters)
 let drawer = null; // { key, renaming } of the matchup open in the side panel
 let curScope = null; // the scope of the last render
 let openId = null;
@@ -56,7 +57,7 @@ let toastTimer;
 
 // --- data helpers ---
 // Context for shared.js: my notes and decks as currently loaded, and the translator.
-const C = { get notes() { return notes; }, get decks() { return decks; }, t: (k, v) => t(k, v), canon: (name) => cardNames[name] || name };
+const C = { get notes() { return notes; }, get decks() { return decks; }, get merges() { return merges; }, t: (k, v) => t(k, v), canon: (name) => cardNames[name] || name };
 
 // A card's one name, as Scryfall knows it: a printing with its own name (Beholder's Sleep Ray is Stifle) and either face
 // of a double-faced card (Black Panther, Hope Enduring is King T'Challa) count as that card wherever my cards show: My
@@ -290,6 +291,7 @@ async function load() {
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
     else if (k === 'decks') decks = obj(v);
+    else if (k === 'deckMerges') merges = obj(v);
   }
   // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays, and
   // first takes what the imported one knows and it lacks (a record caught in part has no format, deck or result).
@@ -412,6 +414,7 @@ function applyChanges(changes) {
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
     } else if (k === 'decks') decks = obj(c.newValue);
+    else if (k === 'deckMerges') merges = obj(c.newValue);
     else if (k === 'meta') useMeta(c.newValue); // loaded by another dashboard tab
   }
   refresh();
@@ -542,6 +545,7 @@ function render() {
   const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
   curScope = s;
   renderFilters(s, shown, list, vs, v);
+  renderDeckTools(s);
   renderGlance(stats, cmp);
   renderVersions(cur, prev);
   renderOverview(stats);
@@ -567,6 +571,94 @@ function renderHeader() {
     $('#live-text').textContent = t('live_pill', { opp: oppLabel(live) }) + (score ? ` · ${score}` : '');
   }
 }
+
+// --- deck tools, under the filters with one deck in view: matches the site gave no deck for are filed under one of my
+// decks in one go (the "My deck" pick of each match, all at once), and a deck split under several names or ids is merged
+// into another one (c.merges; its matches keep their lists, which show as versions), until split again. ---
+let mergeOpen = false;
+const sameFormat = (d, format) => String((d && (d.formatId || d.format)) || '').toLowerCase().replace(/[\s_]+/g, '-') === String(format || '').toLowerCase().replace(/[\s_]+/g, '-');
+const deckLabel = (id, d) => (d.name || id) + (d.format || d.formatId ? ` · ${d.format || d.formatId}` : '');
+const unfiled = (s) => matches.filter((m) => inScope(m, s) && !m.limitedDeck && !S.myDeck(m, C));
+// The other decks of a format, newest first: from my matches (the deck each one now counts under), then the decks seen on
+// the site in that format that I have not played yet.
+function otherDecks(s) {
+  const out = new Map(); // name -> id
+  for (const m of matches) {
+    const d = S.myDeck(m, C);
+    if (d && formatOf(m) === s.format && deckName(m) !== s.deck && !out.has(deckName(m))) out.set(deckName(m), d.id);
+  }
+  for (const [id, d] of Object.entries(decks)) if (d && d.name && d.name !== s.deck && sameFormat(d, s.format) && !out.has(d.name)) out.set(d.name, id);
+  return [...out].map(([name, id]) => ({ name, id }));
+}
+function renderDeckTools(s) {
+  const el = $('#deck-tools');
+  const unknown = s.deck !== null && s.deck === t('unknown') ? unfiled(s) : [];
+  if (s.deck === null || (s.deck === t('unknown') && !unknown.length)) { el.hidden = true; mergeOpen = false; return; }
+  el.hidden = false;
+  if (unknown.length) {
+    const opts = (mine) => Object.entries(decks).filter(([, d]) => d && sameFormat(d, s.format) === mine)
+      .map(([id, d]) => ({ id, label: deckLabel(id, d) })).sort((a, b) => a.label.localeCompare(b.label, locale))
+      .map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join('');
+    const here = opts(true), elsewhere = opts(false);
+    el.innerHTML = `<span>${esc(tn('unfiled_matches', unknown.length))}</span>`
+      + `<select id="dt-assign" aria-label="${esc(t('deck_choose'))}"><option value="">${esc(t('deck_choose'))}</option>`
+      + (here ? `<optgroup label="${esc(s.format)}">${here}</optgroup>` : '') + (elsewhere ? `<optgroup label="${esc(t('deck_other_formats'))}">${elsewhere}</optgroup>` : '') + '</select>'
+      + `<button type="button" class="btn" data-dt="assign">${esc(t('deck_assign'))}</button>`;
+    return;
+  }
+  const ids = new Set(matches.filter((m) => inScope(m, s)).map((m) => (S.myDeck(m, C) || {}).id).filter(Boolean));
+  const within = [...new Set(Object.values(merges).filter((to) => ids.has(to.id)).map((to) => to.from).filter(Boolean))];
+  const others = otherDecks(s);
+  el.innerHTML = (within.length ? `<span class="muted">${esc(t('deck_includes', { list: within.join(', ') }))}</span><button type="button" class="link" data-dt="split">${esc(t('deck_split'))}</button>` : '')
+    + (!others.length ? '' : !mergeOpen ? `<button type="button" class="link" data-dt="merge-open">${esc(t('deck_merge'))}</button>`
+      : `<label>${esc(t('deck_merge_into', { deck: s.deck }))} <select id="dt-merge">${others.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></label>`
+        + `<button type="button" class="btn" data-dt="merge">${esc(t('deck_merge_go'))}</button><button type="button" class="link" data-dt="merge-cancel">${esc(t('ov_cancel'))}</button>`);
+  if (!el.innerHTML) el.hidden = true;
+}
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-dt]');
+  if (!b) return;
+  const s = activeScope();
+  const act = b.dataset.dt;
+  if (act === 'merge-open' || act === 'merge-cancel') { mergeOpen = act === 'merge-open'; render(); return; }
+  if (act === 'assign') {
+    const id = $('#dt-assign').value;
+    if (!id) { $('#dt-assign').focus(); return; }
+    const list = unfiled(s);
+    for (const m of list) notes[m.id] = Object.assign({}, notes[m.id], { deckId: id });
+    await chrome.storage.local.set(Object.fromEntries(list.map((m) => ['note:' + m.id, notes[m.id]])));
+    const name = S.deckName(list[0], C);
+    toast(tn('unfiled_done', list.length, { deck: name }));
+    setFilter({ scope: scopeFor({ format: s.format, deck: name }), version: null });
+    return;
+  }
+  if (act === 'merge') {
+    const to = otherDecks(s).find((o) => o.id === $('#dt-merge').value);
+    if (!to) return;
+    const list = matches.filter((m) => inScope(m, s));
+    if (!confirm(tn('deck_merge_confirm', list.length, { from: s.deck, to: to.name }))) return;
+    // Every id this deck goes by in these matches (as recorded, or picked by hand) points to the other deck, and so do
+    // the decks merged into it before.
+    const raw = new Set(list.map((m) => (notes[m.id] && notes[m.id].deckId) || (m.myDeck && m.myDeck.id)).filter(Boolean));
+    const now = new Set(list.map((m) => (S.myDeck(m, C) || {}).id).filter(Boolean));
+    const next = { ...merges };
+    for (const [id, x] of Object.entries(next)) if (now.has(x.id)) next[id] = { ...x, id: to.id, name: to.name };
+    for (const id of raw) if (id !== to.id) next[id] = { id: to.id, name: to.name, from: s.deck };
+    merges = next;
+    mergeOpen = false;
+    await chrome.storage.local.set({ deckMerges: merges });
+    toast(t('deck_merged', { from: s.deck, to: to.name }));
+    setFilter({ scope: scopeFor({ format: s.format, deck: to.name }), version: null });
+    return;
+  }
+  if (act === 'split') {
+    const ids = new Set(matches.filter((m) => inScope(m, s)).map((m) => (S.myDeck(m, C) || {}).id).filter(Boolean));
+    merges = Object.fromEntries(Object.entries(merges).filter(([, to]) => !ids.has(to.id)));
+    await chrome.storage.local.set({ deckMerges: merges });
+    toast(t('deck_split_done'));
+    render();
+  }
+});
 
 function renderFilters(s, shown, list, vs, v) {
   $('#f-scope').value = JSON.stringify([s.format, s.deck]);
@@ -1369,7 +1461,7 @@ const ACTIONS = {
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(addon ? addon.exportExtra(all) : {}) }), 'application/json');
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), deckMerges: merges, plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(addon ? addon.exportExtra(all) : {}) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -1408,7 +1500,7 @@ const ACTIONS = {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
     const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(addon ? addon.prefixes : [])];
-    await chrome.storage.local.remove(Object.keys(all).filter((k) => k === 'deletedMatches' || prefixes.some((p) => k.startsWith(p)))); // all gone: an import brings everything back
+    await chrome.storage.local.remove(Object.keys(all).filter((k) => k === 'deletedMatches' || k === 'deckMerges' || prefixes.some((p) => k.startsWith(p)))); // all gone: an import brings everything back
     openId = null;
     toast(t('all_deleted'));
   },
@@ -1481,6 +1573,7 @@ $('#import').addEventListener('change', async (e) => {
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id] && !here.has(id)) items['dec:' + id] = obj(d);
     if (addon) addon.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
+    if (Object.keys(obj(data && data.deckMerges)).length) items.deckMerges = { ...obj(data.deckMerges), ...merges }; // the merges made here win
     await chrome.storage.local.set(items);
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
