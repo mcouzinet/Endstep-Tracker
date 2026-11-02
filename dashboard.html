@@ -96,7 +96,6 @@
     .panel.cards { padding: 16px 12px 10px; }
     .cards .rec { padding-left: 8px; padding-right: 8px; }
     .cards .rec.cells { --bar: 9rem; --cell: 7.2rem; }
-    @media (max-width: 1180px) { .cards .rec.cells { --bar: 5rem; --cell: 5.4rem; } } /* the card names keep their room */
     .cards .rec.head { position: sticky; top: 0; z-index: 1; padding-top: 8px; background: var(--surface); } /* the column names stay in sight down a 100-card list */
     .cards .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* the gap stays visible */
     .cards-note { margin: 0 8px 10px; font-size: 12px; }
@@ -394,15 +393,6 @@
       .match-row .when { grid-area: meta; }
       .promo { grid-template-columns: auto minmax(0, 1fr); }
       .promo-shot { display: none; }
-    }
-    @media (min-width: 561px) and (max-width: 980px) { /* too many columns for the card names: the cells go under the name, three to a row */
-      .cards .rec.cells { grid-template-columns: repeat(15, minmax(0, 1fr)); }
-      .cards .rec.cells > :nth-child(1) { grid-column: span 7; }
-      .cards .rec.cells > :nth-child(2) { grid-column: span 4; }
-      .cards .rec.cells > :nth-child(3), .cards .rec.cells > :nth-child(4) { grid-column: span 2; }
-      .cards .rec.head { display: none; }
-      .cards .rec-sub { grid-column: span 5; text-align: left; }
-      .cards .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 6px; color: var(--ink-3); }
     }
     @media (max-width: 560px) {
       main { padding: 18px 12px 80px; }
