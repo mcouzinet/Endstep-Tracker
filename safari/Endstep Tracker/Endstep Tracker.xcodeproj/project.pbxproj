@@ -20,6 +20,7 @@
 		2AF2FC9D30666BB2005D94CB /* theme.css in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC8E30666BB2005D94CB /* theme.css */; };
 		2AF2FC9E30666BB2005D94CB /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC8F30666BB2005D94CB /* popup.js */; };
 		2AF2FC9F30666BB2005D94CB /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC9030666BB2005D94CB /* background.js */; };
+		2AF2FCAC30666BB2005D94CB /* telemetry.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FCAD30666BB2005D94CB /* telemetry.js */; };
 		2AF2FCA030666BB2005D94CB /* hook.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC9130666BB2005D94CB /* hook.js */; };
 		2AF2FCA130666BB2005D94CB /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC9230666BB2005D94CB /* popup.html */; };
 		2AF2FCA230666BB2005D94CB /* overlay.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AF2FC9330666BB2005D94CB /* overlay.js */; };
@@ -73,6 +74,7 @@
 		2AF2FC8E30666BB2005D94CB /* theme.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = theme.css; path = ../../../dist/safari/theme.css; sourceTree = "<group>"; };
 		2AF2FC8F30666BB2005D94CB /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.js; path = ../../../dist/safari/popup.js; sourceTree = "<group>"; };
 		2AF2FC9030666BB2005D94CB /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../../dist/safari/background.js; sourceTree = "<group>"; };
+		2AF2FCAD30666BB2005D94CB /* telemetry.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = telemetry.js; path = ../../../dist/safari/telemetry.js; sourceTree = "<group>"; };
 		2AF2FC9130666BB2005D94CB /* hook.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = hook.js; path = ../../../dist/safari/hook.js; sourceTree = "<group>"; };
 		2AF2FC9230666BB2005D94CB /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../../dist/safari/popup.html; sourceTree = "<group>"; };
 		2AF2FC9330666BB2005D94CB /* overlay.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = overlay.js; path = ../../../dist/safari/overlay.js; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 				2AF2FC8E30666BB2005D94CB /* theme.css */,
 				2AF2FC8F30666BB2005D94CB /* popup.js */,
 				2AF2FC9030666BB2005D94CB /* background.js */,
+				2AF2FCAD30666BB2005D94CB /* telemetry.js */,
 				2AF2FC9130666BB2005D94CB /* hook.js */,
 				2AF2FC9230666BB2005D94CB /* popup.html */,
 				2AF2FC9330666BB2005D94CB /* overlay.js */,
@@ -278,6 +281,7 @@
 				2AF2FCA330666BB2005D94CB /* dashboard.html in Resources */,
 				2AF2FCAA30666BB2005D94CB /* shared.js in Resources */,
 				2AF2FC9F30666BB2005D94CB /* background.js in Resources */,
+				2AF2FCAC30666BB2005D94CB /* telemetry.js in Resources */,
 				2AF2FC9E30666BB2005D94CB /* popup.js in Resources */,
 				2AF2FCA730666BB2005D94CB /* _locales in Resources */,
 				2AF2FCA030666BB2005D94CB /* hook.js in Resources */,
@@ -452,7 +456,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6DTUA72PA3;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -487,7 +491,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6DTUA72PA3;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -525,7 +529,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6DTUA72PA3;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -570,7 +574,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6DTUA72PA3;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
