@@ -33,6 +33,11 @@ if [ "$target" = firefox ]; then
   ' "$stage/manifest.json"
 fi
 if [ "$target" = safari ]; then
+  # The Xcode projects list the package's files one by one: a file they miss is silently missing from the app (telemetry.js
+  # stopped the whole background script in the Safari 1.5 and 1.6).
+  for f in "$stage"/*; do for x in safari safari-ios; do
+    grep -qF "/* $(basename "$f") in Resources */" "$x/Endstep Tracker/Endstep Tracker.xcodeproj/project.pbxproj" || { echo "$(basename "$f") is not in the $x Xcode project"; exit 1; }
+  done; done
   # Safari: 18.4 for storage.getKeys. browser_specific_settings instead of minimum_chrome_version, a 1024 px icon (Apple's
   # packager builds the app's App Store icon from the largest one), and hook.js out of the manifest: Safari ignores
   # "world" there, background.js registers it in the page world instead.

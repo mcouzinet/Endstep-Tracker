@@ -21,6 +21,7 @@
 		2AC0DEE03077F5EE008498E1 /* theme.css in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED13077F5EE008498E1 /* theme.css */; };
 		2AC0DEE13077F5EE008498E1 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED23077F5EE008498E1 /* popup.js */; };
 		2AC0DEE23077F5EE008498E1 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED33077F5EE008498E1 /* background.js */; };
+		2AC0DEEF3077F5EE008498E1 /* telemetry.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DEF03077F5EE008498E1 /* telemetry.js */; };
 		2AC0DEE33077F5EE008498E1 /* hook.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED43077F5EE008498E1 /* hook.js */; };
 		2AC0DEE43077F5EE008498E1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED53077F5EE008498E1 /* popup.html */; };
 		2AC0DEE53077F5EE008498E1 /* overlay.js in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0DED63077F5EE008498E1 /* overlay.js */; };
@@ -75,6 +76,7 @@
 		2AC0DED13077F5EE008498E1 /* theme.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = theme.css; path = ../../../dist/safari/theme.css; sourceTree = "<group>"; };
 		2AC0DED23077F5EE008498E1 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.js; path = ../../../dist/safari/popup.js; sourceTree = "<group>"; };
 		2AC0DED33077F5EE008498E1 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../../dist/safari/background.js; sourceTree = "<group>"; };
+		2AC0DEF03077F5EE008498E1 /* telemetry.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = telemetry.js; path = ../../../dist/safari/telemetry.js; sourceTree = "<group>"; };
 		2AC0DED43077F5EE008498E1 /* hook.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = hook.js; path = ../../../dist/safari/hook.js; sourceTree = "<group>"; };
 		2AC0DED53077F5EE008498E1 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../../dist/safari/popup.html; sourceTree = "<group>"; };
 		2AC0DED63077F5EE008498E1 /* overlay.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = overlay.js; path = ../../../dist/safari/overlay.js; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 				2AC0DED13077F5EE008498E1 /* theme.css */,
 				2AC0DED23077F5EE008498E1 /* popup.js */,
 				2AC0DED33077F5EE008498E1 /* background.js */,
+				2AC0DEF03077F5EE008498E1 /* telemetry.js */,
 				2AC0DED43077F5EE008498E1 /* hook.js */,
 				2AC0DED53077F5EE008498E1 /* popup.html */,
 				2AC0DED63077F5EE008498E1 /* overlay.js */,
@@ -281,6 +284,7 @@
 				2AC0DEE63077F5EE008498E1 /* dashboard.html in Resources */,
 				2AC0DEED3077F5EE008498E1 /* shared.js in Resources */,
 				2AC0DEE23077F5EE008498E1 /* background.js in Resources */,
+				2AC0DEEF3077F5EE008498E1 /* telemetry.js in Resources */,
 				2AC0DEE13077F5EE008498E1 /* popup.js in Resources */,
 				2AC0DEEA3077F5EE008498E1 /* _locales in Resources */,
 				2AC0DEE33077F5EE008498E1 /* hook.js in Resources */,
@@ -464,7 +468,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Endstep Tracker Extension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker Extension";
@@ -489,7 +493,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -497,7 +501,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Endstep Tracker Extension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker Extension";
@@ -522,7 +526,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -532,7 +536,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Endstep Tracker/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker";
@@ -564,7 +568,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -574,7 +578,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Endstep Tracker/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Endstep Tracker";
@@ -606,7 +610,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
