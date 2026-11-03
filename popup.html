@@ -28,6 +28,7 @@
     .side .in { color: var(--win); } .side .out { color: var(--loss); } .side .muted { font-size: 12px; }
     ul { list-style: none; margin: 0; padding: 0; }
     .recent li { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgb(44 38 30 / .6); font-size: 13px; }
+    .recent:first-child li:first-child { border-top: 0; } /* no session heading above it: only matches against the AI */
     .recent .who { min-width: 0; display: grid; }
     .recent .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .recent .score { font-weight: 600; font-variant-numeric: tabular-nums; }

@@ -50,7 +50,7 @@
   }
 
   // endstep.cc allows 300 requests a minute per client: keep RESERVE of them for the site itself, and on a 429
-  // wait for the window to reset instead of failing the whole format.
+  // wait for the window to reset instead of failing the whole format. Same wait on a 503: the site's "busy right now".
   const header = (r, k) => (r.headers && r.headers.get(k)) || null;
   const waitReset = (r) => {
     const v = header(r, 'retry-after') || header(r, 'x-ratelimit-reset');
@@ -59,7 +59,7 @@
   };
   const json = async (fetchFn, url, tries = 3) => {
     const r = await fetchFn(url);
-    if (r.status === 429 && tries > 1) { await waitReset(r); return json(fetchFn, url, tries - 1); }
+    if ((r.status === 429 || r.status === 503) && tries > 1) { await waitReset(r); return json(fetchFn, url, tries - 1); }
     if (!r.ok) throw Object.assign(new Error(`${r.status} ${url}`), { status: r.status });
     const left = header(r, 'x-ratelimit-remaining');
     if (left !== null && Number(left) < RESERVE) await waitReset(r);
@@ -73,7 +73,7 @@
   }
 
   // One format's archetypes with their top-50 card play rates; ~1 request per archetype, so cache the result.
-  // An archetype the site refuses (4xx) is skipped. A 429 that outlasts the retries, a server or network error stops
+  // An archetype the site refuses (4xx) is skipped. A 429 or 503 that outlasts the retries, a server or network error stops
   // every worker at once and fails the load: nothing is fetched for a result that would be thrown away.
   async function loadFormat(formatId, fetchFn = fetch) {
     const f = encodeURIComponent(formatId);

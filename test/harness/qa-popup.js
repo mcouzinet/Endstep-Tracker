@@ -62,6 +62,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.match(await text('main h2'), /^(Session in progress|Last session)/);
     assert.ok((await p.evaluate(() => document.querySelectorAll('.recent li').length)) <= 3);
 
+    // Only matches against the AI: no session to sum up, the last matches all the same (this used to stop the page).
+    const vsAI = (id, ago) => ({ ...data['match:m1'], id, startedAt: Date.now() - ago, updatedAt: Date.now() - ago, endedAt: Date.now() - ago,
+      participants: [{ userId: 'a', username: 'me', isBot: false }, { userId: 'c', username: 'Forge AI', isBot: true }] });
+    await p.evaluate(async (d) => { await chrome.storage.local.clear(); await chrome.storage.local.set(d); }, { 'match:b1': vsAI('b1', 60e3), 'match:b2': vsAI('b2', 600e3) });
+    await p.reload();
+    await sleep(400);
+    assert.equal(await p.evaluate(() => document.body.classList.contains('loading')), false);
+    assert.equal(await text('main h2'), null);
+    assert.equal(await p.evaluate(() => document.querySelectorAll('.recent li').length), 2);
+
     // "Open the dashboard" opens it in a tab.
     await p.click('#open');
     await b.waitForTarget((x) => x.url() === `chrome-extension://${id}/dashboard.html`, { timeout: 5000 });

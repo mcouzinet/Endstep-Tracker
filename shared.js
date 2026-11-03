@@ -256,6 +256,13 @@
     }
     return out;
   }
+  // The format and deck of my last match, newest first in the list: what the dashboard opens on. Not one against the AI
+  // (a deck trained against it would open on empty records), and a match whose deck is unknown only when no other has one.
+  function lastPlayed(list, c) {
+    const rated = list.filter((m) => !vsAI(m));
+    const m = rated.find((x) => myDeck(x, c) || x.limitedDeck) || rated[0];
+    return m ? { format: formatOf(m, c), deck: deckName(m, c) } : { format: null, deck: null };
+  }
   const sessionOpen = (session, now = Date.now()) => session.length > 0 && now - endOf(session[0]) < SESSION_GAP;
 
   // Records count matches, never games: a match is on the play or on the draw as its game 1 was (the only game where
@@ -486,7 +493,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, mergedInto, deckName, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, sessionOpen, records, sideRecords,
+    myDeck, mergedInto, deckName, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

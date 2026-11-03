@@ -100,7 +100,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       dataBtn: document.getElementById('data-btn').textContent.trim(),
     }))));
     console.log('manifest:', JSON.stringify(await dash.evaluate(() => ({ desc: chrome.runtime.getManifest().description, title: chrome.i18n.getMessage('action_title'), ui: chrome.i18n.getUILanguage() }))));
-    // The dashboard opens on my most played deck: show every deck and open the match this run recorded (not whatever row is first).
+    // The dashboard opens on the deck of my last match against a human: show every deck and open the match this run recorded (not whatever row is first).
     await dash.evaluate(() => { try { localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {} });
     await dash.reload({ waitUntil: 'load' });
     await sleep(800);

@@ -81,5 +81,19 @@ Meta.loadFormat('Modern', fakeFetch).then((snap) => {
     });
   });
 }).then(() => {
+  // The site's "busy": a 503 is waited out like a 429, and one that lasts fails the load with its status.
+  let calls = 0;
+  const h = { 'retry-after': '0' };
+  const busyFor = (n) => async () => (++calls <= n ? { ok: false, status: 503, headers: { get: (k) => h[k] } }
+    : { ok: true, status: 200, headers: { get: (k) => h[k] }, json: async () => ({ formats: [{ formatId: 'Pauper' }] }) });
+  return Meta.listFormats(busyFor(2)).then((formats) => {
+    assert.deepEqual(formats, ['Pauper'], '503 retried');
+    calls = 0;
+    return Meta.listFormats(busyFor(9)).then(() => assert.fail('a lasting 503 fails the load'), (err) => {
+      assert.equal(err.status, 503);
+      assert.equal(calls, 3, 'three tries, then it stops');
+    });
+  });
+}).then(() => {
   console.log('meta test: ok');
 });

@@ -140,7 +140,7 @@ for (const name of ['demo', 'empty', 'cards']) {
     remove: async (keys) => { const ch = {}; for (const k of [].concat(keys)) { if (k in window.__DATA) { ch[k] = { oldValue: window.__DATA[k] }; delete window.__DATA[k]; } } fire(ch); },
   }, onChanged: { addListener(fn) { listeners.push(fn); } } }, runtime: { getManifest: () => ({ version: '0.0' }), getURL: (p) => new URL(p, document.baseURI).href } };
   // The QA scripts clear localStorage and expect every demo match listed: default to all decks, all formats
-  // (the real default, my most played deck, is set by writing the filters pref before loading).
+  // (the real default, the deck of my last match, is set by writing the filters pref before loading).
   try { if (!localStorage.getItem('endstep-tracker.filters')) localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {}
 </script>`;
   const out = html.replace('<head>', `<head><base href="file://${P}/">`).replace('<script src="tracker.js"></script>', stub + '\n  <script src="tracker.js"></script>')

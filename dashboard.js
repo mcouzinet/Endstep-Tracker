@@ -37,7 +37,7 @@ const BASICS = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/;
 const STALE_MS = S.STALE_MS;
 const PREFS = 'endstep-tracker.filters';
 
-// scope: null = the default (my most played deck over 30 days), else { format, deck }; a null format means every format,
+// scope: null = the default (the deck of my last match), else { format, deck }; a null format means every format,
 // a null deck every deck of that format. Stats cover scope + period + opponent; result and search only narrow the history.
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
 // tab: the view shown, one of TABS; kept across visits, never reset with the filters.
@@ -146,19 +146,7 @@ function savePrefs() {
   try { localStorage.setItem(PREFS, JSON.stringify(state)); } catch { /* storage unavailable */ }
 }
 const inScope = (m, s) => (s.format === null || formatOf(m) === s.format) && (s.deck === null || deckName(m) === s.deck);
-// Default scope: the format + deck I played most over the last 30 days (all time when nothing recent).
-function defaultScope() {
-  const top = (list) => {
-    const c = new Map();
-    for (const m of list) { const k = JSON.stringify([formatOf(m), deckName(m)]); c.set(k, (c.get(k) || 0) + 1); }
-    return [...c].sort((a, b) => b[1] - a[1])[0];
-  };
-  const rated = matches.filter((m) => !S.vsAI(m)); // a deck trained against the AI would open on empty records
-  const best = top(rated.filter((m) => m.startedAt >= Date.now() - 30 * 864e5)) || top(rated);
-  if (!best) return { format: null, deck: null };
-  const [format, deck] = JSON.parse(best[0]);
-  return { format, deck };
-}
+const defaultScope = () => S.lastPlayed(matches, C);
 function activeScope() {
   const s = state.scope;
   if (!s || !matches.some((m) => inScope(m, s))) return defaultScope(); // deleted matches can empty a saved scope
@@ -444,11 +432,13 @@ function refresh() {
 
 // --- opponent deck recognition, from endstep.cc's public metagame (see meta.js) ---
 const META_TTL = 7 * 864e5;
+const META_RETRY = 5 * 60e3; // the site's "busy" can last: ask again this long after a failure, while the dashboard is open
 const metaData = {}; // formatId -> { at, decks }
 let metaFormats = null; // formats that have metagame data
 let metaFormatsAt = 0;
 let metaBusy = false;
-let metaFailed = false;
+let metaRetryAt = 0;
+let metaTold = false; // the player was told recognition is unavailable: the next tries stay quiet
 const guessMemo = new Map();
 
 function useMeta(s) {
@@ -475,38 +465,51 @@ function guessFor(m) {
 }
 
 // Load what the current matches need, one format at a time (about one request per archetype), then re-render.
+// A format the site cannot serve leaves the others alone and is asked for again META_RETRY later.
 async function ensureMeta() {
-  if (metaBusy || metaFailed) return;
+  if (metaBusy || Date.now() < metaRetryAt) return;
   const need = matches.filter(recognizable);
   const stale = () => !metaFormats || Date.now() - metaFormatsAt > META_TTL;
   const wanted = () => [...new Set(need.map(metaFormatOf))].filter((f) => f && !fresh(f));
   if (!need.length || (!stale() && !wanted().length)) return;
   metaBusy = true;
   let loaded = false;
+  let failure = null;
   try {
     // One dashboard tab downloads at a time: another one waiting here then finds the result in storage.
     await navigator.locks.request('endstep-tracker-meta', async () => {
       await initMeta();
       if (stale()) {
-        metaFormats = await Meta.listFormats();
-        metaFormatsAt = Date.now();
-        await persistMeta();
+        try {
+          metaFormats = await Meta.listFormats();
+          metaFormatsAt = Date.now();
+          await persistMeta();
+        } catch (err) { failure = err; } // the formats last known still serve
       }
       for (const f of wanted()) {
-        if (!metaData[f]) toast(t('guess_loading', { format: f }));
-        metaData[f] = await Meta.loadFormat(f);
-        await persistMeta();
-        render();
-        loaded = true;
+        if (!metaData[f] && !metaTold) toast(t('guess_loading', { format: f }));
+        try {
+          metaData[f] = await Meta.loadFormat(f);
+          await persistMeta();
+          render();
+          loaded = true;
+        } catch (err) { failure = err; } // the next formats still load
       }
     });
     if (loaded) refresh(); // datalist gains the new archetype names
   } catch (err) {
-    console.warn('[endstep-tracker] metagame unavailable:', err);
-    metaFailed = true;
-    toast(t('guess_unavailable'), true);
+    failure = err;
   } finally {
     metaBusy = false;
+  }
+  if (!failure) return;
+  console.warn('[endstep-tracker] metagame unavailable:', failure);
+  metaRetryAt = Date.now() + META_RETRY;
+  setTimeout(ensureMeta, META_RETRY);
+  // Older data still recognizes decks: only a format with none is worth a word.
+  if (!metaTold && (!metaFormats || wanted().some((f) => !metaData[f]))) {
+    metaTold = true;
+    toast(t('guess_unavailable'), true);
   }
 }
 
