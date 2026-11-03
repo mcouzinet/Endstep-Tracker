@@ -9,7 +9,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   const browser = await puppeteer.launch({
     executablePath: CHROME, headless: HEADLESS, enableExtensions: [EXT], userDataDir: OUT + '/e2e-profile',
-    args: ['--no-first-run', '--window-size=1280,900'], defaultViewport: { width: 1280, height: 900 },
+    // The real site is the point here, not the real Scryfall or the real stats.
+    args: ['--no-first-run', '--window-size=1280,900', '--host-resolver-rules=MAP api.scryfall.com ~NOTFOUND, MAP stats.tolarianstudio.com ~NOTFOUND'], defaultViewport: { width: 1280, height: 900 },
   });
   try {
     await sleep(1500);

@@ -76,7 +76,7 @@ async function resolveNames(names) {
   if (!todo.length || resolving || Date.now() < resolveAfter) return;
   resolving = true;
   const nameOf = (card) => (FRONT_FACE.has(card.layout) && Array.isArray(card.card_faces) && card.card_faces[0].name ? card.card_faces[0].name : card.name);
-  const known = () => { try { localStorage.setItem(S.CARD_NAMES, JSON.stringify(cardNames)); } catch { /* storage unavailable */ } render(); };
+  const known = () => { try { localStorage.setItem(S.CARD_NAMES, JSON.stringify(cardNames)); } catch { /* storage unavailable */ } redrawWhenFree(); };
   // One name a request (the bulk lookup would need a CORS preflight Scryfall does not answer, and misses printed names);
   // the list catches up every 10 names, so a first 100-card deck shows its merges as they come.
   try {
@@ -420,12 +420,15 @@ if (chrome.permissions && chrome.permissions.onAdded) {
   chrome.permissions.onRemoved.addListener(checkAccess);
 }
 
-function refresh() {
-  matches.sort((a, b) => b.startedAt - a.startedAt);
-  fillScope();
+function fillArchetypes() {
   const names = new Set(Object.values(notes).map((n) => n.archetype).filter(Boolean));
   for (const f of Object.values(metaData)) for (const d of f.decks) names.add(d.name); // the site's own archetype names
   $('#archetypes').innerHTML = [...names].sort((a, b) => a.localeCompare(b, locale)).map((a) => `<option value="${esc(a)}">`).join('');
+}
+function refresh() {
+  matches.sort((a, b) => b.startedAt - a.startedAt);
+  fillScope();
+  fillArchetypes();
   render();
   ensureMeta();
 }
@@ -491,12 +494,12 @@ async function ensureMeta() {
         try {
           metaData[f] = await Meta.loadFormat(f);
           await persistMeta();
-          render();
+          redrawWhenFree();
           loaded = true;
         } catch (err) { failure = err; } // the next formats still load
       }
     });
-    if (loaded) refresh(); // datalist gains the new archetype names
+    if (loaded) fillArchetypes(); // datalist gains the new archetype names
   } catch (err) {
     failure = err;
   } finally {
@@ -521,7 +524,24 @@ function guessTag(m) {
 }
 
 // --- rendering ---
+// A redraw replaces what it draws: the keyboard goes back to the same place, by position under its match, row or panel.
+function focusPlace() {
+  const a = document.activeElement;
+  const root = a && a.closest('[id], [data-id], [data-key]');
+  if (!root) return null;
+  const path = [];
+  for (let e = a; e !== root; e = e.parentElement) path.unshift([...e.parentElement.children].indexOf(e));
+  const attr = root.id ? 'id' : root.dataset.id ? 'data-id' : 'data-key';
+  return { a, root: `[${attr}="${CSS.escape(root.getAttribute(attr))}"]`, path };
+}
 function render() {
+  const place = focusPlace();
+  renderView();
+  if (!place || place.a.isConnected) return;
+  const el = place.path.reduce((e, i) => e && e.children[i], document.querySelector(place.root));
+  if (el) el.focus({ preventScroll: true });
+}
+function renderView() {
   document.body.classList.remove('loading');
   const has = matches.length > 0;
   for (const id of ['#filters', '#glance', '#tabs', '#list-tools', '#list-head', '#list-foot']) $(id).hidden = !has;
@@ -1783,8 +1803,13 @@ document.addEventListener('focusin', (e) => {
 });
 
 // Live refresh while a match is being tracked: held back while the user types in a match or has text
-// selected in the list (a re-render would destroy both), applied as soon as they are done.
+// selected in the list (a re-render would destroy both), or presses on something (it would swallow the click),
+// applied as soon as they are done.
+let pressed = false;
+const trackPress = (e) => { const was = pressed; pressed = e.buttons > 0; if (was && !pressed && pending) flushPending(); };
+for (const ev of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) addEventListener(ev, trackPress, true);
 const busy = () => {
+  if (pressed) return true;
   const a = document.activeElement;
   if (a && a.matches('input, textarea, select') && a.closest('.detail, .drawer')) return true;
   const s = getSelection();
@@ -1797,6 +1822,10 @@ function flushPending() {
     pending = null;
     applyChanges(changes);
   }, 0);
+}
+// A redraw nobody asked for here (card names or the metagame arriving) waits the same way, with no change to apply.
+function redrawWhenFree() {
+  if (busy() || pending) { pending = pending || {}; flushPending(); } else render();
 }
 document.addEventListener('focusout', (e) => {
   if (e.target.closest('[data-card]')) hidePreview();

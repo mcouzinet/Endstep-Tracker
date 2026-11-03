@@ -4,7 +4,7 @@ const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/nod
 const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] });
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] }); // never the real Scryfall (see the README)
   const p = await b.newPage();
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
@@ -20,7 +20,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.equal(await p.evaluate(() => document.getElementById('session')), null, 'no session band');
   assert.equal(await p.evaluate(() => !document.getElementById('glance').hidden), true);
   assert.match(await $text('#glance .hero'), /^3–1 ?trop tôt pour un taux ?sur 4 matchs$/); // no percentage under 5 matches
-  assert.equal(await p.evaluate(() => !!document.querySelector('#glance svg, #glance .trend')), false, 'no curve');
+  assert.equal(await p.evaluate(() => !!document.querySelector('#glance svg:not(.i), #glance .trend')), false, 'no curve'); // svg.i: the icons, like the info button
   assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#glance .form-strip button')].map((b) => b.className + ':' + b.dataset.show)),
     ['W:m6', 'L:m5', 'W:m3', 'W:m1'], 'oldest first, the latest on the right');
   // Hovering a square shows its match: result, opponent, archetype, my deck and format.

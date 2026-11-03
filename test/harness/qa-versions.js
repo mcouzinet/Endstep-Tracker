@@ -5,7 +5,7 @@ const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/nod
 const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] });
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] });
   const p = await b.newPage();
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));

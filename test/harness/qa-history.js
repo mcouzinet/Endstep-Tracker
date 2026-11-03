@@ -27,7 +27,7 @@ const older = { nextCursor: null, matches: [
 
 (async () => {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'endstep-qa-'));
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, enableExtensions: [EXT], userDataDir: profile, args: ['--no-first-run', '--lang=fr'] });
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, enableExtensions: [EXT], userDataDir: profile, args: ['--no-first-run', '--lang=fr', '--host-resolver-rules=MAP * ~NOTFOUND'] });
   try {
     const sw = await b.waitForTarget((x) => x.type() === 'service_worker' && x.url().startsWith('chrome-extension://'), { timeout: 10000 });
     const id = new URL(sw.url()).host;

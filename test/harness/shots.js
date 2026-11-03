@@ -3,13 +3,21 @@ const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/nod
 const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] });
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] });
   const errors = [];
   const open = async (name, w, h) => {
     const p = await b.newPage();
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
     p.on('console', (m) => m.type() === 'error' && errors.push(`${name}: ${m.text()}`));
     await p.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+    // Scryfall answered here, never the real one (see the README): a blank card for the hover preview, each name as itself.
+    await p.setRequestInterception(true);
+    p.on('request', (q) => {
+      const u = new URL(q.url());
+      if (u.host !== 'api.scryfall.com') return q.continue();
+      if (u.searchParams.get('format') === 'image') return q.respond({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="244" height="340"><rect width="244" height="340" fill="#777"/></svg>' });
+      return q.respond({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ name: u.searchParams.get('exact') }) });
+    });
     await p.goto(`file://${__dirname}/harness-${name}.html`);
     await p.evaluate(() => localStorage.clear());
     await p.reload();
