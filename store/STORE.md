@@ -166,6 +166,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 - Change a deck's format, under the filters: to a format of the site or one you type yourself (7ph). Its next matches follow, and deck recognition uses the new format's metagame.
 - Merge two decks, the next matches included, and file the matches with no deck in one go. "Split" undoes a merge or a move.
+- Draft and sealed pools show as one line, "Limited deck", instead of one per day.
 - Now in Spanish, German, Italian and Brazilian Portuguese.
 - The dashboard opens on the deck of your last match.
 - Fixed: a note being typed could be lost when the page refreshed; the popup's button did nothing when all your matches were against the AI; a metagame format endstep.cc can't serve for now no longer blocks the others; My cards in narrow windows.
@@ -174,6 +175,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 - Change le format d'un deck, sous les filtres : pour un format du site ou un que tu écris toi-même (7ph). Ses prochains matchs suivent, et la reconnaissance des decks utilise le métagame du nouveau format.
 - Fusionne deux decks, les prochains matchs compris, et range d'un coup les matchs sans deck. « Séparer » annule une fusion ou un changement.
+- Les pools de draft et de sealed tiennent sur une seule ligne, « Deck limité », au lieu d'une par jour.
 - Disponible aussi en espagnol, allemand, italien et portugais du Brésil.
 - Le tableau de bord s'ouvre sur le deck de ton dernier match.
 - Corrigé : une note en cours de saisie pouvait se perdre quand la page se rafraîchissait ; le bouton de la popup ne faisait rien quand tous tes matchs étaient contre l'IA ; un format de métagame qu'endstep.cc ne sert pas pour l'instant ne bloque plus les autres ; Mes cartes dans une fenêtre étroite.
@@ -182,6 +184,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 - Change a deck's format, under the filters: to a format of the site or one you type yourself (7ph). Its next matches follow.
 - Merge two decks, and file the matches with no deck in one go. "Split" undoes a merge or a move.
+- Draft and sealed pools show as one line, "Limited deck", instead of one per day.
 - Now in Spanish, German, Italian and Brazilian Portuguese.
 - The dashboard opens on the deck of your last match.
 - Fixed: a note being typed could be lost when the page refreshed; the popup's button did nothing when all your matches were against the AI.
@@ -190,6 +193,7 @@ What changed for the user, to paste where a store asks for it: AMO ("Release not
 
 - Change le format d'un deck, sous les filtres : pour un format du site ou un que tu écris toi-même (7ph). Ses prochains matchs suivent.
 - Fusionne deux decks, et range d'un coup les matchs sans deck. « Séparer » annule une fusion ou un changement.
+- Les pools de draft et de sealed tiennent sur une seule ligne, « Deck limité », au lieu d'une par jour.
 - Disponible aussi en espagnol, allemand, italien et portugais du Brésil.
 - Le tableau de bord s'ouvre sur le deck de ton dernier match.
 - Corrigé : une note en cours de saisie pouvait se perdre quand la page se rafraîchissait ; le bouton de la popup ne faisait rien quand tous tes matchs étaient contre l'IA.

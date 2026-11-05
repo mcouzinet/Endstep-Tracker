@@ -76,6 +76,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const summary = await p.evaluate(() => document.querySelector('.match[data-id="m6"] details[data-key="deck:m6"] summary').textContent);
   assert.match(summary, / · v1$/);
 
+  // The decks the site saves from a limited pool, a new one at each draft: one line, no versions, not offered for a merge.
+  await p.evaluate(async () => {
+    const pool = (id, day, card) => ({ ...JSON.parse(JSON.stringify(window.__DATA['match:m3'])), id, format: 'freeplay', formatId: 'casual', myDeck: { id: `pool-${day}`, name: `Draft pool \u2014 ${day}`, cards: [{ name: card, quantity: 40 }] } });
+    await chrome.storage.local.set({
+      'match:p1': pool('p1', '2026-10-30', 'Lightning Bolt'), 'match:p2': pool('p2', '2026-11-02', 'Counterspell'),
+      decks: { ...(await chrome.storage.local.get('decks')).decks, 'pool-2026-10-30': { id: 'pool-2026-10-30', name: 'Draft pool \u2014 2026-10-30', format: 'draft', formatId: null } },
+    });
+  });
+  await sleep(300);
+  const scopes = await p.$$eval('#f-scope option', (o) => o.map((x) => x.textContent));
+  assert.ok(scopes.includes('Deck limité · Freeplay (2)'), scopes.join(' | '));
+  assert.ok(!scopes.some((x) => x.includes('Draft pool')), 'no line per day');
+  await p.select('#f-scope', JSON.stringify(['Freeplay', 'Deck limité']));
+  await sleep(200);
+  const pools = await p.evaluate(() => ({ count: document.getElementById('count').textContent, versions: document.getElementById('f-version').hidden }));
+  assert.match(pools.count, /^2 /);
+  assert.equal(pools.versions, true, 'no version menu');
+  await p.evaluate(() => { document.getElementById('tab-cards').click(); });
+  await sleep(200);
+  await p.select('#f-scope', JSON.stringify(['Modern', 'Burn']));
+  await sleep(100);
+  await p.evaluate(() => document.querySelector('[data-dt="merge-open"]').click());
+  await sleep(100);
+  assert.ok(!(await p.$$eval('#dt-merge option', (o) => o.map((x) => x.textContent))).some((x) => x.includes('Draft pool')), 'not offered for a merge');
+
   assert.deepEqual(errors, []);
   console.log('qa-versions: ok');
   await b.close();

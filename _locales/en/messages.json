@@ -368,6 +368,9 @@
   "news_17_merge": {
     "message": "Merge two decks, and file the matches with no deck in one go."
   },
+  "news_17_pools": {
+    "message": "Draft and sealed pools show as one line, “Limited deck”, instead of one per day."
+  },
   "news_17_languages": {
     "message": "Now in Spanish, German, Italian and Brazilian Portuguese."
   },

@@ -58,4 +58,14 @@ assert.equal(S.metaFormat(m({ formatId: 'Vintage', myDeck: jeskai }), rule, ['Vi
 assert.equal(S.metaFormat(m({ formatId: 'Vintage', myDeck: jeskai }), { ...C, formatMoves: { j: { Vintage: '7ph' } } }, ['Vintage']), null, 'no metagame for 7ph, not Vintage');
 assert.equal(S.metaFormat(m({ formatId: 'Vintage' }), { ...C, notes: { m: { formatId: '7ph' } } }, ['Vintage']), null, 'a match moved on its own too');
 
+// The decks the site saves from a limited pool, a new one at each draft: one entry, not one per day.
+const POOL = 'Draft pool \u2014 2026-11-02';
+const named = (name) => m({ myDeck: { id: 'p', name } });
+assert.equal(S.deckName(named(POOL), C), 'limited_deck', 'a draft pool');
+assert.equal(S.deckName(named('Sealed pool \u2014 2026-10-30'), C), 'limited_deck', 'a sealed pool');
+assert.equal(S.deckName(named('Draft pool 12345'), C), 'Draft pool 12345', 'not the site\'s name');
+assert.equal(S.deckName(named('My ' + POOL), C), 'My ' + POOL, 'not the site\'s name either');
+assert.equal(S.deckName(named(POOL), { ...C, decks: { p: { name: 'Vintage cube run' } } }), 'Vintage cube run', 'renamed on the site: a deck of its own');
+assert.equal(S.deckName(m({ myDeck: { id: 'p', name: 'Vintage cube run' } }), { ...C, decks: { p: { name: POOL } } }), 'limited_deck', 'the name on the site wins, as for any deck');
+
 console.log('format: ok');

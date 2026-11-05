@@ -368,6 +368,9 @@
   "news_17_merge": {
     "message": "Führe zwei Decks zusammen und ordne Matches ohne Deck auf einmal zu."
   },
+  "news_17_pools": {
+    "message": "Draft- und Sealed-Pools stehen in einer Zeile, „Limited-Deck“, statt in einer pro Tag."
+  },
   "news_17_languages": {
     "message": "Jetzt auch auf Spanisch, Deutsch, Italienisch und brasilianischem Portugiesisch."
   },

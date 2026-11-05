@@ -188,7 +188,7 @@ const versionKey = (m) => listKey((myDeck(m) || {}).cards);
 // One deck's versions, oldest first and numbered from 1; the current one is the list of my latest match.
 function versionsOf(s) {
   const out = { list: [], current: null, unknown: 0 };
-  if (s.format === null || s.deck === null) return out;
+  if (s.format === null || s.deck === null || s.deck === t('limited_deck')) return out; // each pool is its own list, not a version
   const by = new Map();
   for (const m of matches) { // newest first
     if (formatOf(m) !== s.format || deckName(m) !== s.deck) continue;
@@ -349,7 +349,7 @@ $('#promo-wz-close').addEventListener('click', () => {
 
 // What's new after an update to a release, on every browser, until closed. A release adds its entry here (message
 // keys, every language in _locales); only the newest unseen one shows (S.newsDue), so an older entry is dead and goes.
-const NEWS = { '1.7': ['news_17_format', 'news_17_merge', 'news_17_languages', 'news_17_last', 'news_17_fixes'] };
+const NEWS = { '1.7': ['news_17_format', 'news_17_merge', 'news_17_pools', 'news_17_languages', 'news_17_last', 'news_17_fixes'] };
 let newsAt = null; // the release whose news is shown
 // A store review, asked once enough matches are recorded (not imported, not against the AI, not live), until answered,
 // and never on the page load that shows the news. Not on Safari: Apple forbids custom review prompts (guideline 5.6.1).
@@ -648,7 +648,7 @@ function otherDecks(s) {
     out.set(k, { name, id, format, label, here });
   };
   for (const m of matches) { const d = S.myDeck(m, C); if (d) add(deckName(m), d.id, S.formatKey(m, C), formatOf(m)); }
-  for (const [id, d] of Object.entries(decks)) if (d) add(d.name, id, d.formatId || d.format, S.formatLabel(d.formatId || d.format, C));
+  for (const [id, d] of Object.entries(decks)) if (d && !S.sitePool(d.name)) add(d.name, id, d.formatId || d.format, S.formatLabel(d.formatId || d.format, C));
   const all = [...out.values()];
   return [...all.filter((o) => o.here), ...all.filter((o) => !o.here)];
 }

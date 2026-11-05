@@ -7,7 +7,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## [1.7] (2026-11-05)
 
-Changer le format d'un deck, fusionner deux decks, ranger d'un coup les matchs sans deck, quatre nouvelles langues, et le tableau de bord qui s'ouvre sur ton dernier deck.
+Changer le format d'un deck, fusionner deux decks, ranger d'un coup les matchs sans deck, les pools de draft sur une seule ligne, quatre nouvelles langues, et le tableau de bord qui s'ouvre sur ton dernier deck.
 
 ### Ajouté
 
@@ -20,6 +20,7 @@ Changer le format d'un deck, fusionner deux decks, ranger d'un coup les matchs s
 
 ### Modifié
 
+- **Les pools de draft et de sealed sur une seule ligne** : endstep enregistre chaque pool comme un nouveau deck nommé d'après le jour. Ils se regroupent maintenant sous « Deck limité », anciens et nouveaux compris, au lieu d'une ligne par jour. Le détail d'un match garde le nom d'origine, et un pool renommé sur le site reste un deck à part.
 - **Le tableau de bord s'ouvre sur le deck du dernier match**, au lieu du deck le plus joué sur 30 jours : après un changement de deck, les nouveaux matchs sont visibles tout de suite. Les matchs contre l'IA et ceux dont le deck est inconnu ne comptent pas. Un autre deck choisi dans le menu reste affiché jusqu'à ce qu'on réinitialise les filtres.
 
 ### Corrigé

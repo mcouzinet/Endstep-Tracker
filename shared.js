@@ -177,9 +177,14 @@
     return { id: to ? to.id : id, name: (to && to.name) || d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
   }
   // The deck's current name on the site, else the one it had during the match: a deck renamed there keeps its matches.
+  // The deck the site saves from a limited pool, a new one at each draft, is named after its kind and the day: they all make
+  // one entry, not one per day. Renamed on the site, it is a deck of its own. ponytail: tied to the site's wording (DeckBuildView).
+  const sitePool = (name) => /^(Draft|Sealed) pool \S+ \d{4}-\d{2}-\d{2}$/.test(name || '');
   function deckName(m, c) {
     const d = myDeck(m, c);
-    return d ? (obj(c.decks)[d.id] || {}).name || d.name || `Deck ${d.id.slice(0, 8)}` : m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
+    if (!d) return m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
+    const name = (obj(c.decks)[d.id] || {}).name || d.name || `Deck ${d.id.slice(0, 8)}`;
+    return sitePool(name) ? c.t('limited_deck') : name;
   }
   // The format as the site names it: its formatId, else its game kind ('casual' is constructed without a banlist). When
   // the site's match details were missed (no formatId), the deck I played tells it, if its format fits the game (a Duel
@@ -506,7 +511,7 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
-    myDeck, mergedInto, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
+    myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

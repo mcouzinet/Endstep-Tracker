@@ -368,6 +368,9 @@
   "news_17_merge": {
     "message": "Fusionne deux decks, et range d'un coup les matchs sans deck."
   },
+  "news_17_pools": {
+    "message": "Les pools de draft et de sealed tiennent sur une seule ligne, « Deck limité », au lieu d'une par jour."
+  },
   "news_17_languages": {
     "message": "Disponible aussi en espagnol, allemand, italien et portugais du Brésil."
   },
