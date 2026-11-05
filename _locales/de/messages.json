@@ -1154,6 +1154,27 @@
   "deck_move_confirm_other": {
     "message": "„{from}“ nach „{to}“ verschieben? Seine {n} Matches zählen dann unter diesem Deck und Format. Du kannst sie später wieder trennen."
   },
+  "deck_format": {
+    "message": "Format ändern…"
+  },
+  "deck_format_to": {
+    "message": "Format von „{deck}“:"
+  },
+  "deck_format_hint": {
+    "message": "Auswählen oder eintippen"
+  },
+  "deck_format_go": {
+    "message": "Ändern"
+  },
+  "deck_format_confirm_one": {
+    "message": "„{deck}“ von {from} nach {to} verschieben? Sein Match zählt dann in {to}, ebenso seine nächsten Matches in {from}. „Trennen“ macht das rückgängig."
+  },
+  "deck_format_confirm_other": {
+    "message": "„{deck}“ von {from} nach {to} verschieben? Seine {n} Matches zählen dann in {to}, ebenso seine nächsten Matches in {from}. „Trennen“ macht das rückgängig."
+  },
+  "deck_format_done": {
+    "message": "„{deck}“ nach {format} verschoben"
+  },
   "deck_includes": {
     "message": "Enthält auch: {list}"
   },

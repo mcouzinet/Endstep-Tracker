@@ -1154,6 +1154,27 @@
   "deck_move_confirm_other": {
     "message": "¿Mover \"{from}\" a \"{to}\"? Sus {n} matches contarán en ese deck y ese formato. Podrás separarlos más adelante."
   },
+  "deck_format": {
+    "message": "Cambiar de formato…"
+  },
+  "deck_format_to": {
+    "message": "Formato de \"{deck}\":"
+  },
+  "deck_format_hint": {
+    "message": "Elígelo o escríbelo"
+  },
+  "deck_format_go": {
+    "message": "Cambiar"
+  },
+  "deck_format_confirm_one": {
+    "message": "¿Pasar \"{deck}\" de {from} a {to}? Su match contará en {to}, igual que sus próximos matches en {from}. \"Separar\" deshace el cambio."
+  },
+  "deck_format_confirm_other": {
+    "message": "¿Pasar \"{deck}\" de {from} a {to}? Sus {n} matches contarán en {to}, igual que sus próximos matches en {from}. \"Separar\" deshace el cambio."
+  },
+  "deck_format_done": {
+    "message": "\"{deck}\" pasa a {format}"
+  },
   "deck_includes": {
     "message": "Incluye también: {list}"
   },

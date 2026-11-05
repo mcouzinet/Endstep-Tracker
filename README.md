@@ -19,7 +19,7 @@ On Android, Firefox runs it; Chrome and Brave on Android have no extensions.
 - **Your sideboarding**, recorded between games: your usual plan against each archetype, to copy or export.
 - **A small panel on endstep.cc**: your record in the matchup, your usual sideboarding between games, opponents you met before.
 - **Your past matches**, imported from your endstep history when you ask for it.
-- **Your decks, your way**: file the matches the site gave no deck for in one go, merge a deck split under several names.
+- **Your decks, your way**: file the matches the site gave no deck for in one go, merge a deck split under several names, move a deck to another format, even one the site doesn't have.
 - **Share an image of your stats**, ready to paste on Discord.
 - CSV and JSON export, backups.
 - In English, French, Spanish, German, Italian and Brazilian Portuguese.

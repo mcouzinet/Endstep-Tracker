@@ -1154,6 +1154,27 @@
   "deck_move_confirm_other": {
     "message": "Move \"{from}\" to \"{to}\"? Its {n} matches will count under that deck and format. You can split them later."
   },
+  "deck_format": {
+    "message": "Change format…"
+  },
+  "deck_format_to": {
+    "message": "Format of \"{deck}\":"
+  },
+  "deck_format_hint": {
+    "message": "Pick one or type it"
+  },
+  "deck_format_go": {
+    "message": "Change"
+  },
+  "deck_format_confirm_one": {
+    "message": "Move \"{deck}\" from {from} to {to}? Its match will count in {to}, and so will its next matches in {from}. \"Split\" undoes this."
+  },
+  "deck_format_confirm_other": {
+    "message": "Move \"{deck}\" from {from} to {to}? Its {n} matches will count in {to}, and so will its next matches in {from}. \"Split\" undoes this."
+  },
+  "deck_format_done": {
+    "message": "\"{deck}\" moved to {format}"
+  },
   "deck_includes": {
     "message": "Also includes: {list}"
   },
