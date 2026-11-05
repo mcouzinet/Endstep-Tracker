@@ -39,7 +39,7 @@ The dashboard opens on the deck you play most:
 
 • Search the history: opponent, archetype, card seen, note.
 
-• Share an image of your stats, copy or export your side plan, file the matches with no deck in one go, merge two decks.
+• Share an image of your stats, copy or export your side plan, file the matches with no deck in one go, merge two decks, change a deck's format.
 
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
@@ -75,7 +75,7 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • Recherche dans l’historique : adversaire, archétype, carte vue, note.
 
-• Partage une image de tes stats, copie ou exporte ton plan de side, range d'un coup les matchs sans deck, fusionne deux decks.
+• Partage une image de tes stats, copie ou exporte ton plan de side, range d'un coup les matchs sans deck, fusionne deux decks, change le format d'un deck.
 
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 
@@ -161,6 +161,38 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 ## Release notes
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first. The App Store gets its own notes, which never name another platform (Android, Chrome, Firefox, Edge): Apple refused the Mac 1.5 for "Firefox for Android" in What's New (guideline 2.3.10, accurate metadata).
+
+### 1.7 (EN)
+
+- Change a deck's format, under the filters: to a format of the site or one you type yourself (7ph). Its next matches follow, and deck recognition uses the new format's metagame.
+- Merge two decks, the next matches included, and file the matches with no deck in one go. "Split" undoes a merge or a move.
+- Now in Spanish, German, Italian and Brazilian Portuguese.
+- The dashboard opens on the deck of your last match.
+- Fixed: a note being typed could be lost when the page refreshed; the popup's button did nothing when all your matches were against the AI; a metagame format endstep.cc can't serve for now no longer blocks the others; My cards in narrow windows.
+
+### 1.7 (FR)
+
+- Change le format d'un deck, sous les filtres : pour un format du site ou un que tu écris toi-même (7ph). Ses prochains matchs suivent, et la reconnaissance des decks utilise le métagame du nouveau format.
+- Fusionne deux decks, les prochains matchs compris, et range d'un coup les matchs sans deck. « Séparer » annule une fusion ou un changement.
+- Disponible aussi en espagnol, allemand, italien et portugais du Brésil.
+- Le tableau de bord s'ouvre sur le deck de ton dernier match.
+- Corrigé : une note en cours de saisie pouvait se perdre quand la page se rafraîchissait ; le bouton de la popup ne faisait rien quand tous tes matchs étaient contre l'IA ; un format de métagame qu'endstep.cc ne sert pas pour l'instant ne bloque plus les autres ; Mes cartes dans une fenêtre étroite.
+
+### 1.7 (App Store EN)
+
+- Change a deck's format, under the filters: to a format of the site or one you type yourself (7ph). Its next matches follow.
+- Merge two decks, and file the matches with no deck in one go. "Split" undoes a merge or a move.
+- Now in Spanish, German, Italian and Brazilian Portuguese.
+- The dashboard opens on the deck of your last match.
+- Fixed: a note being typed could be lost when the page refreshed; the popup's button did nothing when all your matches were against the AI.
+
+### 1.7 (App Store FR)
+
+- Change le format d'un deck, sous les filtres : pour un format du site ou un que tu écris toi-même (7ph). Ses prochains matchs suivent.
+- Fusionne deux decks, et range d'un coup les matchs sans deck. « Séparer » annule une fusion ou un changement.
+- Disponible aussi en espagnol, allemand, italien et portugais du Brésil.
+- Le tableau de bord s'ouvre sur le deck de ton dernier match.
+- Corrigé : une note en cours de saisie pouvait se perdre quand la page se rafraîchissait ; le bouton de la popup ne faisait rien quand tous tes matchs étaient contre l'IA.
 
 ### 1.6 (EN)
 

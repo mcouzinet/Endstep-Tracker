@@ -362,23 +362,20 @@
   "news_title": {
     "message": "Neu in {v}"
   },
-  "news_16_ranked": {
-    "message": "Ein Filter „Ranked / Unranked“ neben dem Zeitraum."
+  "news_17_format": {
+    "message": "Ändere das Format eines Decks unter den Filtern, auch in eines, das du selbst eintippst (7ph). Seine nächsten Matches folgen."
   },
-  "news_16_cards": {
-    "message": "Spalten „Gespielt“ und „Im Spiel“ in Meine Karten (eine reanimierte Kreatur zählt endlich), und jede Zahl dort erklärt sich beim Darüberfahren."
+  "news_17_merge": {
+    "message": "Führe zwei Decks zusammen und ordne Matches ohne Deck auf einmal zu."
   },
-  "news_16_side": {
-    "message": "Kopiere oder exportiere deinen Side-Plan (Menü Daten)."
+  "news_17_languages": {
+    "message": "Jetzt auch auf Spanisch, Deutsch, Italienisch und brasilianischem Portugiesisch."
   },
-  "news_16_games": {
-    "message": "Im Panel eines Matchups: deine Bilanz in Game 1 und nach dem Siden."
+  "news_17_last": {
+    "message": "Das Dashboard öffnet sich beim Deck deines letzten Matches."
   },
-  "news_16_share": {
-    "message": "Teile ein Bild deiner Stats, bereit zum Einfügen in Discord (Menü Daten)."
-  },
-  "news_16_names": {
-    "message": "Eine Karte, ein Name: aufgedruckte Namen (Secret Lair, Universes Beyond) und doppelseitige Karten zählen als eine Karte."
+  "news_17_fixes": {
+    "message": "Behoben: Eine angefangene Notiz geht beim Aktualisieren der Seite nicht mehr verloren, und die Schaltfläche im Popup funktioniert, wenn alle deine Matches gegen die KI waren."
   },
   "news_all": {
     "message": "Alle Änderungen (auf Französisch)"
@@ -807,7 +804,7 @@
     "message": "Bis zur nächsten Version ausblenden"
   },
   "promo_news": {
-    "message": "Neu: Vergleiche deine Liste mit mehreren Decks gleichzeitig, und ManaBox wird unterstützt."
+    "message": "Neu: Teile einen Vergleich über einen einfachen Link, und Decks von endstep.cc werden unterstützt."
   },
   "promo_lead": {
     "message": "Vergleiche zwei Decklisten direkt auf der Deckseite (Moxfield, Archidekt, MTGGoldfish…): gemeinsame Karten, exklusive Karten und Mengenunterschiede."

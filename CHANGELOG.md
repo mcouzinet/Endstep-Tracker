@@ -5,20 +5,30 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## Non publié
 
+## [1.7] (2026-11-05)
+
+Changer le format d'un deck, fusionner deux decks, ranger d'un coup les matchs sans deck, quatre nouvelles langues, et le tableau de bord qui s'ouvre sur ton dernier deck.
+
 ### Ajouté
 
-- **Changer le format d'un deck** (1.6.9) : sous les filtres, « Changer de format… » fait passer le deck affiché dans un autre format, choisi dans la liste ou écrit à la main (7ph, un format que le site ne connaît pas). Ses prochains matchs dans le format d'origine suivent. La reconnaissance utilise le métagame du nouveau format, et aucun s'il n'en a pas. « Séparer » annule le changement. Demandé sur le Discord (Nathan).
-- **Ranger d'un coup les matchs sans deck** (1.6.1) : sous les filtres, quand « Inconnu » est choisi (des matchs importés de l'historique dont le site ne donnait pas le deck), choisis un de tes decks et tous ces matchs passent sous lui, comme avec le sélecteur « Mon deck » de chaque match.
-- **Fusionner deux decks** (1.6.1) : sous les filtres, « Fusionner avec un autre deck… » range tous les matchs du deck affiché sous un autre deck du même format, les prochains compris ; chaque match garde sa liste, qui apparaît comme une version. Pratique pour un deck recréé sous un autre nom ou supprimé du site. « Séparer » défait la fusion. Les fusions sont dans les sauvegardes.
-- **Une note en cours de saisie n'est plus perdue** (1.6.8) : à l'arrivée des noms de cartes ou du métagame, souvent juste après l'ouverture d'un match, le tableau de bord se redessinait sous le curseur : la suite du texte partait et le clavier perdait sa ligne. Il attend maintenant qu'on ait quitté le champ, et le clavier reste à sa place. Le clic qui suit une note modifiée n'est plus perdu non plus.
-- **Le tableau de bord s'ouvre sur le deck du dernier match** (1.6.7), au lieu du deck le plus joué sur 30 jours : après un changement de deck, les nouveaux matchs sont visibles tout de suite. Les matchs contre l'IA et ceux dont le deck est inconnu ne comptent pas. Un autre deck choisi dans le menu reste affiché jusqu'à ce qu'on réinitialise les filtres.
-- **Popup : « Ouvrir le tableau de bord » ne répondait plus** (1.6.7) : tant que tous les matchs enregistrés étaient contre l'IA, la popup plantait et son bouton ne faisait rien. Elle affiche maintenant ces matchs, et aucune donnée enregistrée ne peut plus bloquer le bouton.
-- **Reconnaissance des decks quand endstep.cc est occupé** (1.6.7) : un format que le site ne sert pas pour l'instant (réponse 503 « busy », vue sur Pauper) n'empêche plus les autres de se charger. Il est redemandé toutes les 5 minutes tant que le tableau de bord reste ouvert, sans avoir à le recharger. Le message « indisponible » ne s'affiche qu'une fois, et seulement si un format n'a aucune donnée : un métagame plus ancien reste utilisé.
-- **« Mes cartes » sur iPad et dans une fenêtre étroite** (1.6.6) : les noms de cartes se coupaient lettre par lettre sous 1164 px de large. Les colonnes se resserrent jusqu'à 1180 px ; sous 980 px, les chiffres passent sous le nom, trois par ligne.
-- **Safari : tableau de bord et enregistrement réparés** (1.6.5) : `telemetry.js` manquait aux projets Xcode depuis la 1.5, ce qui arrêtait tout le script d'arrière-plan : le bouton du tableau de bord ne faisait plus rien et, sur une installation neuve, les matchs n'étaient plus enregistrés. Le fichier est dans les deux apps, une erreur des statistiques ne peut plus bloquer le reste, et `release.sh safari` échoue si un fichier du paquet manque à un projet Xcode.
-- **Safari sur iPad** (1.6.4) : l'app Safari, jusque-là réservée à l'iPhone, s'installe aussi sur iPad, avec ses propres captures sur l'App Store. Son écran dit « cet appareil » au lieu de « cet iPhone ».
-- **Ranger des matchs dans un autre format** (1.6.3) : « Fusionner avec un autre deck… » et « Ranger sous ce deck » proposent aussi les decks des autres formats. Choisir l'un d'eux fait passer les matchs affichés dans ce deck et dans son format : des matchs joués en « Sans banlist » avant l'arrivée d'un format sur le site comptent enfin avec ce format. « Séparer » les remet dans leur format d'origine.
-- **Quatre nouvelles langues** (1.6.2) : espagnol, allemand, italien et portugais du Brésil, en plus du français et de l'anglais. L'extension suit la langue du navigateur, et le sélecteur de l'en-tête permet d'en choisir une autre.
+- **Changer le format d'un deck** : sous les filtres, « Changer de format… » fait passer le deck affiché dans un autre format, choisi dans la liste ou écrit à la main (7ph, un format que le site ne connaît pas). Ses prochains matchs dans le format d'origine suivent. La reconnaissance utilise le métagame du nouveau format, et aucun s'il n'en a pas. « Séparer » annule le changement.
+- **Fusionner deux decks** : sous les filtres, « Fusionner avec un autre deck… » range tous les matchs du deck affiché sous un autre deck du même format, les prochains compris ; chaque match garde sa liste, qui apparaît comme une version. Pratique pour un deck recréé sous un autre nom ou supprimé du site. « Séparer » défait la fusion. Les fusions sont dans les sauvegardes.
+- **Ranger des matchs dans un autre format** : « Fusionner avec un autre deck… » et « Ranger sous ce deck » proposent aussi les decks des autres formats. Choisir l'un d'eux fait passer les matchs affichés dans ce deck et dans son format : des matchs joués en « Sans banlist » avant l'arrivée d'un format sur le site comptent enfin avec ce format. « Séparer » les remet dans leur format d'origine.
+- **Ranger d'un coup les matchs sans deck** : sous les filtres, quand « Inconnu » est choisi (des matchs importés de l'historique dont le site ne donnait pas le deck), choisis un de tes decks et tous ces matchs passent sous lui, comme avec le sélecteur « Mon deck » de chaque match.
+- **Quatre nouvelles langues** : espagnol, allemand, italien et portugais du Brésil, en plus du français et de l'anglais. L'extension suit la langue du navigateur, et le sélecteur de l'en-tête permet d'en choisir une autre.
+- **Safari sur iPad** : l'app Safari, jusque-là réservée à l'iPhone, s'installe aussi sur iPad, avec ses propres captures sur l'App Store. Son écran dit « cet appareil » au lieu de « cet iPhone ».
+
+### Modifié
+
+- **Le tableau de bord s'ouvre sur le deck du dernier match**, au lieu du deck le plus joué sur 30 jours : après un changement de deck, les nouveaux matchs sont visibles tout de suite. Les matchs contre l'IA et ceux dont le deck est inconnu ne comptent pas. Un autre deck choisi dans le menu reste affiché jusqu'à ce qu'on réinitialise les filtres.
+
+### Corrigé
+
+- **Une note en cours de saisie n'est plus perdue** : à l'arrivée des noms de cartes ou du métagame, souvent juste après l'ouverture d'un match, le tableau de bord se redessinait sous le curseur : la suite du texte partait et le clavier perdait sa ligne. Il attend maintenant qu'on ait quitté le champ, et le clavier reste à sa place. Le clic qui suit une note modifiée n'est plus perdu non plus.
+- **Popup : « Ouvrir le tableau de bord » ne répondait plus** : tant que tous les matchs enregistrés étaient contre l'IA, la popup plantait et son bouton ne faisait rien. Elle affiche maintenant ces matchs, et aucune donnée enregistrée ne peut plus bloquer le bouton.
+- **Reconnaissance des decks quand endstep.cc est occupé** : un format que le site ne sert pas pour l'instant (réponse 503 « busy », vue sur Pauper) n'empêche plus les autres de se charger. Il est redemandé toutes les 5 minutes tant que le tableau de bord reste ouvert, sans avoir à le recharger. Le message « indisponible » ne s'affiche qu'une fois, et seulement si un format n'a aucune donnée : un métagame plus ancien reste utilisé.
+- **« Mes cartes » sur iPad et dans une fenêtre étroite** : les noms de cartes se coupaient lettre par lettre sous 1164 px de large. Les colonnes se resserrent jusqu'à 1180 px ; sous 980 px, les chiffres passent sous le nom, trois par ligne.
+- **Safari : tableau de bord et enregistrement réparés** : un fichier manquait aux apps depuis la 1.5, ce qui arrêtait tout le script d'arrière-plan : le bouton du tableau de bord ne faisait plus rien et, sur une installation neuve, les matchs n'étaient plus enregistrés. Une erreur des statistiques ne peut plus bloquer le reste.
 
 ## [1.6] (2026-10-26)
 

@@ -362,23 +362,20 @@
   "news_title": {
     "message": "Novedades de la {v}"
   },
-  "news_16_ranked": {
-    "message": "Un filtro “Ranked / Unranked” junto al periodo."
+  "news_17_format": {
+    "message": "Cambia el formato de un deck bajo los filtros, incluso a uno que escribas tú (7ph). Sus próximos matches lo siguen."
   },
-  "news_16_cards": {
-    "message": "Columnas “Jugada” y “En juego” en Mis cartas (por fin cuenta una criatura reanimada), y cada número se explica al pasar el cursor."
+  "news_17_merge": {
+    "message": "Fusiona dos decks y asigna de una vez los matches sin deck."
   },
-  "news_16_side": {
-    "message": "Copia o exporta tu plan de side (menú Datos)."
+  "news_17_languages": {
+    "message": "Ahora también en español, alemán, italiano y portugués de Brasil."
   },
-  "news_16_games": {
-    "message": "En la ficha de un matchup: tu balance en la partida 1 y después del side."
+  "news_17_last": {
+    "message": "El panel se abre en el deck de tu último match."
   },
-  "news_16_share": {
-    "message": "Comparte una imagen de tus estadísticas, lista para pegar en Discord (menú Datos)."
-  },
-  "news_16_names": {
-    "message": "Una carta, un nombre: los nombres impresos (Secret Lair, Universes Beyond) y las cartas de dos caras cuentan como una sola carta."
+  "news_17_fixes": {
+    "message": "Corregido: una nota a medio escribir ya no se pierde cuando la página se actualiza, y el botón de la ventana emergente funciona cuando todos tus matches son contra la IA."
   },
   "news_all": {
     "message": "Registro de cambios completo (en francés)"
@@ -807,7 +804,7 @@
     "message": "Ocultar hasta la próxima versión"
   },
   "promo_news": {
-    "message": "Novedad: compara tu lista con varios decks a la vez, y ManaBox es compatible."
+    "message": "Novedad: comparte una comparación con un simple enlace, y los decks de endstep.cc son compatibles."
   },
   "promo_lead": {
     "message": "Compara dos decklists directamente en la página del deck (Moxfield, Archidekt, MTGGoldfish…): cartas en común, exclusivas y diferencias de cantidad."

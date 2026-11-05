@@ -362,23 +362,20 @@
   "news_title": {
     "message": "Novità della {v}"
   },
-  "news_16_ranked": {
-    "message": "Un filtro “Ranked / Unranked” accanto al periodo."
+  "news_17_format": {
+    "message": "Cambia il formato di un deck sotto i filtri, anche con uno che scrivi tu (7ph). I suoi prossimi match lo seguono."
   },
-  "news_16_cards": {
-    "message": "Colonne “Giocata” e “In gioco” in Le mie carte (finalmente conta anche una creatura rianimata), e lì ogni numero si spiega al passaggio del mouse."
+  "news_17_merge": {
+    "message": "Unisci due deck e assegna in un colpo solo i match senza deck."
   },
-  "news_16_side": {
-    "message": "Copia o esporta il tuo piano di side (menu Dati)."
+  "news_17_languages": {
+    "message": "Ora anche in spagnolo, tedesco, italiano e portoghese brasiliano."
   },
-  "news_16_games": {
-    "message": "Nel pannello di un matchup: il tuo bilancio in partita 1 e dopo il side."
+  "news_17_last": {
+    "message": "La dashboard si apre sul deck del tuo ultimo match."
   },
-  "news_16_share": {
-    "message": "Condividi un’immagine delle tue statistiche, pronta da incollare su Discord (menu Dati)."
-  },
-  "news_16_names": {
-    "message": "Una carta, un nome: i nomi stampati (Secret Lair, Universes Beyond) e le carte bifronte contano come una sola carta."
+  "news_17_fixes": {
+    "message": "Corretto: una nota in corso di scrittura non si perde più quando la pagina si aggiorna, e il pulsante del popup funziona quando tutti i tuoi match sono contro l'IA."
   },
   "news_all": {
     "message": "Changelog completo (in francese)"
@@ -807,7 +804,7 @@
     "message": "Nascondi fino alla prossima versione"
   },
   "promo_news": {
-    "message": "Novità: confronta la tua lista con più deck alla volta, e ManaBox è supportato."
+    "message": "Novità: condividi un confronto con un semplice link, e i deck di endstep.cc sono supportati."
   },
   "promo_lead": {
     "message": "Confronta due decklist direttamente sulla pagina del deck (Moxfield, Archidekt, MTGGoldfish…): carte in comune, esclusive e differenze di quantità."

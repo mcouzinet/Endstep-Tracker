@@ -362,23 +362,20 @@
   "news_title": {
     "message": "New in {v}"
   },
-  "news_16_ranked": {
-    "message": "A “Ranked / Unranked” filter beside the period."
+  "news_17_format": {
+    "message": "Change a deck's format under the filters, even to one you type yourself (7ph). Its next matches follow."
   },
-  "news_16_cards": {
-    "message": "“Played” and “In play” columns in My cards (a reanimated creature counts at last), and every number there explains itself on hover."
+  "news_17_merge": {
+    "message": "Merge two decks, and file the matches with no deck in one go."
   },
-  "news_16_side": {
-    "message": "Copy or export your side plan (Data menu)."
+  "news_17_languages": {
+    "message": "Now in Spanish, German, Italian and Brazilian Portuguese."
   },
-  "news_16_games": {
-    "message": "In a matchup's panel: your record in game 1 and after sideboarding."
+  "news_17_last": {
+    "message": "The dashboard opens on the deck of your last match."
   },
-  "news_16_share": {
-    "message": "Share an image of your stats, ready to paste on Discord (Data menu)."
-  },
-  "news_16_names": {
-    "message": "One card, one name: printed names (Secret Lair, Universes Beyond) and double-faced cards count as one card."
+  "news_17_fixes": {
+    "message": "Fixed: a note being typed is no longer lost when the page refreshes, and the popup's button works when all your matches are against the AI."
   },
   "news_all": {
     "message": "Full changelog (in French)"
@@ -807,7 +804,7 @@
     "message": "Hide until the next version"
   },
   "promo_news": {
-    "message": "New: compare your list with several decks at once, and ManaBox is supported."
+    "message": "New: share a comparison with a simple link, and endstep.cc decks are supported."
   },
   "promo_lead": {
     "message": "Compare two decklists right on the deck page (Moxfield, Archidekt, MTGGoldfish…): shared cards, exclusives and quantity gaps."

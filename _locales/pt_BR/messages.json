@@ -362,23 +362,20 @@
   "news_title": {
     "message": "Novidades da {v}"
   },
-  "news_16_ranked": {
-    "message": "Um filtro “Ranqueadas / Não ranqueadas” ao lado do período."
+  "news_17_format": {
+    "message": "Mude o formato de um deck abaixo dos filtros, até para um que você digitar (7ph). As próximas partidas dele acompanham."
   },
-  "news_16_cards": {
-    "message": "Colunas “Jogada” e “Em jogo” em Minhas cartas (uma criatura reanimada enfim conta), e cada número ali se explica ao passar o mouse."
+  "news_17_merge": {
+    "message": "Mescle dois decks e atribua de uma vez as partidas sem deck."
   },
-  "news_16_side": {
-    "message": "Copie ou exporte seu plano de side (menu Dados)."
+  "news_17_languages": {
+    "message": "Agora também em espanhol, alemão, italiano e português do Brasil."
   },
-  "news_16_games": {
-    "message": "No painel de um matchup: seus resultados no game 1 e depois do side."
+  "news_17_last": {
+    "message": "O painel abre no deck da sua última partida."
   },
-  "news_16_share": {
-    "message": "Compartilhe uma imagem das suas stats, pronta para colar no Discord (menu Dados)."
-  },
-  "news_16_names": {
-    "message": "Uma carta, um nome: nomes impressos (Secret Lair, Universes Beyond) e cartas dupla face contam como uma só carta."
+  "news_17_fixes": {
+    "message": "Corrigido: uma nota sendo digitada não se perde mais quando a página atualiza, e o botão do popup funciona quando todas as suas partidas são contra a IA."
   },
   "news_all": {
     "message": "Changelog completo (em francês)"
@@ -807,7 +804,7 @@
     "message": "Ocultar até a próxima versão"
   },
   "promo_news": {
-    "message": "Novo: compare sua lista com vários decks de uma vez, e o ManaBox é suportado."
+    "message": "Novo: compartilhe uma comparação com um simples link, e os decks do endstep.cc são suportados."
   },
   "promo_lead": {
     "message": "Compare duas decklists direto na página do deck (Moxfield, Archidekt, MTGGoldfish…): cartas em comum, exclusivas e diferenças de quantidade."

@@ -348,8 +348,8 @@ $('#promo-wz-close').addEventListener('click', () => {
 });
 
 // What's new after an update to a release, on every browser, until closed. A release adds its entry here (message
-// keys, both languages in _locales); only the newest unseen one shows (S.newsDue).
-const NEWS = { '1.6': ['news_16_ranked', 'news_16_cards', 'news_16_games', 'news_16_side', 'news_16_share', 'news_16_names'] };
+// keys, every language in _locales); only the newest unseen one shows (S.newsDue), so an older entry is dead and goes.
+const NEWS = { '1.7': ['news_17_format', 'news_17_merge', 'news_17_languages', 'news_17_last', 'news_17_fixes'] };
 let newsAt = null; // the release whose news is shown
 // A store review, asked once enough matches are recorded (not imported, not against the AI, not live), until answered,
 // and never on the page load that shows the news. Not on Safari: Apple forbids custom review prompts (guideline 5.6.1).
