@@ -74,6 +74,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const dash = await browser.newPage();
     await dash.goto(`chrome-extension://${ext.id}/dashboard.html`);
     await sleep(1000);
+    await dash.evaluate(() => document.getElementById('tab-history').click()); // the list renders in its own tab only
     // A Modern match with a recognizable opponent: exercises the real metagame API through the host permission.
     await dash.evaluate(() => chrome.storage.local.set({ 'match:qa-modern': { v: 1, id: 'qa-modern', status: 'complete', result: 'L', startedAt: Date.now() - 36e5, updatedAt: Date.now() - 30e5, endedAt: Date.now() - 30e5,
       format: 'constructed', formatId: 'Modern', ranked: true, gamesPerMatch: 3, mySeat: 0, score: [0, 2], colors: { 1: 'UR' },
@@ -105,6 +106,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await dash.evaluate(() => { try { localStorage.setItem('endstep-tracker.filters', JSON.stringify({ scope: { format: null, deck: null } })); } catch {} });
     await dash.reload({ waitUntil: 'load' });
     await sleep(800);
+    await dash.evaluate(() => document.getElementById('tab-history').click());
+    await sleep(200);
     const rowSel = matchId ? `.match[data-id="${matchId}"] .match-row` : '.match-row';
     await dash.evaluate((sel) => { const r = document.querySelector(sel) || document.querySelector('.match-row'); if (r && !r.closest('.match').classList.contains('open')) r.click(); }, rowSel);
     for (let i = 0; i < 40 && !(await dash.evaluate(() => !!document.querySelector('.coach'))); i++) await sleep(250); // decisions load lazily, then the coach block renders

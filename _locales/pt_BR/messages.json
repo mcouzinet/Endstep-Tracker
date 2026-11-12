@@ -605,6 +605,15 @@
   "compare_stop": {
     "message": "Parar de comparar"
   },
+  "compare_to": {
+    "message": "Comparar com…"
+  },
+  "compare_label": {
+    "message": "Comparar com outra versão"
+  },
+  "version_against": {
+    "message": "em relação à v{n}"
+  },
   "cmp_title": {
     "message": "Resultados com {v}, em partidas"
   },
@@ -875,6 +884,18 @@
   "cards_none": {
     "message": "Nenhum game terminado com este deck ainda."
   },
+  "cards_cut_one": {
+    "message": "Não está mais na lista: {n} carta"
+  },
+  "cards_cut_other": {
+    "message": "Não estão mais na lista: {n} cartas"
+  },
+  "card_new": {
+    "message": "nova"
+  },
+  "card_new_title": {
+    "message": "Não estava na v{n}"
+  },
   "col_card": {
     "message": "Carta"
   },
@@ -1017,7 +1038,7 @@
     "message": "Seus resultados conforme o começo da partida: on the play ou on the draw, manteve 7 ou após um mulligan.\nTudo segue o primeiro game de cada partida."
   },
   "info_cards": {
-    "message": "Contado em games, para cada carta do seu deck.\nComprada: a carta esteve na sua mão durante o game, ou seja, Mão inicial + Depois. Não comprada: ela ficou no seu grimório.\nJogada: você a conjurou, ou a jogou como terreno. Em jogo: ela chegou ao seu campo de batalha, mesmo sem ser comprada (reanimada, colocada no campo de batalha). Essas duas colunas contam os games jogados desde a 1.6.\nA diferença ao lado do nome = Comprada menos Não comprada, em pontos. Uma relação com a vitória, não uma prova de que a carta faz ganhar.\nPasse o mouse sobre um número para ver o detalhe; clique no cabeçalho de uma coluna para ordenar."
+    "message": "Contado em games, para cada carta do seu deck.\nComprada: a carta esteve na sua mão durante o game, ou seja, Mão inicial + Depois. Não comprada: ela ficou no seu grimório.\nJogada: você a conjurou, ou a jogou como terreno. Em jogo: ela chegou ao seu campo de batalha, mesmo sem ser comprada (reanimada, colocada no campo de batalha). Essas duas colunas contam os games jogados desde a 1.6.\nA diferença ao lado do nome = Comprada menos Não comprada, em pontos. Uma relação com a vitória, não uma prova de que a carta faz ganhar.\nSó aparecem as cartas da lista exibida (sua última lista, ou a versão escolhida); as que ela não tem mais ficam recolhidas embaixo. Cada carta conta mesmo assim todos os games em que estava no seu deck. “nova”: não estava na versão anterior.\nPasse o mouse sobre um número para ver o detalhe; clique no cabeçalho de uma coluna para ordenar."
   },
   "copy_side": {
     "message": "Copiar meu plano de side"
@@ -1081,6 +1102,15 @@
   },
   "board_title": {
     "message": "Games em que ela chegou ao meu campo de batalha, vinda da mão ou não (reanimada, colocada no campo de batalha)"
+  },
+  "col_used": {
+    "message": "Pouco usadas"
+  },
+  "used_sort_title": {
+    "message": "As cartas que menos conjuro ou coloco em jogo depois de comprá-las"
+  },
+  "used_title": {
+    "message": "Conjurada ou colocada em jogo em {u} dos {d} games em que a comprei"
   },
   "win_rate_text": {
     "message": "{pct} de vitórias"

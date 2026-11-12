@@ -605,6 +605,15 @@
   "compare_stop": {
     "message": "Interrompi il confronto"
   },
+  "compare_to": {
+    "message": "Confronta con…"
+  },
+  "compare_label": {
+    "message": "Confronta con un’altra versione"
+  },
+  "version_against": {
+    "message": "rispetto a v{n}"
+  },
   "cmp_title": {
     "message": "Bilancio con {v}, in match"
   },
@@ -875,6 +884,18 @@
   "cards_none": {
     "message": "Ancora nessuna partita conclusa con questo deck."
   },
+  "cards_cut_one": {
+    "message": "Non più nella lista: {n} carta"
+  },
+  "cards_cut_other": {
+    "message": "Non più nella lista: {n} carte"
+  },
+  "card_new": {
+    "message": "nuova"
+  },
+  "card_new_title": {
+    "message": "Assente nella v{n}"
+  },
   "col_card": {
     "message": "Carta"
   },
@@ -1017,7 +1038,7 @@
     "message": "Il tuo bilancio in base a come è iniziato il match: on the play o on the draw, mano da 7 tenuta o dopo un mulligan.\nTutto si basa sulla prima partita di ogni match."
   },
   "info_cards": {
-    "message": "Conteggio in partite, per ogni carta del tuo deck.\nPescata: la carta è stata nella tua mano durante la partita, cioè Mano iniziale + Dopo. Non pescata: è rimasta nel tuo grimorio.\nGiocata: l’hai lanciata, o giocata come terra. In gioco: è arrivata sul tuo campo di battaglia, anche senza essere pescata (rianimata, messa sul campo di battaglia). Queste due colonne contano le partite giocate dalla 1.6.\nLo scarto accanto al nome = Pescata meno Non pescata, in punti. Un legame con la vittoria, non la prova che la carta fa vincere.\nPassa il mouse su un numero per il dettaglio; clicca sull’intestazione di una colonna per ordinare."
+    "message": "Conteggio in partite, per ogni carta del tuo deck.\nPescata: la carta è stata nella tua mano durante la partita, cioè Mano iniziale + Dopo. Non pescata: è rimasta nel tuo grimorio.\nGiocata: l’hai lanciata, o giocata come terra. In gioco: è arrivata sul tuo campo di battaglia, anche senza essere pescata (rianimata, messa sul campo di battaglia). Queste due colonne contano le partite giocate dalla 1.6.\nLo scarto accanto al nome = Pescata meno Non pescata, in punti. Un legame con la vittoria, non la prova che la carta fa vincere.\nSono elencate solo le carte della lista mostrata (la tua ultima lista, o la versione scelta); quelle che non ha più sono raccolte in fondo. Ogni carta conta comunque tutte le partite in cui era nel tuo deck. «nuova»: assente nella versione precedente.\nPassa il mouse su un numero per il dettaglio; clicca sull’intestazione di una colonna per ordinare."
   },
   "copy_side": {
     "message": "Copia il mio piano di side"
@@ -1081,6 +1102,15 @@
   },
   "board_title": {
     "message": "Partite in cui è arrivata sul mio campo di battaglia, dalla mano o no (rianimata, messa sul campo di battaglia)"
+  },
+  "col_used": {
+    "message": "Poco usate"
+  },
+  "used_sort_title": {
+    "message": "Le carte che lancio o metto in gioco meno spesso dopo averle pescate"
+  },
+  "used_title": {
+    "message": "Lanciata o messa in gioco in {u} delle {d} partite in cui l’ho pescata"
   },
   "win_rate_text": {
     "message": "{pct} di vittorie"

@@ -10,7 +10,7 @@
   // bits (lobby, deck pick, deck and match details) and every frame since the last full game state.
   const MAX_BUFFER = 3000;
   let buffer = [];
-  const sticky = { lobby: null, deck: null, match: {}, decks: {} };
+  const sticky = { lobby: null, deck: null, match: {}, decks: {}, acted: {} };
   const post = (kind, data) => {
     const msg = { [TAG]: kind, data, at: Date.now() };
     remember(kind, data, msg);
@@ -25,6 +25,7 @@
     } else if (kind === 'out') buffer.push(msg);
     else if (kind === 'deck') sticky.deck = msg;
     else if (kind === 'match') sticky.match[data.id] = msg;
+    else if (kind === 'acted') sticky.acted[data] = msg; // this tab plays it: the new copy must keep recording it
     else if (kind === 'decks') for (const d of data) sticky.decks[d.id] = { [TAG]: kind, data: [d], at: msg.at };
     if (buffer.length > MAX_BUFFER) buffer = []; // a game this long is not worth replaying
   }
@@ -32,7 +33,7 @@
     if (e.source !== window || !e.data) return;
     if (e.data[TAG] === 'history-next') { nextHistory(e.data.cursor); return; }
     if (e.data[TAG] !== 'hello') return;
-    const replay = [sticky.lobby, sticky.deck, ...Object.values(sticky.decks), ...Object.values(sticky.match), ...buffer];
+    const replay = [sticky.lobby, sticky.deck, ...Object.values(sticky.decks), ...Object.values(sticky.match), ...Object.values(sticky.acted), ...buffer];
     for (const m of replay) if (m) window.postMessage({ ...m, replay: true }, location.origin);
   });
 

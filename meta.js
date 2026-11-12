@@ -18,23 +18,35 @@
   // decks: [{ name, slug, colours, registrations, cards: { name: playRate } }]
   // seen: card names the opponent showed (any zone), duplicates allowed.
   // Naive Bayes over archetypes: prior = share, likelihood = play rate of each seen card (UNSEEN when absent).
+  // A metagame's names, normalized once per decks array (the pages ask about every match of a deck at each redraw).
+  const prepared = new WeakMap();
+  function prepare(decks) {
+    if (!prepared.has(decks)) {
+      const known = new Set();
+      const rates = decks.map((d) => {
+        const r = new Map();
+        for (const [c, v] of Object.entries(d.cards || {})) { r.set(norm(c), v); known.add(norm(c)); }
+        return r;
+      });
+      prepared.set(decks, { known, rates, total: decks.reduce((s, d) => s + (d.registrations || 0), 0) || decks.length });
+    }
+    return prepared.get(decks);
+  }
+
   function classify(seen, decks, { minConfidence = 0.6, minCards = 2 } = {}) {
     if (!Array.isArray(decks) || !decks.length) return null;
-    const known = new Set();
-    for (const d of decks) for (const c of Object.keys(d.cards || {})) known.add(norm(c));
+    const { known, rates: allRates, total } = prepare(decks);
     const shown = {}; // normalized -> name as the opponent showed it (front face), for display
     for (const s of seen || []) { const c = norm(s); if (known.has(c) && !shown[c]) shown[c] = String(s).split(' // ')[0].trim(); }
     const names = Object.keys(shown);
     if (names.filter((c) => !BASICS.test(c)).length < minCards) return null;
 
-    const total = decks.reduce((s, d) => s + (d.registrations || 0), 0) || decks.length;
-    const scored = decks.map((d) => {
-      const rates = {};
-      for (const [c, r] of Object.entries(d.cards || {})) rates[norm(c)] = r;
+    const scored = decks.map((d, i) => {
+      const rates = allRates[i];
       let log = Math.log(((d.registrations || 0) + 1) / (total + decks.length));
       const matched = [];
       for (const c of names) {
-        const r = rates[c];
+        const r = rates.get(c);
         log += Math.log(Math.max(r || 0, UNSEEN));
         if (r >= 0.5 && !BASICS.test(c)) matched.push(shown[c]);
       }

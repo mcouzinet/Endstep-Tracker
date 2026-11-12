@@ -25,6 +25,11 @@
   let dismissed = null; // id of the match whose end card the user closed
   let edit = null; // { id, value }: the archetype being typed for that match
   const typing = () => document.activeElement === host; // then the updates wait: a redraw would drop the field
+  let dragging = false; // so do they while the panel is moved: a redraw would drop the bar that holds the pointer
+  const busy = () => typing() || dragging;
+  // A match's recognized archetype, worked out once per record: the panel redraws at each write of a match in play.
+  // Forgotten when what it depends on changes (notes, decks, metagame).
+  let guesses = new WeakMap();
 
   const host = document.createElement('div');
   host.id = HOST;
@@ -137,12 +142,15 @@
     const open = choice ? choice.open : phase !== 'game'; // folded while a game is played, unfolded around it
 
     const C = { notes: data.notes, decks: data.decks, merges: data.merges, formatMoves: data.formatMoves, t };
-    const guess = (x) => (S.archetype(x, C) ? null : S.recognize(x, C, data.meta, Meta, T));
+    const guess = (x) => {
+      if (!guesses.has(x)) guesses.set(x, S.archetype(x, C) ? null : S.recognize(x, C, data.meta, Meta, T));
+      return guesses.get(x);
+    };
     const keyOf = (x) => S.oppKey(x, C, (guess(x) || {}).name);
     const session = S.records(S.lastSession(list), now).m;
     const opp = S.opps(m).map((p) => p.name).join(', ') || '?';
     const summary = phase === 'after'
-      ? `<span class="dot off"></span><span class="sum"><b class="${m.result}">${esc(t({ W: 'win', L: 'loss', D: 'draw' }[m.result] || 'unfinished'))}</b> ${esc(S.scoreText(m))}</span>`
+      ? `<span class="dot off"></span><span class="sum"><b class="${esc(m.result)}">${esc(t({ W: 'win', L: 'loss', D: 'draw' }[m.result] || 'unfinished'))}</b> ${esc(S.scoreText(m))}</span>`
       : `<span class="dot"></span><span class="sum"><b>REC</b> · ${esc(t('ov_session', { wl: wl(session) }))}</span>`;
     const toggle = phase === 'after'
       ? `<button class="icon" tabindex="-1" data-close title="${esc(t('drawer_close'))}" aria-label="${esc(t('drawer_close'))}">${icon(CROSS)}</button>`
@@ -267,20 +275,29 @@
     e.preventDefault();
     const start = { x: e.clientX, y: e.clientY, right: at.right, bottom: at.bottom };
     bar.setPointerCapture(e.pointerId);
+    dragging = true;
     const move = (ev) => { pos.right = start.right - (ev.clientX - start.x); pos.bottom = start.bottom - (ev.clientY - start.y); place(); };
     const up = () => {
       bar.removeEventListener('pointermove', move);
       bar.removeEventListener('pointerup', up);
+      bar.removeEventListener('pointercancel', up);
+      dragging = false;
       Object.assign(pos, at); // where it was dropped, as shown
       if (!orphaned()) chrome.storage.local.set({ settings: { ...data.settings, overlayPos: { right: pos.right, bottom: pos.bottom } } });
+      if (!typing()) render(); // the updates that waited
     };
     bar.addEventListener('pointermove', move);
     bar.addEventListener('pointerup', up);
+    bar.addEventListener('pointercancel', up);
   });
 
   function apply(k, v) {
-    if (k.startsWith('match:')) { const m = v === undefined ? null : S.normalizeMatch(v); if (m) data.matches.set(m.id, m); else data.matches.delete(k.slice(6)); }
-    else if (k.startsWith('note:')) { if (v === undefined) delete data.notes[k.slice(5)]; else data.notes[k.slice(5)] = S.obj(v); }
+    if (/^note:|^(decks|deckMerges|formatMoves|meta)$/.test(k)) guesses = new WeakMap();
+    if (k.startsWith('match:')) {
+      const m = v === undefined ? null : S.normalizeMatch(v);
+      if (m) for (const g of m.games) g.log = []; // never shown here, and the heaviest part of a record
+      if (m) data.matches.set(m.id, m); else data.matches.delete(k.slice(6));
+    } else if (k.startsWith('note:')) { if (v === undefined) delete data.notes[k.slice(5)]; else data.notes[k.slice(5)] = S.normalizeNote(v); }
     else if (k === 'decks') data.decks = S.obj(v);
     else if (k === 'deckMerges') data.merges = S.obj(v); // decks merged in the dashboard
     else if (k === 'formatMoves') data.formatMoves = S.obj(v); // decks moved to another format in the dashboard
@@ -300,7 +317,7 @@
     if (area !== 'local' || orphaned()) return;
     let touched = false;
     for (const [k, c] of Object.entries(changes)) if (/^(match|note):|^(decks|deckMerges|formatMoves|meta|settings|historyImport)$/.test(k)) { apply(k, c.newValue); touched = true; }
-    if (touched && !typing()) render();
+    if (touched && !busy()) render();
   });
-  const tick = setInterval(() => { if (orphaned()) { clearInterval(tick); host.remove(); } else if (shown && !typing()) render(); }, 30e3); // the end card expires
+  const tick = setInterval(() => { if (orphaned()) { clearInterval(tick); host.remove(); } else if (shown && !busy()) render(); }, 30e3); // the end card expires
 })();

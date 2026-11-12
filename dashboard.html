@@ -93,6 +93,7 @@
     .versions .chg { white-space: nowrap; }
     .versions .add { color: var(--win); } .versions .cut { color: var(--loss); }
     .versions .chg .card { color: var(--ink); }
+    .versions select { padding-block: 2px; font-size: 13px; }
     .context .rec { padding-left: 8px; padding-right: 8px; } /* aligned with the clickable rows of the other panels */
     .split .panel { padding: 16px 12px 10px; }
     .split .panel-title, .cards .panel-title { padding: 0 8px 6px; }
@@ -108,8 +109,12 @@
     .rec.head .sort:hover, .rec.head .sort[aria-pressed="true"] { color: var(--ink); }
     .rec.head .sort:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 2px; }
     .rec.head .sort .arrow { margin-left: 3px; color: var(--gold-hi); }
-    .gap { margin-left: 6px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+    .gap { margin-left: 6px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; }
     .gap.up { color: var(--win); } .gap.down { color: var(--loss); }
+    .new { margin-left: 6px; padding: 0 5px; white-space: nowrap; border: 1px solid var(--gold); border-radius: 3px; color: var(--gold-hi); font-size: 11px; font-weight: 600; } /* a card the list just got */
+    .cut-cards { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+    .cut-cards > summary { margin: 0 8px 6px; }
+    .cut-cards .rec-label .card { color: var(--ink-2); } /* no longer in the list: still there, quieter */
     /* ---- sideboarding: + in, − out ---- */
     .chg.add { color: var(--win); } .chg.cut { color: var(--loss); }
     .chg .card { color: var(--ink); }

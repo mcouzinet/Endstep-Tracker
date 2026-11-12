@@ -605,6 +605,15 @@
   "compare_stop": {
     "message": "Arrêter la comparaison"
   },
+  "compare_to": {
+    "message": "Comparer à…"
+  },
+  "compare_label": {
+    "message": "Comparer à une autre version"
+  },
+  "version_against": {
+    "message": "par rapport à v{n}"
+  },
   "cmp_title": {
     "message": "Bilan avec {v}, en matchs"
   },
@@ -875,6 +884,18 @@
   "cards_none": {
     "message": "Aucune game terminée avec ce deck pour l’instant."
   },
+  "cards_cut_one": {
+    "message": "Plus dans la liste : {n} carte"
+  },
+  "cards_cut_other": {
+    "message": "Plus dans la liste : {n} cartes"
+  },
+  "card_new": {
+    "message": "nouvelle"
+  },
+  "card_new_title": {
+    "message": "Absente de la v{n}"
+  },
   "col_card": {
     "message": "Carte"
   },
@@ -1017,7 +1038,7 @@
     "message": "Ton bilan selon la situation de départ : sur le play ou sur la draw, main de 7 gardée ou après un mulligan.\nTout se lit d’après la première game de chaque match."
   },
   "info_cards": {
-    "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nJouée : tu l’as lancée, ou posée pour un terrain. En jeu : elle est arrivée sur ton champ de bataille, même sans être piochée (réanimée, mise en jeu). Ces deux colonnes comptent les games jouées depuis la 1.6.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nSurvole un chiffre pour son détail ; clique sur un en-tête de colonne pour trier."
+    "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nJouée : tu l’as lancée, ou posée pour un terrain. En jeu : elle est arrivée sur ton champ de bataille, même sans être piochée (réanimée, mise en jeu). Ces deux colonnes comptent les games jouées depuis la 1.6.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nSeules les cartes de la liste affichée sont listées (ta dernière liste, ou la version choisie) ; celles qu’elle n’a plus sont repliées en bas. Chaque carte compte quand même toutes les games où elle était dans ton deck. « nouvelle » : absente de la version d’avant.\nSurvole un chiffre pour son détail ; clique sur un en-tête de colonne pour trier."
   },
   "copy_side": {
     "message": "Copier mon plan de side"
@@ -1081,6 +1102,15 @@
   },
   "board_title": {
     "message": "Games où elle est arrivée sur mon champ de bataille, depuis ma main ou non (réanimée, mise en jeu)"
+  },
+  "col_used": {
+    "message": "Peu jouées"
+  },
+  "used_sort_title": {
+    "message": "Les cartes que je lance ou mets en jeu le moins souvent une fois piochées"
+  },
+  "used_title": {
+    "message": "Lancée ou mise en jeu dans {u} des {d} games où je l’ai piochée"
   },
   "win_rate_text": {
     "message": "{pct} de victoires"

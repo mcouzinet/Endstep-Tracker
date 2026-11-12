@@ -40,7 +40,10 @@ async function attachOpenTabs() {
     }
   }
 }
-chrome.runtime.onInstalled.addListener(attachOpenTabs);
+// Only when the extension is installed or updated, and not on Firefox, which puts the manifest's content scripts in the
+// open tabs itself: a second copy would record every match twice (and a browser update reloads the tabs anyway).
+const FIREFOX = typeof importScripts !== 'function'; // its build runs this file as a background script (see the top)
+chrome.runtime.onInstalled.addListener(({ reason }) => { if (!FIREFOX && (reason === 'install' || reason === 'update')) attachOpenTabs(); });
 // Nothing is new to a new user: the dashboard's "What's new" waits for the next release (X.Y).
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') chrome.storage.local.set({ newsSeen: chrome.runtime.getManifest().version.split('.').slice(0, 2).join('.') });

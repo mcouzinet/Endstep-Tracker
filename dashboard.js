@@ -33,7 +33,6 @@ const END_REASON = {
   milled: 'end_decked', decked: 'end_decked', poison: 'end_poison', timeout: 'end_timeout', draw: 'end_draw',
 };
 const PLAYS = new Set(['LAND_PLAYED', 'SPELL_CAST']);
-const BASICS = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/;
 const STALE_MS = S.STALE_MS;
 const PREFS = 'endstep-tracker.filters';
 
@@ -49,7 +48,6 @@ let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my de
 let merges = {}; // deckId -> { id, name, from }: decks merged into another one (deck tools, under the filters)
 let formatMoves = {}; // deckId -> { format on the site: my format }: decks moved to another format (same tools)
 let drawer = null; // { key, renaming } of the matchup open in the side panel
-let curScope = null; // the scope of the last render
 let openId = null;
 let decisions = {}; // matchId -> { gameNumber: [decision] }, loaded only for the open match
 let addon = null; // an optional module installed next to this page in development, never in the store builds
@@ -126,7 +124,8 @@ const pips = (c) => S.pips(c, t);
 const cardLink = (name) => `<a class="card" data-card="${esc(name)}" href="https://scryfall.com/search?q=${encodeURIComponent(`!"${name}"`)}" target="_blank" rel="noopener">${esc(name)}</a>`;
 
 const ago = (ts) => S.ago(ts, I18N);
-const fullDate = (ts) => new Date(ts).toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' });
+const dateFormats = new Map(); // one formatter per language: building one costs more than formatting a date
+const fullDate = (ts) => (dateFormats.get(locale) || dateFormats.set(locale, new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' })).get(locale)).format(ts);
 
 function oppKey(m) {
   const a = archetype(m) || (guessFor(m) || {}).name; // a recognized deck files with the same-named manual tags
@@ -210,10 +209,22 @@ function activeVersion(vs) {
   const v = state.version;
   return (v === '?' && vs.unknown) || vs.list.some((x) => x.key === v) ? v : 'all';
 }
+// The list my cards are about: the version in view, else the current one (my latest match's); null when no list was
+// recorded. in: its cards, with its sideboard and commanders; added: its cards that the version before it (or the one it
+// is compared with) did not have.
+function listInView(s, vs, v, base) {
+  const view = vs.list.find((x) => x.key === (v === 'all' ? vs.current : v));
+  if (!view) return null;
+  const m = matches.find((x) => inScope(x, s) && versionKey(x) === view.key); // newest first
+  const ref = base || vs.list[view.n - 2];
+  const had = ref && new Set(keyLines(ref.key).map(([name]) => name));
+  return { in: S.deckNames(m, C), added: new Set(had ? keyLines(view.key).map(([name]) => name).filter((n) => !had.has(n)) : []), ref };
+}
 // Cards added (+) and cut (−) from one list key to another, additions first, each card under its one name. A list that
 // only swapped a printing for another of the same card shows that swap.
+const keyLines = (key) => key.split('\n').map((l) => [l.slice(l.indexOf(' ') + 1), Number(l.slice(0, l.indexOf(' ')))]);
 function listDiff(from, to) {
-  const counts = (key, c) => S.canonCounts(Object.fromEntries(key.split('\n').map((l) => [l.slice(l.indexOf(' ') + 1), Number(l.slice(0, l.indexOf(' ')))])), c);
+  const counts = (key, c) => S.canonCounts(Object.fromEntries(keyLines(key)), c);
   const diff = (c) => {
     const a = counts(from, c); const b = counts(to, c);
     return [...new Set([...Object.keys(a), ...Object.keys(b)])].map((n) => [n, (b[n] || 0) - (a[n] || 0)]).filter(([, d]) => d)
@@ -247,7 +258,7 @@ function haystack(m) {
   return [oppLabel(m), n.archetype, (guessFor(m) || {}).name, n.notes, deckName(m), fmt(m), ...seen].join('\n').toLowerCase();
 }
 
-// Scope menu: every deck, grouped by format, most played first.
+// Scope menu: every deck by name, grouped by format, the most played format first.
 function fillScope() {
   const tree = new Map(); // format -> { n, decks: Map(deck -> n) }, counting the matches the records are made of
   const rated = matches.filter((m) => !S.vsAI(m));
@@ -261,7 +272,7 @@ function fillScope() {
   const opt = (format, deck, label, n) => `<option value="${esc(JSON.stringify([format, deck]))}">${esc(label)} (${n})</option>`;
   $('#f-scope').innerHTML = opt(null, null, t('scope_all'), rated.length) + [...tree].sort((a, b) => byCount([a[0], a[1].n], [b[0], b[1].n])).map(([f, e]) => `<optgroup label="${esc(f)}">${
     e.decks.size > 1 ? opt(f, null, t('scope_all_format', { format: f }), e.n) : ''}${
-    [...e.decks].sort(byCount).map(([d, n]) => opt(f, d, t('scope_deck', { deck: d, format: f }), n)).join('')}</optgroup>`).join('');
+    [...e.decks].sort((a, b) => String(a[0]).localeCompare(String(b[0]), locale, { numeric: true })).map(([d, n]) => opt(f, d, t('scope_deck', { deck: d, format: f }), n)).join('')}</optgroup>`).join('');
 }
 
 // --- data loading ---
@@ -278,26 +289,31 @@ async function load() {
       const m = normalizeMatch(v);
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
-    } else if (k.startsWith('note:')) notes[k.slice(5)] = obj(v);
+    } else if (k.startsWith('note:')) notes[k.slice(5)] = S.normalizeNote(v);
     else if (k === 'decks') decks = obj(v);
     else if (k === 'deckMerges') merges = obj(v);
     else if (k === 'formatMoves') formatMoves = obj(v);
   }
-  // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays, and
-  // first takes what the imported one knows and it lacks (a record caught in part has no format, deck or result).
-  const pairs = S.historyPairs(matches);
-  if (pairs.length) {
-    const byId = new Map(matches.map((m) => [m.id, m]));
-    const completed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)]).filter(([m, h]) => m && h && S.fillFromHistory(m, h).length).map(([m]) => m);
-    const twins = new Set(pairs.map((p) => p.h));
-    matches = matches.filter((m) => !twins.has(m.id));
-    await chrome.storage.local.set(Object.fromEntries(completed.map((m) => ['match:' + m.id, m])));
-    chrome.storage.local.remove([...twins].map((id) => 'match:' + id));
+  const { fill, drop } = twins(matches);
+  if (drop.size) {
+    matches = matches.filter((m) => !drop.has(m.id));
+    await chrome.storage.local.set(Object.fromEntries(fill.map((m) => ['match:' + m.id, m])));
+    chrome.storage.local.remove([...drop].map((id) => 'match:' + id));
   }
   if (addon) addon.load(all);
   showNews(all.newsSeen, all.reviewClosed);
   showPromo(all.promoClosed, all.whozicClosed);
   refresh();
+}
+
+// Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays, and first
+// takes what the imported one knows and it lacks (a record caught in part has no format, deck or result). fill: the
+// recorded matches completed; drop: the ids of their imported twins.
+function twins(list) {
+  const byId = new Map(list.map((m) => [m.id, m]));
+  const pairs = S.historyPairs(list);
+  const fill = pairs.map((p) => [byId.get(p.m), byId.get(p.h)]).filter(([m, h]) => m && h && S.fillFromHistory(m, h).length).map(([m]) => m);
+  return { fill, drop: new Set(pairs.map((p) => p.h)) };
 }
 
 // Deck Compare promo, where Deck Compare is listed (Chrome Web Store, Edge Add-ons) and not installed. Closed, it stays
@@ -398,7 +414,7 @@ function applyChanges(changes) {
     } else if (k.startsWith('note:')) {
       const id = k.slice(5);
       if (c.newValue === undefined) delete notes[id];
-      else notes[id] = obj(c.newValue);
+      else notes[id] = S.normalizeNote(c.newValue);
     } else if (k.startsWith('dec:')) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
@@ -568,14 +584,14 @@ function renderView() {
   const list = listed(shown);
   const cur = vs.list.find((x) => x.key === v);
   const prev = cur && vs.list[cur.n - 2];
-  const cmp = prev && state.compare ? { label: t('version_n', { n: prev.n }), list: scoped(prev.key) } : null;
-  curScope = s;
+  const base = cur && vs.list.find((x) => x.key === state.compare && x !== cur); // the version it is compared with
+  const cmp = base ? { label: t('version_n', { n: base.n }), list: scoped(base.key) } : null;
   renderFilters(s, shown, list, vs, v);
   renderDeckTools(s);
   renderGlance(stats, cmp);
-  renderVersions(cur, prev);
+  renderVersions(vs, cur, prev, base);
   renderOverview(stats);
-  renderCards(s, stats);
+  if (state.tab === 'cards') renderCards(s, stats, listInView(s, vs, v, base)); // a hidden tab waits for its turn
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
   if (s.deck === null) {
@@ -583,7 +599,7 @@ function renderView() {
       esc(deckName(m)) + (s.format === null ? ` <span class="muted">· ${esc(formatOf(m))}</span>` : ''), deckName(m)], 'deck');
   }
   $('#history').classList.toggle('one-deck', s.deck !== null);
-  renderMatches(list);
+  if (state.tab === 'history') renderMatches(list);
   renderDrawer(s, stats, vs);
 }
 
@@ -832,7 +848,8 @@ function renderOverview(list) {
     const p = S.matchOnPlay(x);
     if (p !== null) ctx[p ? 'play' : 'draw'][x.result]++;
     const g1 = S.firstGame(x);
-    if (g1) ctx[g1.mulligans[x.mySeat] ? 'mull' : 'keep'][x.result]++;
+    const k = g1 && g1.mulligans[x.mySeat]; // unknown when the tracker missed the hand
+    if (Number.isInteger(k)) ctx[k ? 'mull' : 'keep'][x.result]++;
   }
   const row = (label, k) => rec(esc(label), ctx[k]);
   $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}${infoBtn('info_context')}</h2>
@@ -842,15 +859,20 @@ function renderOverview(list) {
 // --- my cards: the results of the games where I drew each card, beside those where it stayed in my library ---
 // Counted in games (a card is drawn in a game). The gap between the two rates, in points, sorts the list once both
 // have MIN_SAMPLE results: a link between drawing the card and winning, not proof that the card wins. A click on a
-// column's head sorts by it instead (best first, the names from A), again reverses it; a rate under MIN_SAMPLE games
-// never ranks before one that has them. Every card is listed: a 100-card Duel Commander deck as much as a 60-card one.
+// column's head sorts by it instead (best first, the names from A, the least used first), again reverses it; a rate
+// under MIN_SAMPLE games never ranks before one that has them. Every card of the list in view is listed, a 100-card
+// Duel Commander deck as much as a 60-card one; the cards it no longer has wait below, folded. Each card counts the
+// games where it was in my deck, whatever the version.
 const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
 function cardGap(x) { // in points, null until both sides have MIN_SAMPLE games (also on the stats image)
   const n = (r) => r.W + r.L + r.D;
   return n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
     ? Math.round(100 * winRate(x.drawn)) - Math.round(100 * winRate(x.notDrawn)) : null;
 }
-function renderCards(s, list) {
+// How often I cast a drawn card or got it onto my battlefield, null under MIN_SAMPLE drawn games that record it.
+const useRate = (x) => (x.drawnTracked.W + x.drawnTracked.L + x.drawnTracked.D >= MIN_SAMPLE
+  ? (x.used.W + x.used.L + x.used.D) / (x.drawnTracked.W + x.drawnTracked.L + x.drawnTracked.D) : null);
+function renderCards(s, list, deck) {
   const el = $('#cards-panel');
   if (s.deck === null) { // a card's results only mean something within one deck
     el.innerHTML = `<p class="muted cards-note">${esc(t('cards_needs_deck'))}</p>`;
@@ -858,17 +880,18 @@ function renderCards(s, list) {
   }
   if (state.tab === 'cards') resolveNames(rawCardNames(list));
   const n = (r) => r.W + r.L + r.D;
-  const by = state.cardSort;
-  const dir = state.cardRev ? -1 : 1;
-  const key = (x) => (by === 'gap' ? x.gap : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
-  const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: cardGap(x) }))
-    .filter((x) => n(x.drawn) || n(x.opening) || n(x.board))
-    .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
-      : (key(a) === null) - (key(b) === null) || dir * ((key(b) || 0) - (key(a) || 0)))
-      || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
   // Played and In play appear once a game records them (since 1.5.6). Each cell says on hover what its numbers count,
   // since the column names are far up a long list.
   const tracked = list.some((m) => m.games.some((g) => g.played));
+  const by = state.cardSort === 'used' && !tracked ? 'gap' : state.cardSort;
+  const dir = state.cardRev ? -1 : 1;
+  const up = by === 'name' || by === 'used'; // A to Z, the least used first: the rest sorts the best first
+  const key = (x) => (by === 'gap' ? x.gap : by === 'used' ? x.use : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
+  const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: cardGap(x), use: useRate(x) }))
+    .filter((x) => n(x.drawn) || n(x.opening) || n(x.board))
+    .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
+      : (key(a) === null) - (key(b) === null) || dir * (up ? (key(a) || 0) - (key(b) || 0) : (key(b) || 0) - (key(a) || 0)))
+      || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
   const tip = (k, r, vars) => (n(r) ? t(k, { wl: wl(r), n: n(r), rate: n(r) >= MIN_SAMPLE ? t('win_rate_text', { pct: pct(r) }) : t('glance_early'), ...vars }) : t('cell_none'));
   const cells = (x) => [
     { key: t('col_not_drawn'), title: tip('cell_not_drawn', x.notDrawn), r: x.notDrawn },
@@ -877,24 +900,32 @@ function renderCards(s, list) {
     ...(tracked ? [{ key: t('col_played'), title: tip('cell_played', x.played, { p: n(x.played), d: n(x.drawnTracked) }), r: x.played },
       { key: t('col_board'), title: tip('cell_board', x.board, { o: n(x.boardOnly) }), r: x.board }] : []),
   ];
-  // The head: each column sorts the list; the arrow says which and which way (down: best first, or Z to A).
+  // The head: each column sorts the list; the arrow says which and which way (down: best first, Z to A, or the most used
+  // first).
   const sortBtn = (col, label, title = '') => {
     const on = by === col;
-    const down = on && (col === 'name' ? state.cardRev : !state.cardRev);
+    const down = on && (col === 'name' || col === 'used' ? state.cardRev : !state.cardRev);
     const aria = t('sort_by', { col: label }) + (on ? ` (${t(down ? 'sort_desc' : 'sort_asc')})` : '');
     return `<button type="button" class="sort" data-card-sort="${col}" aria-pressed="${on}" aria-label="${esc(aria)}"${title ? ` title="${esc(title)}"` : ''}>`
       + `${esc(label)}${on ? `<span class="arrow" aria-hidden="true">${down ? '↓' : '↑'}</span>` : ''}</button>`;
   };
-  const head = `<div class="rec cells head" style="--cells:${tracked ? 5 : 3}"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}</span>`
+  const head = `<div class="rec cells head" style="--cells:${tracked ? 5 : 3}"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('gap', t('col_gap'), t('gap_sort_title'))}${tracked ? ` · ${sortBtn('used', t('col_used'), t('used_sort_title'))}` : ''}</span>`
     + `<span class="main">${sortBtn('drawn', t('col_drawn'))}</span><span>${sortBtn('notDrawn', t('col_not_drawn'), t('not_drawn_title'))}</span>`
     + `<span>${sortBtn('opening', t('col_opening'), t('opening_title'))}</span><span>${sortBtn('later', t('col_later'), t('later_title'))}</span>`
     + (tracked ? `<span>${sortBtn('played', t('col_played'), t('played_title'))}</span><span>${sortBtn('board', t('col_board'), t('board_title'))}</span>` : '') + '</div>';
+  // Beside the name: the gap, or how often the card is used when sorting by it; "new" on a card the list just got.
   const row = (x) => {
-    const g = x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
-    return rec(cardLink(x.name) + g, x.drawn, { cells: cells(x), attrs: `title="${esc(tip('cell_drawn', x.drawn))}"` });
+    const g = by === 'used'
+      ? (x.use === null ? '' : ` <span class="gap" title="${esc(t('used_title', { u: n(x.used), d: n(x.drawnTracked) }))}">${Math.round(100 * x.use)} %</span>`)
+      : x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
+    const fresh = deck && deck.added.has(x.name) ? ` <span class="new" title="${esc(t('card_new_title', { n: deck.ref.n }))}">${esc(t('card_new'))}</span>` : '';
+    return rec(cardLink(x.name) + fresh + g, x.drawn, { cells: cells(x), attrs: `title="${esc(tip('cell_drawn', x.drawn))}"` });
   };
+  const kept = deck ? rows.filter((x) => deck.in.has(x.name)) : rows;
+  const cut = deck ? rows.filter((x) => !deck.in.has(x.name)) : [];
+  const folded = cut.length ? `<details class="cut-cards"${el.querySelector('.cut-cards[open]') ? ' open' : ''}><summary>${esc(tn('cards_cut', cut.length))}</summary>${cut.map(row).join('')}</details>` : '';
   const recorded = list.some((m) => m.games.some((g) => g.drawn));
-  const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>` : head + rows.map(row).join('');
+  const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>` : head + kept.map(row).join('') + folded;
   el.innerHTML = `<h2 class="panel-title">${esc(t('by_card'))}${infoBtn('info_cards')}</h2>`
     + (recorded ? '' : `<p class="muted cards-note">${esc(t('cards_since'))}</p>`) + body;
 }
@@ -910,8 +941,9 @@ function renderGlance(list, cmp) {
   const r = S.records(done);
   let mulls = 0; let played = 0; let time = 0; let timed = 0; // matches imported from the site's history have no games
   for (const x of done) {
-    if (x.games.length) played++;
-    for (const gm of x.games) mulls += gm.mulligans[x.mySeat] || 0;
+    const known = x.games.filter((gm) => Number.isInteger(gm.mulligans[x.mySeat])); // a hand the tracker missed counts for nothing
+    if (known.length) played++;
+    for (const gm of known) mulls += gm.mulligans[x.mySeat];
     if (x.endedAt) { time += x.endedAt - x.startedAt; timed++; }
   }
   const enough = (x) => x.W + x.L + x.D >= MIN_SAMPLE;
@@ -930,7 +962,7 @@ function renderGlance(list, cmp) {
     timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
   ].join('');
   const hero = `<b class="hero-n">${enough(r.m) ? pct(r.m) : wl(r.m)}</b><span class="hero-l">${esc(t(enough(r.m) ? 'glance_rate' : 'glance_early'))}<br><span class="muted">${esc(tn('glance_over', n))}</span></span>`;
-  const square = (x) => `<button type="button" class="${x.result}" data-show="${esc(x.id)}" aria-label="${esc([resultLabel(x.result), scoreText(x), oppLabel(x), archetype(x)].filter(Boolean).join(' · '))}"><i></i></button>`;
+  const square = (x) => `<button type="button" class="${esc(x.result)}" data-show="${esc(x.id)}" aria-label="${esc([resultLabel(x.result), scoreText(x), oppLabel(x), archetype(x)].filter(Boolean).join(' · '))}"><i></i></button>`;
   el.innerHTML = `${infoBtn('info_glance')}<div class="glance-head"><div class="hero">${hero}</div><dl class="glance-facts">${facts}</dl></div>
     <div class="glance-form"><h3>${esc(t('recent_form', { n: Math.min(FORM, n) }))}</h3><div class="form-strip">${done.slice(-FORM).map(square).join('')}</div>
     <div class="form-tip" hidden></div></div>`;
@@ -1017,8 +1049,10 @@ function renderDrawer(s, stats, vs) {
   if (s.deck !== null) resolveNames(rawCardNames(list)); // the side plan's names: one deck's cards, as My cards asks for them
   const r = S.records(list);
   const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
+  const byKey = new Map(); // version key -> these matches played with it
+  if (vs.list.length > 1) for (const m of scoped('all')) if (oppKey(m)[0] === drawer.key) { const k = versionKey(m); byKey.set(k, [...(byKey.get(k) || []), m]); }
   const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {
-    const rr = S.records(scoped(x.key).filter((m) => oppKey(m)[0] === drawer.key)).m;
+    const rr = S.records(byKey.get(x.key) || []).m;
     return rr.W + rr.L + rr.D ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
   }).join('') : '';
   const seen = new Map(); // card -> number of these matches where it showed up
@@ -1080,10 +1114,10 @@ function showMatch(m) {
   drawer = null;
   state.tab = 'history';
   savePrefs();
-  if (!listed(scoped()).includes(m)) {
+  if (!listed(scoped(undefined, true)).includes(m)) { // the history lists the matches against the AI too
     $('#q').value = '';
     setFilter({ q: '', result: 'all', period: 'all', ranked: 'all', opp: null, version: null, scope: scopeFor({ format: formatOf(m), deck: deckName(m) }) });
-    if (!listed(scoped()).includes(m)) setFilter({ version: 'all' }); // its list is not recorded (yet)
+    if (!listed(scoped(undefined, true)).includes(m)) setFilter({ version: 'all' }); // its list is not recorded (yet)
   }
   openId = m.id;
   loadDecisions(m.id).then(() => {
@@ -1128,7 +1162,7 @@ function chip(m, g) {
     p === null ? t('pos_unknown') : p ? t('on_play_l') : t('on_draw_l')}${k ? `, ${tn('mulligans', k)}` : ''}`;
   const icon = r ? `<svg class="i"><use href="#${RESULT_ICON[r]}"/></svg>` : '';
   return `<span class="g ${r || 'open'}" role="img" aria-label="${esc(label)}" title="${esc(label)}"><span class="g-res">${icon}</span>`
-    + `<span class="g-pos">${p === null ? '—' : p ? 'play' : 'draw'}${k ? `<b>M${k}</b>` : ''}</span></span>`;
+    + `<span class="g-pos">${p === null ? '—' : p ? 'play' : 'draw'}${k ? `<b>M${esc(k)}</b>` : ''}</span></span>`;
 }
 
 function row(m) {
@@ -1164,7 +1198,7 @@ function detail(m) {
   // "My deck" picker: the tracker's own attribution stays the default; any deck seen on the site can replace it.
   const auto = m.myDeck ? (decks[m.myDeck.id] || {}).name || m.myDeck.name || `Deck ${m.myDeck.id.slice(0, 8)}` : m.limitedDeck ? t('limited_deck') : t('unknown');
   const deckOptions = Object.entries(decks)
-    .map(([id, d]) => ({ id, label: (d.name || id) + (d.format || d.formatId ? ` · ${d.format || d.formatId}` : '') }))
+    .map(([id, d]) => ({ id, label: deckLabel(id, d) }))
     .sort((a, b) => a.label.localeCompare(b.label, locale))
     .map((o) => `<option value="${esc(o.id)}"${o.id === n.deckId ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
   const deckPicker = m.limitedDeck ? '' : `<label class="field">${esc(t('my_deck'))}<select data-note="deckId">
@@ -1198,8 +1232,8 @@ function cardList(cards) {
   if (!names.length) return `<p class="muted">${esc(t('no_cards_seen'))}</p>`;
   const byCount = (a, b) => cards[b] - cards[a] || a.localeCompare(b);
   const li = (c) => `<li><span class="qty">${esc(cards[c])}</span>${cardLink(c)}</li>`;
-  const spells = names.filter((c) => !BASICS.test(c)).sort(byCount);
-  const basics = names.filter((c) => BASICS.test(c)).sort(byCount);
+  const spells = names.filter((c) => !S.BASIC.test(c)).sort(byCount);
+  const basics = names.filter((c) => S.BASIC.test(c)).sort(byCount);
   return `<ul class="cardlist">${spells.map(li).join('')}${basics.length ? `<li class="sep">${esc(t('basic_lands'))}</li>${basics.map(li).join('')}` : ''}</ul>`;
 }
 
@@ -1210,18 +1244,24 @@ function listVersion(m, md) {
   return x ? ` · ${t('version_n', { n: x.n })}` : '';
 }
 
-// The version in view and what changed from the previous list; a toggle sets the previous list's records beside.
-function renderVersions(cur, prev) {
+// The version in view and what changed from the previous list, or from the one it is compared with; a menu sets any
+// other version's records beside.
+function renderVersions(vs, cur, prev, base) {
   const el = $('#versions');
   el.hidden = !cur;
   if (!cur) return;
   const since = t('version_since', { n: cur.n, date: new Date(cur.from).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) });
-  if (!prev) { el.innerHTML = `<span><b>${esc(since)}</b> · ${esc(t('version_first'))}</span>`; return; }
-  const changes = listDiff(prev.key, cur.key);
+  const pick = `<select id="v-compare" aria-label="${esc(t('compare_label'))}" title="${esc(t('compare_label'))}">`
+    + `<option value="">${esc(t(base ? 'compare_stop' : 'compare_to'))}</option>`
+    + [...vs.list].reverse().filter((x) => x !== cur).map((x) => `<option value="${x.n}"${x === base ? ' selected' : ''}>${esc(t('compare_with', { n: x.n }))}</option>`).join('')
+    + '</select>';
+  const ref = base || prev;
+  if (!ref) { el.innerHTML = `<span><b>${esc(since)}</b> · ${esc(t('version_first'))}</span>${pick}`; return; }
+  const changes = listDiff(ref.key, cur.key);
   const MAX = 8;
   const shown = changes.slice(0, MAX).map(([name, d]) => `<span class="chg ${d > 0 ? 'add' : 'cut'}">${d > 0 ? '+' : '−'}${Math.abs(d)} ${cardLink(name)}</span>`).join(', ');
-  el.innerHTML = `<span><b>${esc(since)}</b>${esc(t('colon'))}${shown}${changes.length > MAX ? ` ${esc(t('version_more', { n: changes.length - MAX }))}` : ''}</span>`
-    + `<button class="link" data-action="compare" aria-pressed="${!!state.compare}">${esc(state.compare ? t('compare_stop') : t('compare_with', { n: prev.n }))}</button>`;
+  const against = ref === prev ? '' : ', ' + t('version_against', { n: ref.n });
+  el.innerHTML = `<span><b>${esc(since)}</b>${esc(against + t('colon'))}${shown}${changes.length > MAX ? ` ${esc(t('version_more', { n: changes.length - MAX }))}` : ''}</span>${pick}`;
 }
 
 // My list, each card under its one name.
@@ -1467,11 +1507,12 @@ async function statsImage(s, list) {
   for (const m of list) { const [key, , label] = oppKey(m); const e = groups.get(key) || { label, list: [] }; e.list.push(m); groups.set(key, e); }
   const matchups = [...groups.values()].map((e) => ({ label: e.label, r: S.records(e.list).m })).filter((e) => n(e.r))
     .sort((a, b) => n(b.r) - n(a.r) || a.label.localeCompare(b.label, locale)).slice(0, 5);
-  const gaps = S.cardStats(list, C).map((x) => ({ name: x.name, gap: cardGap(x) })).filter((x) => x.gap);
-  const up = gaps.filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).slice(0, 3);
-  const down = gaps.filter((x) => x.gap < 0).sort((a, b) => a.gap - b.gap).slice(0, 3);
   const vs = versionsOf(s);
   const v = activeVersion(vs);
+  const deck = listInView(s, vs, v); // the cards of the list in view, as in My cards
+  const gaps = S.cardStats(list, C).map((x) => ({ name: x.name, gap: cardGap(x) })).filter((x) => x.gap && (!deck || deck.in.has(x.name)));
+  const up = gaps.filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).slice(0, 3);
+  const down = gaps.filter((x) => x.gap < 0).sort((a, b) => a.gap - b.gap).slice(0, 3);
   const ver = v === '?' ? t('version_unknown') : v === 'all' ? '' : t('version_n', { n: vs.list.find((x) => x.key === v).n });
   const sub = [s.format, state.period === 'all' ? '' : t('period_' + state.period), { ranked: t('ranked_only'), unranked: t('ranked_not') }[state.ranked],
     ver, state.opp ? t('opponent_facet', { label: state.opp.label }) : ''].filter(Boolean).join(' · ');
@@ -1614,7 +1655,6 @@ const ACTIONS = {
     toast(t('all_deleted'));
   },
   reset: resetFilters,
-  compare: () => setFilter({ compare: !state.compare }),
 };
 
 document.addEventListener('click', (e) => {
@@ -1678,13 +1718,20 @@ $('#import').addEventListener('change', async (e) => {
     const here = new Map(matches.map((m) => [m.id, m]));
     const items = {};
     for (const m of list) items['match:' + m.id] = S.mergeMatch(here.get(m.id), m);
-    for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = { ...obj(n), ...obj(notes[id]) };
+    for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = { ...S.normalizeNote(n), ...obj(notes[id]) };
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id] && !here.has(id)) items['dec:' + id] = obj(d);
     if (addon) addon.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     if (Object.keys(obj(data && data.deckMerges)).length) items.deckMerges = { ...obj(data.deckMerges), ...merges }; // the merges made here win
     if (Object.keys(obj(data && data.formatMoves)).length) items.formatMoves = { ...obj(data.formatMoves), ...formatMoves }; // so do these moves
+    if (Object.keys(obj(data && data.decks)).length) items.decks = { ...obj(data.decks), ...decks }; // my decks' names and lists, as seen here first
+    // A backup from another computer may hold the site's history of matches recorded here, or the other way round.
+    const { fill, drop } = twins([...matches.filter((m) => !items['match:' + m.id]), ...list.map((m) => items['match:' + m.id])]);
+    for (const m of fill) items['match:' + m.id] = m;
+    for (const id of drop) for (const k of ['match:', 'note:', 'dec:']) delete items[k + id];
     await chrome.storage.local.set(items);
+    const gone = [...drop].filter((id) => here.has(id));
+    if (gone.length) await chrome.storage.local.remove(gone.map((id) => 'match:' + id));
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
   } catch {
@@ -1796,8 +1843,9 @@ $('#drawer').addEventListener('submit', async (e) => {
   if (!confirm(tn('confirm_rename', targets.length, { from, to }))) return;
   for (const m of targets) notes[m.id] = Object.assign({}, notes[m.id], { archetype: to });
   await chrome.storage.local.set(Object.fromEntries(targets.map((m) => ['note:' + m.id, notes[m.id]])));
+  if (state.opp && state.opp.key === drawer.key) state.opp = { key: 'a:' + to, label: to }; // the filter follows the name
   drawer = { key: 'a:' + to };
-  render();
+  setFilter({});
   toast(tn('archetype_renamed', targets.length, { to }));
 });
 $('#drawer').addEventListener('keydown', (e) => {
@@ -1818,6 +1866,11 @@ $('#tabs').addEventListener('keydown', (e) => {
 $('#f-scope').addEventListener('change', (e) => {
   const [format, deck] = JSON.parse(e.target.value);
   setFilter({ scope: scopeFor({ format, deck }), version: null, compare: false, opp: null }); // an archetype facet rarely survives a change of deck
+});
+$('#versions').addEventListener('change', (e) => {
+  if (e.target.id !== 'v-compare') return;
+  const x = versionsOf(activeScope()).list.find((y) => String(y.n) === e.target.value);
+  setFilter({ compare: x ? x.key : false });
 });
 $('#f-version').addEventListener('change', (e) => {
   const v = e.target.value;

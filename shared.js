@@ -13,18 +13,26 @@
   const esc = (s) => String(s === undefined || s === null ? '' : s)
     .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-  // Records come from the tracker or from an imported file: keep only what the pages can render.
+  // Records come from the tracker or from an imported file: keep only what the pages can render. A field of the wrong
+  // type is dropped, so that one odd record (a hand-edited backup) can neither stop the pages nor slip markup into them.
+  const ids = (v) => Object.fromEntries(Object.entries(obj(v)).filter(([, x]) => Array.isArray(x))); // { card: [ids] }
+  const MAX_DATE = 8.64e15; // beyond it, a Date is invalid
   function normalizeMatch(m) {
-    if (!m || typeof m !== 'object' || typeof m.id !== 'string' || !m.id || !Number.isFinite(m.startedAt)) return null;
+    if (!m || typeof m !== 'object' || typeof m.id !== 'string' || !m.id || !Number.isFinite(m.startedAt) || Math.abs(m.startedAt) > MAX_DATE) return null;
     if (!Array.isArray(m.players) || !Array.isArray(m.games)) return null;
     m.players = m.players.filter((p) => p && typeof p === 'object' && Number.isInteger(p.seat)).map((p) => ({ ...p, name: String(p.name || '?') }));
     m.games = m.games.filter((g) => g && typeof g === 'object' && Number.isFinite(g.n)).map((g) => ({
-      ...g, mulligans: obj(g.mulligans), life: obj(g.life), seen: obj(g.seen), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
-      drawn: g.drawn === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.drawn)).filter(([, ids]) => Array.isArray(ids))),
-      played: g.played === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.played)).filter(([, ids]) => Array.isArray(ids))),
-      board: g.board === undefined ? undefined : Object.fromEntries(Object.entries(obj(g.board)).filter(([, ids]) => Array.isArray(ids))),
+      ...g, life: obj(g.life), log: Array.isArray(g.log) ? g.log.filter(Array.isArray) : [],
+      mulligans: Object.fromEntries(Object.entries(obj(g.mulligans)).filter(([, k]) => Number.isInteger(k) && k >= 0)),
+      seen: Object.fromEntries(Object.entries(obj(g.seen)).map(([seat, cards]) => [seat, ids(cards)])),
+      drawn: g.drawn === undefined ? undefined : ids(g.drawn),
+      played: g.played === undefined ? undefined : ids(g.played),
+      board: g.board === undefined ? undefined : ids(g.board),
       openingHand: Array.isArray(g.openingHand) ? g.openingHand.filter((c) => typeof c === 'string') : undefined,
     }));
+    if (!['W', 'L', 'D'].includes(m.result)) delete m.result;
+    for (const k of ['format', 'formatId', 'gameType']) if (m[k] !== undefined && m[k] !== null && typeof m[k] !== 'string') delete m[k];
+    for (const k of ['updatedAt', 'endedAt']) if (m[k] !== undefined && !(Number.isFinite(m[k]) && Math.abs(m[k]) <= MAX_DATE)) delete m[k];
     if (m.mains !== undefined) {
       m.mains = Object.fromEntries(Object.entries(obj(m.mains))
         .map(([n, c]) => [n, Object.fromEntries(Object.entries(obj(c)).filter(([, k]) => Number.isFinite(k) && k > 0))]));
@@ -35,7 +43,14 @@
     m.status = m.status === 'complete' || m.status === 'abandoned' ? m.status : 'active';
     if (!Number.isFinite(m.updatedAt)) m.updatedAt = m.startedAt;
     if (m.myDeck && (typeof m.myDeck !== 'object' || typeof m.myDeck.id !== 'string')) m.myDeck = null;
+    if (m.myDeck && typeof m.myDeck.name !== 'string') m.myDeck = { ...m.myDeck, name: null };
     return m;
+  }
+  // A match's note, typed by me or imported: its text fields are text.
+  function normalizeNote(n) {
+    const out = { ...obj(n) };
+    for (const k of ['archetype', 'notes', 'deckId', 'formatId']) if (out[k] !== undefined && typeof out[k] !== 'string') delete out[k];
+    return out;
   }
 
   const opps = (m) => m.players.filter((p) => p && p.seat !== m.mySeat);
@@ -146,16 +161,18 @@
   const pips = (c, t) => `<span class="pips">${String(c).replace(/[^WUBRG]/g, '').split('')
     .map((x) => `<span class="pip pip-${x}" title="${esc(t('color_' + x))}" aria-label="${esc(t('color_' + x))}">${x}</span>`).join('')}</span>`;
   // "5 minutes ago", "yesterday", then a date. i18n: { locale, t }.
+  const formats = new Map(); // language -> its formatters: building one costs more than formatting a date
   function ago(ts, i18n) {
-    const rtf = new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto' });
+    if (!formats.has(i18n.locale)) formats.set(i18n.locale, { rtf: new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto' }),
+      day: new Intl.DateTimeFormat(i18n.locale, { day: 'numeric', month: 'short' }), year: new Intl.DateTimeFormat(i18n.locale, { day: 'numeric', month: 'short', year: 'numeric' }) });
+    const { rtf, day, year } = formats.get(i18n.locale);
     const diff = (ts - Date.now()) / 1000;
     const a = Math.abs(diff);
     if (a < 60) return i18n.t('just_now');
     if (a < 3600) return rtf.format(Math.round(diff / 60), 'minute');
     if (a < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
     if (a < 7 * 86400) return rtf.format(Math.round(diff / 86400), 'day');
-    const d = new Date(ts);
-    return d.toLocaleDateString(i18n.locale, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+    return (new Date(ts).getFullYear() === new Date().getFullYear() ? day : year).format(ts);
   }
 
   // A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
@@ -464,15 +481,25 @@
       .sort((a, b) => b.times - a.times || b.qty - a.qty || a.name.localeCompare(b.name));
     return { matches: n, in: side(1), out: side(-1) };
   }
+  // The cards of my deck as recorded with a match, each under its one name: its main, its sideboard (a companion, a wish
+  // target) and its commanders.
+  function deckNames(m, c) {
+    const canon = canonOf(c);
+    const d = myDeck(m, c);
+    const lists = [d && d.cards, d && d.sideboard, d && (obj(c.decks)[d.id] || {}).commanders];
+    return new Set(lists.flatMap((l) => Object.keys(deckCounts(l) || {})).map(canon));
+  }
   // My cards' results, counted in games (a card is drawn in a game, not in a match): the games where I drew it (in my
   // hand from turn 1 on, or played) against the games where it stayed in my library, and the games it was in my opening
   // hand. Drawn cards are recorded since 1.1 (g.drawn): older games count for the opening hand only.
-  // [{ name, drawn, notDrawn, opening }], each a W/L/D tally; basic lands left out.
+  // [{ name, drawn, notDrawn, opening, later, played, drawnTracked, used, board, boardOnly }], each a W/L/D tally; basic
+  // lands left out.
   function cardStats(list, c) {
     const by = new Map();
     const canon = canonOf(c);
-    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), board: tally(), boardOnly: tally() }).get(name);
+    const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), used: tally(), board: tally(), boardOnly: tally() }).get(name);
     for (const m of list) {
+      const own = m.games.length ? deckNames(m, c) : null;
       for (const g of m.games) {
         const r = gRes(m, g);
         if (!r) continue;
@@ -482,10 +509,8 @@
         // Only cards of my deck: its main for that game, its sideboard (a companion, a wish target) and its commanders; an
         // opponent's card that went through my hand, or that I cast or took, is not one (unknown main: all count).
         const main = mainOf(m, g.n, c);
-        const d = myDeck(m, c);
-        const extra = [...Object.keys(deckCounts(d && d.sideboard) || {}), ...Object.keys(deckCounts(d && (obj(c.decks)[d.id] || {}).commanders) || {})];
         const inMain = main && new Set(Object.keys(main).map(canon));
-        const inDeck = inMain && new Set([...inMain, ...extra.map(canon)]);
+        const inDeck = inMain && new Set([...inMain, ...own]);
         const mine = (name) => !inDeck || inDeck.has(name);
         const drawn = new Set([...names('drawn')].filter(mine));
         // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
@@ -493,12 +518,15 @@
         for (const name of drawn) { row(name).drawn[r]++; if (kept && !kept.has(name)) row(name).later[r]++; }
         for (const name of inMain || []) if (!drawn.has(name)) row(name).notDrawn[r]++;
         // Played and in play, recorded since 1.5.6 (games without the buckets count for neither); drawnTracked: the drawn
-        // games that could say whether the card was played, for the ratio.
+        // games that could say whether the card was played, for the ratios; used: those where I cast it or it reached my
+        // battlefield (the cards I draw and leave in my hand have few).
+        const board = g.board ? names('board') : null;
         if (g.played) {
-          for (const name of drawn) row(name).drawnTracked[r]++;
-          for (const name of names('played')) if (mine(name)) row(name).played[r]++;
+          const played = names('played');
+          for (const name of drawn) { row(name).drawnTracked[r]++; if (played.has(name) || (board && board.has(name))) row(name).used[r]++; }
+          for (const name of played) if (mine(name)) row(name).played[r]++;
         }
-        if (g.board) for (const name of names('board')) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
+        if (board) for (const name of board) if (mine(name)) { row(name).board[r]++; if (!drawn.has(name)) row(name).boardOnly[r]++; }
       }
     }
     return [...by.values()].filter((x) => !BASIC.test(x.name));
@@ -509,10 +537,10 @@
 
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
-    esc, obj, normalizeMatch, scoreText, pips, ago,
+    esc, obj, normalizeMatch, normalizeNote, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
-    deckCounts, mainOf, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
+    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

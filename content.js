@@ -15,6 +15,9 @@
   let live = false;
   const HISTORY_PAGE_MS = 1000; // between two pages of my history while importing it: far below the site's 300 requests a minute
   let nextPage = null;
+  // Ids come from the page's world, where any script can post: the site's are UUIDs. A name every object has
+  // ("__proto__", "constructor") never becomes a key: it would reach every object of this world.
+  const isId = (id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id) && !(id in Object.prototype);
 
   let chain = chrome.storage.local.get(['lastDeck', 'decks']).then((s) => {
     ctx.lastDeck = s.lastDeck || null;
@@ -43,7 +46,7 @@
       let msg;
       try { msg = JSON.parse(data); } catch { return; }
       const a = msg.payload;
-      if (!a || ignored.has(a.matchId)) return;
+      if (!a || !isId(a.matchId) || ignored.has(a.matchId)) return;
       acted.add(a.matchId);
       const side = T.onSideboard(store, a, at);
       if (side) save(side, true);
@@ -52,11 +55,16 @@
       if (entry) save(entry);
       // } dev-only
     } else if (kind === 'deck') {
+      if (!isId(data)) return;
       ctx.lastDeck = { id: data, at };
       chrome.storage.local.set({ lastDeck: ctx.lastDeck });
     } else if (kind === 'decks') {
-      for (const d of data) ctx.decks[d.id] = Object.assign(ctx.decks[d.id] || {}, d);
-      chrome.storage.local.set({ decks: ctx.decks });
+      if (!Array.isArray(data)) return;
+      // Read again before writing: another endstep.cc tab, or a backup imported in the dashboard, may have added decks.
+      ctx.decks = S.obj((await chrome.storage.local.get('decks')).decks);
+      for (const d of data) if (d && isId(d.id)) ctx.decks[d.id] = Object.assign(ctx.decks[d.id] || {}, d);
+      if (orphaned()) return;
+      await chrome.storage.local.set({ decks: ctx.decks });
       // Deck details usually load after the match record guessed its deck: fill in what was missing.
       for (const entry of store.values()) {
         const mine = entry.rec.myDeck;
@@ -75,7 +83,7 @@
       // it got show in the in-page panel.
       const { historyImport: on, deletedMatches } = await chrome.storage.local.get(['historyImport', 'deletedMatches']);
       if (!S.importing(on)) return;
-      const recs = data.rows.map((row) => T.fromHistory(row, ctx.decks)).filter(Boolean);
+      const recs = (Array.isArray(data.rows) ? data.rows : []).map((row) => T.fromHistory(row, ctx.decks)).filter(Boolean);
       const all = Object.entries(await S.loadStore()).filter(([k]) => k.startsWith('match:')).map(([, v]) => S.normalizeMatch(v)).filter(Boolean);
       // Matches I deleted from the dashboard stay deleted: by their id, or as the twin of a recorded one.
       const gone = Object.entries(S.obj(deletedMatches)).map(([id, f]) => S.normalizeMatch({ ...S.obj(f), id, games: [] })).filter(Boolean);
@@ -89,22 +97,27 @@
       const completed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)])
         .filter(([m, h]) => m && h && m.source !== 'history' && !store.has(m.id) && S.fillFromHistory(m, h).length).map(([m]) => m);
       if (orphaned()) return;
+      // "Done" may have been clicked in the panel while the matches were being read: the import stays stopped.
+      const { historyImport: now } = await chrome.storage.local.get('historyImport');
+      const going = S.importing(now);
       await chrome.storage.local.set({ ...Object.fromEntries([...add, ...completed].map((r) => ['match:' + r.id, r])),
-        historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: (on.read || 0) + recs.length, added: (on.added || 0) + add.length,
-          completed: (on.completed || 0) + completed.length, done: !data.next, failed: !!data.failed } });
+        ...(going ? { historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: (now.read || 0) + recs.length, added: (now.added || 0) + add.length,
+          completed: (now.completed || 0) + completed.length, done: !data.next, failed: !!data.failed } } : {}) });
       clearTimeout(nextPage); // the site's own "Older matches" and this chain make one chain
-      if (data.next) {
+      if (going && data.next) {
         nextPage = setTimeout(async () => {
           const { historyImport: still } = await chrome.storage.local.get('historyImport');
           if (S.importing(still) && !orphaned()) window.postMessage({ [TAG]: 'history-next', cursor: data.next }, location.origin);
         }, HISTORY_PAGE_MS);
       }
     } else if (kind === 'match') {
+      if (!data || !isId(data.id)) return;
       ctx.meta[data.id] = Object.assign(ctx.meta[data.id] || {}, data);
       const entry = store.get(data.id);
       if (entry) { T.applyMeta(entry.rec, ctx.meta[data.id], ctx); if (acted.has(data.id)) save(entry); }
     } else if (kind === 'acted') {
-      if (typeof data !== 'string' || ignored.has(data)) return;
+      // Sent with each of my game actions: the first one makes the record appear at once, the frames save the rest.
+      if (!isId(data) || ignored.has(data) || acted.has(data)) return;
       acted.add(data);
       const entry = store.get(data);
       if (entry) { save(entry, true); setLive(entry.rec.status === 'active'); }
@@ -117,7 +130,8 @@
     if (!id || ignored.has(id)) return;
     if (!store.has(id) && !looked.has(id)) {
       looked.add(id);
-      const saved = await chrome.storage.local.get(['match:' + id, 'dec:' + id]);
+      const saved = await chrome.storage.local.get(['match:' + id, 'dec:' + id, 'deletedMatches']);
+      if (S.obj(saved.deletedMatches)[id]) { ignored.add(id); return; } // deleted from the dashboard before this page was loaded
       if (saved['match:' + id]) store.set(id, { rec: saved['match:' + id], rt: {}, dec: saved['dec:' + id] || {} });
     }
     const entry = T.handle(store, f, ctx, f.timestamp || Date.now());
@@ -141,9 +155,12 @@
     timers.set(id, setTimeout(() => { timers.delete(id); write(entry); }, 1000));
   }
 
-  // A match deleted from the dashboard stays deleted: stop tracking it instead of writing it back.
+  // A match deleted from the dashboard stays deleted: stop tracking it instead of writing it back. The decks and the
+  // deck picked, which another endstep.cc tab may have changed, are taken in.
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local') return;
+    if (area !== 'local' || orphaned()) return;
+    if (changes.decks) ctx.decks = S.obj(changes.decks.newValue);
+    if (changes.lastDeck) ctx.lastDeck = changes.lastDeck.newValue || null;
     for (const [k, c] of Object.entries(changes)) {
       if (!k.startsWith('match:') || c.newValue !== undefined) continue;
       const id = k.slice(6);

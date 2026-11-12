@@ -99,6 +99,10 @@ const sided = (arch, vary) => {
 };
 const cardsData = JSON.parse(JSON.stringify(data));
 const archs = Object.keys(SIDE);
+// Every Burn match registered this list, its sideboard beside: "My cards" lists the cards of the current list.
+const burnList = { cards: Object.entries(BURN).map(([name, quantity]) => ({ name, quantity })),
+  sideboard: Object.entries(Object.assign({}, ...Object.values(SIDE).map(([inn]) => inn))).map(([name, quantity]) => ({ name, quantity })) };
+for (const v of Object.values(cardsData)) if (v && v.myDeck && v.myDeck.name === 'Burn') Object.assign(v.myDeck, JSON.parse(JSON.stringify(burnList)));
 for (let i = 0; i < 24; i++) {
   const arch = archs[i % 3];
   const id = 'c' + i;
@@ -120,6 +124,7 @@ for (let i = 0; i < 24; i++) {
     deck: 'Burn', formatId: 'Modern', ranked: true, score: [w, l], games });
   m.games.forEach((g, k) => { g.drawn = games[k].drawn; g.openingHand = Object.keys(games[k].drawn).slice(0, 5); });
   m.mains = mains;
+  Object.assign(m.myDeck, JSON.parse(JSON.stringify(burnList)));
   cardsData['match:' + id] = m;
   cardsData['note:' + id] = { archetype: arch };
 }

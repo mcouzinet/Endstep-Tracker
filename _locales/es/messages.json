@@ -605,6 +605,15 @@
   "compare_stop": {
     "message": "Dejar de comparar"
   },
+  "compare_to": {
+    "message": "Comparar con…"
+  },
+  "compare_label": {
+    "message": "Comparar con otra versión"
+  },
+  "version_against": {
+    "message": "frente a v{n}"
+  },
   "cmp_title": {
     "message": "Balance con {v}, en matches"
   },
@@ -875,6 +884,18 @@
   "cards_none": {
     "message": "Aún no hay ninguna partida terminada con este deck."
   },
+  "cards_cut_one": {
+    "message": "Ya no está en la lista: {n} carta"
+  },
+  "cards_cut_other": {
+    "message": "Ya no están en la lista: {n} cartas"
+  },
+  "card_new": {
+    "message": "nueva"
+  },
+  "card_new_title": {
+    "message": "No estaba en la v{n}"
+  },
   "col_card": {
     "message": "Carta"
   },
@@ -1017,7 +1038,7 @@
     "message": "Tu balance según cómo empezó el match: en el play o en el draw, quedándote con 7 o tras un mulligan.\nTodo se basa en la primera partida de cada match."
   },
   "info_cards": {
-    "message": "Contado en partidas, para cada carta de tu deck.\nRobada: la carta pasó por tu mano durante la partida, es decir Mano inicial + Después. No robada: se quedó en tu biblioteca.\nJugada: la lanzaste, o la jugaste como tierra. En juego: llegó a tu campo de batalla, aunque no la hayas robado (reanimada, puesta en el campo de batalla). Esas dos columnas cuentan las partidas jugadas desde la 1.6.\nLa diferencia junto al nombre = Robada menos No robada, en puntos. Una relación con la victoria, no una prueba de que la carta te haga ganar.\nPasa el cursor sobre un número para ver su detalle; haz clic en el encabezado de una columna para ordenar."
+    "message": "Contado en partidas, para cada carta de tu deck.\nRobada: la carta pasó por tu mano durante la partida, es decir Mano inicial + Después. No robada: se quedó en tu biblioteca.\nJugada: la lanzaste, o la jugaste como tierra. En juego: llegó a tu campo de batalla, aunque no la hayas robado (reanimada, puesta en el campo de batalla). Esas dos columnas cuentan las partidas jugadas desde la 1.6.\nLa diferencia junto al nombre = Robada menos No robada, en puntos. Una relación con la victoria, no una prueba de que la carta te haga ganar.\nSolo aparecen las cartas de la lista mostrada (tu última lista, o la versión elegida); las que ya no tiene quedan plegadas abajo. Cada carta cuenta igualmente todas las partidas en las que estaba en tu deck. «nueva»: no estaba en la versión anterior.\nPasa el cursor sobre un número para ver su detalle; haz clic en el encabezado de una columna para ordenar."
   },
   "copy_side": {
     "message": "Copiar mi plan de side"
@@ -1081,6 +1102,15 @@
   },
   "board_title": {
     "message": "Partidas en las que llegó a mi campo de batalla, desde mi mano o no (reanimada, puesta en el campo de batalla)"
+  },
+  "col_used": {
+    "message": "Poco usadas"
+  },
+  "used_sort_title": {
+    "message": "Las cartas que menos lanzo o pongo en juego una vez robadas"
+  },
+  "used_title": {
+    "message": "Lanzada o puesta en juego en {u} de las {d} partidas en las que la robé"
   },
   "win_rate_text": {
     "message": "{pct} de victorias"

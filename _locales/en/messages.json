@@ -605,6 +605,15 @@
   "compare_stop": {
     "message": "Stop comparing"
   },
+  "compare_to": {
+    "message": "Compare with…"
+  },
+  "compare_label": {
+    "message": "Compare with another version"
+  },
+  "version_against": {
+    "message": "against v{n}"
+  },
   "cmp_title": {
     "message": "Record with {v}, in matches"
   },
@@ -875,6 +884,18 @@
   "cards_none": {
     "message": "No finished game with this deck yet."
   },
+  "cards_cut_one": {
+    "message": "No longer in the list: {n} card"
+  },
+  "cards_cut_other": {
+    "message": "No longer in the list: {n} cards"
+  },
+  "card_new": {
+    "message": "new"
+  },
+  "card_new_title": {
+    "message": "Not in v{n}"
+  },
   "col_card": {
     "message": "Card"
   },
@@ -1017,7 +1038,7 @@
     "message": "Your record by how the match started: on the play or on the draw, seven kept or after a mulligan.\nAll of it goes by the first game of each match."
   },
   "info_cards": {
-    "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nPlayed: you cast it, or played it as a land. In play: it reached your battlefield, even without being drawn (reanimated, put onto the battlefield). Those two columns count the games played since 1.6.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nHover a number for its detail; click a column head to sort."
+    "message": "Counted in games, for each card of your deck.\nDrawn: the card was in your hand during the game, that is Opening hand + Later. Not drawn: it stayed in your library.\nPlayed: you cast it, or played it as a land. In play: it reached your battlefield, even without being drawn (reanimated, put onto the battlefield). Those two columns count the games played since 1.6.\nThe gap beside the name = Drawn minus Not drawn, in points. A link with winning, not proof that the card wins.\nOnly the cards of the list in view are listed (your latest list, or the version picked); the ones it no longer has are folded at the bottom. Each card still counts every game it was in your deck. “new”: not in the version before.\nHover a number for its detail; click a column head to sort."
   },
   "copy_side": {
     "message": "Copy my side plan"
@@ -1081,6 +1102,15 @@
   },
   "board_title": {
     "message": "Games where it reached my battlefield, from my hand or not (reanimated, put onto the battlefield)"
+  },
+  "col_used": {
+    "message": "Least used"
+  },
+  "used_sort_title": {
+    "message": "The cards I cast or get onto my battlefield least often once drawn"
+  },
+  "used_title": {
+    "message": "Cast or put onto my battlefield in {u} of the {d} games where I drew it"
   },
   "win_rate_text": {
     "message": "{pct} wins"

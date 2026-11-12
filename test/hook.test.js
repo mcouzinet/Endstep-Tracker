@@ -70,6 +70,20 @@ const M1 = '11111111-2222-3333-4444-555555555555';
 out.length = 0;
 ws2.send(`{"type":"GAME_ACTION","payload":{"matchId":"${M1}","type":"PASS_PRIORITY"}}`);
 assert.deepEqual(out.map((m) => [m[TAG], m.data]), [['acted', M1]]);
+// Reloaded mid-match (store build): the new content.js learns again that this tab plays it, before the frames, so that
+// the end of the match is saved even if I take no other action.
+const outR = [];
+const onR = [];
+const winR = { ...window, WebSocket: FakeWS, postMessage: (msg) => outR.push(msg), addEventListener: (type, fn) => { if (type === 'message') onR.push(fn); }, __endstepTrackerHook: false };
+winR.window = winR;
+vm.runInNewContext(release, { ...sandbox, window: winR });
+const wsR = new winR.WebSocket('wss://endstep.cc/ws');
+wsR.handlers.message({ data: JSON.stringify({ type: 'GAME_STATE', matchId: M1, seq: 1, payload: {} }) });
+wsR.send(`{"type":"GAME_ACTION","payload":{"matchId":"${M1}","type":"PASS_PRIORITY"}}`);
+wsR.handlers.message({ data: JSON.stringify({ type: 'GAME_EVENT', matchId: M1, seq: 2, payload: { type: 'GAME_OUTCOME' } }) });
+outR.length = 0;
+onR.forEach((fn) => fn({ source: winR, data: { [TAG]: 'hello' } }));
+assert.deepEqual(outR.map((m) => m[TAG] === 'acted' ? ['acted', m.data] : [m[TAG], JSON.parse(m.data).seq]), [['acted', M1], ['ws', 1], ['ws', 2]]);
 
 // My match history (/history): each page the site loads goes to content.js, cut down to what a match record needs; asked
 // for the next page (an import I started), the hook sends the site's own request again, with the next cursor.

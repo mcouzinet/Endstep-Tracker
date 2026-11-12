@@ -19,7 +19,7 @@ async function load() {
   const d = { matches: [], notes: {}, decks: S.obj(all.decks), merges: S.obj(all.deckMerges), formatMoves: S.obj(all.formatMoves), settings: S.obj(all.settings) };
   for (const [k, v] of Object.entries(all)) {
     if (k.startsWith('match:')) { const m = S.normalizeMatch(v); if (m) d.matches.push(m); }
-    else if (k.startsWith('note:')) d.notes[k.slice(5)] = S.obj(v);
+    else if (k.startsWith('note:')) d.notes[k.slice(5)] = S.normalizeNote(v);
   }
   d.matches.sort((a, b) => b.startedAt - a.startedAt);
   d.meta = all.meta ? { formats: all.meta.formats, byFormat: S.obj(all.meta.byFormat) } : null;

@@ -113,6 +113,19 @@ assert.ok(!ps['Stolen Thing'], 'a card in play that is not in my deck is left ou
 const stolen = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(stolen.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "Mishra's Bauble": [55] } });
 assert.ok(!S.cardStats([stolen], C).some((x) => x.name === "Mishra's Bauble"), 'an opponent\'s card that went through my hand is not drawn');
+// Used (the "Rarely played" sort): drawn, then cast or put onto my battlefield; drawn and kept in hand is not.
+const um = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
+Object.assign(um.games.find((g) => g.n === 2), { drawn: { Pyroblast: [20], Thoughtcast: [23], Frogmite: [24] }, played: { Pyroblast: [20] }, board: { Frogmite: [24] } });
+const us = Object.fromEntries(S.cardStats([um], C).map((x) => [x.name, x]));
+const lost = { W: 0, L: 1, D: 0 };
+assert.deepEqual(us.Pyroblast.used, lost, 'drawn and cast');
+assert.deepEqual(us.Frogmite.used, { W: 1, L: 1, D: 0 }, 'cast in game 1; in game 2 put onto the battlefield without being cast');
+assert.deepEqual([us.Thoughtcast.used, us.Thoughtcast.drawnTracked], [{ W: 0, L: 0, D: 0 }, { W: 1, L: 1, D: 0 }], 'drawn in both games, never cast');
+assert.deepEqual([us['Myr Enforcer'].used, us['Myr Enforcer'].drawnTracked], [{ W: 0, L: 0, D: 0 }, { W: 1, L: 0, D: 0 }], 'drawn in game 1, never cast');
+// A match's deck, each card under its one name: main, sideboard, commanders.
+const withDeck = { ...m, myDeck: { id: 'd', name: 'Affinity', cards: [{ name: 'Thoughtcast', quantity: 4 }], sideboard: ['Duress'] } };
+assert.deepEqual([...S.deckNames(withDeck, { ...C, decks: { d: { commanders: ['Urza'] } } })].sort(), ['Duress', 'Thoughtcast', 'Urza']);
+assert.equal(S.deckNames({ ...m, myDeck: null }, C).size, 0, 'no list recorded');
 // A double-faced card transformed on the battlefield keeps the name it had in my hand (same id within the game).
 const dfc = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(dfc.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "King T'Challa": [42], 'Black Panther': [42] }, played: { "King T'Challa": [42] }, board: { 'Black Panther': [42] } });
