@@ -362,23 +362,23 @@
   "news_title": {
     "message": "New in {v}"
   },
-  "news_17_format": {
-    "message": "Change a deck's format under the filters, even to one you type yourself (7ph). Its next matches follow."
+  "news_18_rating": {
+    "message": "Your opponent's rating in ranked matches, in the panel and the history."
   },
-  "news_17_merge": {
-    "message": "Merge two decks, and file the matches with no deck in one go."
+  "news_18_cards": {
+    "message": "My cards only shows your current list."
   },
-  "news_17_pools": {
-    "message": "Draft and sealed pools show as one line, “Limited deck”, instead of one per day."
+  "news_18_used": {
+    "message": "New “Least used” sort in My cards."
   },
-  "news_17_languages": {
-    "message": "Now in Spanish, German, Italian and Brazilian Portuguese."
+  "news_18_versions": {
+    "message": "Compare any two versions of your list."
   },
-  "news_17_last": {
-    "message": "The dashboard opens on the deck of your last match."
+  "news_18_fast": {
+    "message": "Faster, and decks in alphabetical order."
   },
-  "news_17_fixes": {
-    "message": "Fixed: a note being typed is no longer lost when the page refreshes, and the popup's button works when all your matches are against the AI."
+  "news_18_fixes": {
+    "message": "Fixed: a match stuck “in progress” after an update, and matches sometimes recorded twice."
   },
   "news_all": {
     "message": "Full changelog (in French)"

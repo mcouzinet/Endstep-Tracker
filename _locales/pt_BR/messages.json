@@ -362,23 +362,23 @@
   "news_title": {
     "message": "Novidades da {v}"
   },
-  "news_17_format": {
-    "message": "Mude o formato de um deck abaixo dos filtros, até para um que você digitar (7ph). As próximas partidas dele acompanham."
+  "news_18_rating": {
+    "message": "O rating do seu oponente nas partidas ranqueadas, no painel e no histórico."
   },
-  "news_17_merge": {
-    "message": "Mescle dois decks e atribua de uma vez as partidas sem deck."
+  "news_18_cards": {
+    "message": "Minhas cartas mostra só a sua lista atual."
   },
-  "news_17_pools": {
-    "message": "Os pools de draft e sealed aparecem em uma só linha, “Deck limitado”, em vez de uma por dia."
+  "news_18_used": {
+    "message": "Nova ordenação “Pouco usadas” em Minhas cartas."
   },
-  "news_17_languages": {
-    "message": "Agora também em espanhol, alemão, italiano e português do Brasil."
+  "news_18_versions": {
+    "message": "Compare duas versões quaisquer da sua lista."
   },
-  "news_17_last": {
-    "message": "O painel abre no deck da sua última partida."
+  "news_18_fast": {
+    "message": "Mais rápido, e os decks em ordem alfabética."
   },
-  "news_17_fixes": {
-    "message": "Corrigido: uma nota sendo digitada não se perde mais quando a página atualiza, e o botão do popup funciona quando todas as suas partidas são contra a IA."
+  "news_18_fixes": {
+    "message": "Corrigido: uma partida presa “em andamento” após uma atualização, e partidas às vezes registradas duas vezes."
   },
   "news_all": {
     "message": "Changelog completo (em francês)"

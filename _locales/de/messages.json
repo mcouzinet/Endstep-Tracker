@@ -362,23 +362,23 @@
   "news_title": {
     "message": "Neu in {v}"
   },
-  "news_17_format": {
-    "message": "Ändere das Format eines Decks unter den Filtern, auch in eines, das du selbst eintippst (7ph). Seine nächsten Matches folgen."
+  "news_18_rating": {
+    "message": "Die Wertung deines Gegners in gewerteten Matches, im Panel und im Verlauf."
   },
-  "news_17_merge": {
-    "message": "Führe zwei Decks zusammen und ordne Matches ohne Deck auf einmal zu."
+  "news_18_cards": {
+    "message": "Meine Karten zeigt nur deine aktuelle Liste."
   },
-  "news_17_pools": {
-    "message": "Draft- und Sealed-Pools stehen in einer Zeile, „Limited-Deck“, statt in einer pro Tag."
+  "news_18_used": {
+    "message": "Neue Sortierung „Selten genutzt“ in Meine Karten."
   },
-  "news_17_languages": {
-    "message": "Jetzt auch auf Spanisch, Deutsch, Italienisch und brasilianischem Portugiesisch."
+  "news_18_versions": {
+    "message": "Vergleiche zwei beliebige Versionen deiner Liste."
   },
-  "news_17_last": {
-    "message": "Das Dashboard öffnet sich beim Deck deines letzten Matches."
+  "news_18_fast": {
+    "message": "Schneller, und Decks in alphabetischer Reihenfolge."
   },
-  "news_17_fixes": {
-    "message": "Behoben: Eine angefangene Notiz geht beim Aktualisieren der Seite nicht mehr verloren, und die Schaltfläche im Popup funktioniert, wenn alle deine Matches gegen die KI waren."
+  "news_18_fixes": {
+    "message": "Behoben: ein Match, das nach einem Update „laufend“ blieb, und manchmal doppelt aufgezeichnete Matches."
   },
   "news_all": {
     "message": "Alle Änderungen (auf Französisch)"

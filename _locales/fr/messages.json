@@ -362,23 +362,23 @@
   "news_title": {
     "message": "Nouveautés de la {v}"
   },
-  "news_17_format": {
-    "message": "Change le format d'un deck sous les filtres, même pour un format que tu écris toi-même (7ph). Ses prochains matchs suivent."
+  "news_18_rating": {
+    "message": "La cote de ton adversaire en partie classée, dans le panneau et l'historique."
   },
-  "news_17_merge": {
-    "message": "Fusionne deux decks, et range d'un coup les matchs sans deck."
+  "news_18_cards": {
+    "message": "Mes cartes n'affiche que ta liste actuelle."
   },
-  "news_17_pools": {
-    "message": "Les pools de draft et de sealed tiennent sur une seule ligne, « Deck limité », au lieu d'une par jour."
+  "news_18_used": {
+    "message": "Nouveau tri « Peu jouées » dans Mes cartes."
   },
-  "news_17_languages": {
-    "message": "Disponible aussi en espagnol, allemand, italien et portugais du Brésil."
+  "news_18_versions": {
+    "message": "Compare deux versions de ta liste, n'importe lesquelles."
   },
-  "news_17_last": {
-    "message": "Le tableau de bord s'ouvre sur le deck de ton dernier match."
+  "news_18_fast": {
+    "message": "Plus rapide, et les decks par ordre alphabétique."
   },
-  "news_17_fixes": {
-    "message": "Corrigé : une note en cours de saisie n'est plus perdue quand la page se rafraîchit, et le bouton de la popup marche quand tous tes matchs sont contre l'IA."
+  "news_18_fixes": {
+    "message": "Corrigé : un match bloqué « en cours » après une mise à jour, et des matchs parfois enregistrés deux fois."
   },
   "news_all": {
     "message": "Toutes les modifications"

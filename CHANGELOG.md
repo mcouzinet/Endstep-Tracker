@@ -5,27 +5,27 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## Non publié
 
+## [1.8] (2026-11-16)
+
 ### Ajouté
 
-- **La cote de l'adversaire dans les matchs classés** (1.7.2, 1.7.3) : sa cote au classement du format, telle qu'au début du match, dans une pastille bleue à côté de son nom : dans le panneau sur endstep.cc dès la première game, et dans l'historique (sa place et le top au survol). Les deux cotes sont dans le détail du match. L'extension la demande une fois par match classé au site, comme sa fiche de joueur. Seulement pour les matchs joués à partir de cette version.
-- **Trier les cartes peu jouées** (1.7.1) : dans « Carte par carte », « Peu jouées » range d'abord les cartes que tu lances ou mets en jeu le moins souvent une fois piochées, avec le pourcentage à côté du nom. Pour repérer celles qui restent en main. Demandé sur le Discord (Sympthom).
-- **Comparer à n'importe quelle version** (1.7.1) : le menu « Comparer à… » sous les matchups propose toutes les autres versions de la liste, pas seulement celle d'avant. Les cartes changées s'affichent par rapport à la version choisie.
+- **Cote de l'adversaire** en partie classée, à côté de son nom : dans le panneau sur endstep.cc et dans l'historique.
+- **Tri « Peu jouées »** dans Mes cartes : les cartes que tu pioches mais ne joues presque jamais.
+- **Comparer deux versions** de ta liste, n'importe lesquelles.
 
 ### Modifié
 
-- **« Carte par carte » montre ta liste actuelle** (1.7.1) : seules les cartes de ta dernière liste (ou de la version choisie) sont listées, et celles que tu as retirées sont repliées en bas. Chaque carte compte toujours toutes les games où elle était dans ton deck. Une carte ajoutée depuis la version d'avant porte la mention « nouvelle ». L'image de tes stats suit la même liste.
-- **Les decks par ordre alphabétique** (1.7.1) dans le menu, les formats les plus joués toujours en premier. Demandé sur le Discord (Sympthom).
-- **Un tableau de bord plus rapide** (1.7.1) : seul l'onglet affiché se redessine, et la reconnaissance des decks adverses calcule une seule fois par métagame ce qu'elle refaisait pour chaque match (environ 25 fois plus rapide), dans le tableau de bord, la popup et le panneau sur endstep.cc.
-- **Moins d'écritures pendant une partie** (1.7.1) : le match n'est plus réécrit en entier à chacune de mes actions (passer, payer, attaquer), seulement à la première, puis au fil des changements de la partie. Le panneau sur endstep.cc ne garde plus le journal des games, qu'il n'affiche pas.
+- **Mes cartes** n'affiche que ta liste actuelle. Les cartes retirées sont en bas, les nouvelles sont signalées.
+- **Decks par ordre alphabétique** dans le menu.
+- **Plus rapide**, surtout avec beaucoup de matchs.
 
 ### Corrigé
 
-- **Un match pouvait rester « en cours »** (1.7.1) après une mise à jour de l'extension en pleine partie, si elle se finissait sans autre action de ma part (abandon adverse, létal pendant son tour) : l'onglet sait maintenant qu'il joue ce match dès son retour.
-- **Firefox : chaque match pouvait s'enregistrer deux fois** (1.7.1) après une installation ou une mise à jour, Firefox remettant déjà lui-même le traqueur dans les onglets ouverts. Même chose sur Chrome et Edge après une mise à jour du navigateur.
-- **Un deck vu dans un autre onglet n'est plus effacé** (1.7.1) : deux onglets endstep.cc ouverts ne réécrivent plus la liste de decks l'un de l'autre, et l'import d'une sauvegarde reprend maintenant les decks qu'elle contient (noms, listes, réserves).
-- **Import d'une sauvegarde** (1.7.1) : un match de l'historique du site déjà enregistré ici sous un autre identifiant n'est plus compté deux fois jusqu'au rechargement. Une fiche bizarre (sauvegarde modifiée à la main) ne bloque plus le tableau de bord et ne peut plus y glisser de balisage.
-- **Mulligans inconnus** (1.7.1) : une game dont le traqueur n'a pas vu la main de départ ne compte plus comme « garde 7 », ni dans la moyenne de mulligans.
-- **Petites corrections** (1.7.1) : la pastille « en direct » d'un match contre l'IA ne remet plus tous les filtres à zéro ; renommer l'archétype filtré garde le filtre ; « Terminer » dans le panneau d'import de l'historique n'est plus annulé par la page en cours de lecture ; un match supprimé ne revient plus après un rechargement de la page ; déplacer le panneau n'est plus interrompu par une mise à jour du match.
+- Un match pouvait rester « en cours » après une mise à jour de l'extension en pleine partie.
+- Firefox pouvait enregistrer un match deux fois.
+- Avec deux onglets endstep.cc ouverts, l'un pouvait effacer les decks de l'autre.
+- Import d'une sauvegarde : les decks suivent, et plus de match compté deux fois.
+- Une main de départ non vue ne compte plus comme « garde 7 ».
 
 ## [1.7] (2026-11-05)
 

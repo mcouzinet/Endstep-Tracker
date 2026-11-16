@@ -17,19 +17,19 @@ Endstep Tracker automatically records the Magic: The Gathering matches you play 
 
 While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype, your record against it and your usual sideboarding. The toolbar popup shows the same during a match, and your session otherwise.
 
-The dashboard opens on the deck you play most:
+The dashboard opens on the deck of your last match:
 
 • At a glance: your win rate, your records on the play and on the draw, and your latest results.
 
 • Matchups: record in matches, on the play and on the draw, ranked or not; in a matchup, game 1 against the games after sideboarding.
 
-• My cards: for each card of your deck, the win rate of the games where you drew it, next to the games where it stayed in your library, where it was in your opening hand, where you drew it later, cast it, or where it reached the battlefield (a reanimated creature counts). Every number explains itself on hover.
+• My cards: for each card of your current list (the cards you cut wait below), the win rate of the games where you drew it, next to the games where it stayed in your library, where it was in your opening hand, where you drew it later, cast it, or where it reached the battlefield (a reanimated creature counts). Every number explains itself on hover, and a sort brings up the cards you draw but rarely play.
 
 • Your sideboarding: what you bring in and take out between games is recorded, shown for each matchup and recalled between two games against the same kind of deck.
 
-• List versions: when your main deck changes, compare the new list with the previous one, matchup by matchup.
+• List versions: when your main deck changes, compare any two versions of your list, matchup by matchup.
 
-• Match history: date, format, opponent, your deck, score, result.
+• Match history: date, format, opponent and their rating in ranked matches, your deck, score, result.
 
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
 
@@ -43,7 +43,7 @@ The dashboard opens on the deck you play most:
 
 • Notes per match, "My deck" picker, export to JSON or CSV, import, delete everything.
 
-Everything stays on your computer. The extension never sends anything to endstep.cc, never plays for you, and has no account or ads. Only anonymous usage statistics are sent (install, update, one signal a day), and they can be switched off. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
+Everything stays on your computer. The extension never plays for you and has no account or ads; it only asks endstep.cc what the site's own pages ask (the players' ratings when a ranked match starts, your history when you import it). Only anonymous usage statistics are sent (install, update, one signal a day), and they can be switched off. Only public game information (what you could see on screen) is recorded, and nothing is recorded while spectating.
 
 Not affiliated with endstep.cc or Wizards of the Coast.
 
@@ -53,19 +53,19 @@ Endstep Tracker enregistre automatiquement les parties de Magic: The Gathering q
 
 Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse, ton bilan contre lui et ton side habituel. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
 
-Le tableau de bord s'ouvre sur le deck que tu joues le plus :
+Le tableau de bord s'ouvre sur le deck de ton dernier match :
 
 • En un coup d'œil : ton taux de victoire, tes bilans sur le play et sur la draw, et tes derniers résultats.
 
 • Matchups : bilan en matchs, sur le play et sur la draw, classés ou non ; dans un matchup, la game 1 face aux games après side.
 
-• Mes cartes : pour chaque carte de ton deck, le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque, où elle était dans ta main de départ, où tu l'as piochée plus tard, lancée, ou où elle est arrivée en jeu (une créature réanimée compte). Chaque chiffre s'explique au survol.
+• Mes cartes : pour chaque carte de ta liste actuelle (les cartes retirées attendent en bas), le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque, où elle était dans ta main de départ, où tu l'as piochée plus tard, lancée, ou où elle est arrivée en jeu (une créature réanimée compte). Chaque chiffre s'explique au survol, et un tri fait remonter les cartes que tu pioches mais joues rarement.
 
 • Ton side : ce que tu fais entrer et sortir entre les games est enregistré, montré pour chaque matchup et rappelé entre deux games contre le même type de deck.
 
-• Versions de liste : quand ton main deck change, compare la nouvelle liste à la précédente, matchup par matchup.
+• Versions de liste : quand ton main deck change, compare n'importe quelles versions de ta liste, matchup par matchup.
 
-• Historique des matchs : date, format, adversaire, ton deck, score, résultat.
+• Historique des matchs : date, format, adversaire et sa cote dans les matchs classés, ton deck, score, résultat.
 
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
 
@@ -79,7 +79,7 @@ Le tableau de bord s'ouvre sur le deck que tu joues le plus :
 
 • Notes par match, sélecteur « Mon deck », export JSON ou CSV, import, tout effacer.
 
-Tout reste sur ton ordinateur. L'extension n'envoie jamais rien à endstep.cc, ne joue jamais à ta place, et n'a ni compte ni publicité. Seules des statistiques d'usage anonymes sont envoyées (installation, mise à jour, un signal par jour), et elles se coupent. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
+Tout reste sur ton ordinateur. L'extension ne joue jamais à ta place et n'a ni compte ni publicité ; elle ne demande à endstep.cc que ce que les pages du site demandent elles-mêmes (la cote des joueurs au début d'un match classé, ton historique quand tu l'importes). Seules des statistiques d'usage anonymes sont envoyées (installation, mise à jour, un signal par jour), et elles se coupent. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
 
 Non affilié à endstep.cc ni à Wizards of the Coast.
 
@@ -93,8 +93,8 @@ Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because o
 
 - `storage` / `unlimitedStorage`: the match history (including full game logs) is stored locally in `chrome.storage.local`; a heavy user exceeds the default 10 MB quota.
 - `scripting`: after the extension is installed or updated, the background worker re-injects the tracker into endstep.cc tabs that are already open, so a match in progress is not lost.
-- Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record, and shows a small panel with the user's own records and notes (in a closed shadow root, never focused, never acting on the game). Nothing is sent.
-- Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only: it reads the frames the site receives, and of the frames it sends only the user's own sideboarding choice between two games (the main deck submitted for the next game). It never sends or alters anything.
+- Host permission `https://endstep.cc/*`: the only site the extension works on. The content script observes the game messages the site already exchanges with the browser (WebSocket) to build the match record, and shows a small panel with the user's own records and notes (in a closed shadow root, never focused, never acting on the game). It sends nothing of its own: when a ranked match starts it asks the site for the players' ratings (the request the site's player card makes), and when the user imports their history it loads the next pages the way the site does.
+- Content script in the page world (`world: MAIN`): the game state is only available by observing the site's own WebSocket, which is not accessible from the isolated world. The script is read-only: it reads the frames the site receives, and of the frames it sends only the user's own sideboarding choice between two games (the main deck submitted for the next game). It never alters anything; the only requests it makes are the site's own (the players' ratings when a ranked match starts, the next page of the user's history during an import).
 
 **Remote code**: No. All code is in the package.
 
@@ -161,6 +161,44 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 ## Release notes
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first. The App Store gets its own notes, which never name another platform (Android, Chrome, Firefox, Edge): Apple refused the Mac 1.5 for "Firefox for Android" in What's New (guideline 2.3.10, accurate metadata).
+
+### 1.8 (EN)
+
+- Your opponent's rating in ranked matches, beside their name: in the panel on endstep.cc and in the history.
+- "Least used" sort in My cards: the cards you draw but hardly ever play.
+- Compare any two versions of your list.
+- My cards only shows your current list. Cut cards go to the bottom, new ones are marked.
+- Decks in alphabetical order in the menu.
+- Faster, especially with lots of matches.
+- Fixed: a match stuck "in progress" after an update mid-game, matches recorded twice on Firefox, decks erased by a second endstep.cc tab, and backup imports.
+
+### 1.8 (FR)
+
+- La cote de ton adversaire en partie classée, à côté de son nom : dans le panneau sur endstep.cc et dans l'historique.
+- Tri « Peu jouées » dans Mes cartes : les cartes que tu pioches mais ne joues presque jamais.
+- Compare deux versions de ta liste, n'importe lesquelles.
+- Mes cartes n'affiche que ta liste actuelle. Les cartes retirées sont en bas, les nouvelles sont signalées.
+- Decks par ordre alphabétique dans le menu.
+- Plus rapide, surtout avec beaucoup de matchs.
+- Corrigé : un match bloqué « en cours » après une mise à jour en pleine partie, des matchs enregistrés deux fois sur Firefox, des decks effacés par un second onglet endstep.cc, et l'import des sauvegardes.
+
+### 1.8 (App Store EN)
+
+- Your opponent's rating in ranked matches, beside their name: in the panel on endstep.cc and in the history.
+- "Least used" sort in My cards.
+- Compare any two versions of your list.
+- My cards only shows your current list.
+- Decks in alphabetical order, and a faster dashboard.
+- Fixed: a match stuck "in progress" after an update mid-game, and backup imports.
+
+### 1.8 (App Store FR)
+
+- La cote de ton adversaire en partie classée, à côté de son nom : dans le panneau sur endstep.cc et dans l'historique.
+- Tri « Peu jouées » dans Mes cartes.
+- Compare deux versions de ta liste, n'importe lesquelles.
+- Mes cartes n'affiche que ta liste actuelle.
+- Decks par ordre alphabétique, et un tableau de bord plus rapide.
+- Corrigé : un match bloqué « en cours » après une mise à jour en pleine partie, et l'import des sauvegardes.
 
 ### 1.7 (EN)
 

@@ -362,23 +362,23 @@
   "news_title": {
     "message": "Novità della {v}"
   },
-  "news_17_format": {
-    "message": "Cambia il formato di un deck sotto i filtri, anche con uno che scrivi tu (7ph). I suoi prossimi match lo seguono."
+  "news_18_rating": {
+    "message": "Il rating del tuo avversario nei match classificati, nel pannello e nella cronologia."
   },
-  "news_17_merge": {
-    "message": "Unisci due deck e assegna in un colpo solo i match senza deck."
+  "news_18_cards": {
+    "message": "Le mie carte mostra solo la tua lista attuale."
   },
-  "news_17_pools": {
-    "message": "I pool di draft e sealed appaiono su una sola riga, “Deck limited”, invece di una al giorno."
+  "news_18_used": {
+    "message": "Nuovo ordinamento «Poco usate» in Le mie carte."
   },
-  "news_17_languages": {
-    "message": "Ora anche in spagnolo, tedesco, italiano e portoghese brasiliano."
+  "news_18_versions": {
+    "message": "Confronta due versioni qualsiasi della tua lista."
   },
-  "news_17_last": {
-    "message": "La dashboard si apre sul deck del tuo ultimo match."
+  "news_18_fast": {
+    "message": "Più veloce, e i deck in ordine alfabetico."
   },
-  "news_17_fixes": {
-    "message": "Corretto: una nota in corso di scrittura non si perde più quando la pagina si aggiorna, e il pulsante del popup funziona quando tutti i tuoi match sono contro l'IA."
+  "news_18_fixes": {
+    "message": "Corretto: un match bloccato «in corso» dopo un aggiornamento, e match a volte registrati due volte."
   },
   "news_all": {
     "message": "Changelog completo (in francese)"
