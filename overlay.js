@@ -72,6 +72,7 @@
     p { margin: 0; }
     .muted { color: var(--ink-3); }
     .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--gold-wash); color: var(--gold-hi); font-size: 12px; font-weight: 600; }
+    .rating { flex: none; padding: 0 7px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--ink-2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .tag.guess { background: none; border: 1px dashed color-mix(in oklab, var(--gold) 55%, transparent); color: var(--ink-2); font-weight: 500; }
     .stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
     .stats b { color: var(--ink); font-weight: 700; }
@@ -152,6 +153,9 @@
     const summary = phase === 'after'
       ? `<span class="dot off"></span><span class="sum"><b class="${esc(m.result)}">${esc(t({ W: 'win', L: 'loss', D: 'draw' }[m.result] || 'unfinished'))}</b> ${esc(S.scoreText(m))}</span>`
       : `<span class="dot"></span><span class="sum"><b>REC</b> · ${esc(t('ov_session', { wl: wl(session) }))}</span>`;
+    // The opponent's ladder as the match started, from its first moments: in the bar, so that it shows folded too.
+    const lad = S.ladders(m, S.myAccount(list));
+    const rating = lad.opp ? S.ladderChip(lad.oppName, lad.opp, I) : '';
     const toggle = phase === 'after'
       ? `<button class="icon" tabindex="-1" data-close title="${esc(t('drawer_close'))}" aria-label="${esc(t('drawer_close'))}">${icon(CROSS)}</button>`
       : `<button class="icon" tabindex="-1" data-toggle aria-expanded="${open}" title="${esc(t(open ? 'ov_collapse' : 'ov_expand'))}" aria-label="${esc(t(open ? 'ov_collapse' : 'ov_expand'))}">${icon(open ? CHEVRON_DOWN : CHEVRON_UP)}</button>`;
@@ -198,7 +202,7 @@
       body = `<div class="body">${head}${arch}${metBlock}${record}${side}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
     }
     box.classList.toggle('open', open);
-    box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${toggle}</div>${body}`;
+    box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${rating}${toggle}</div>${body}`;
     host.hidden = false;
     shown = { id: m.id, phaseKey, open, current };
     place();

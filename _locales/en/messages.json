@@ -704,6 +704,24 @@
   "history_filled": {
     "message": "filled in from your endstep history"
   },
+  "ratings_at_start": {
+    "message": "Rating as the match started"
+  },
+  "rating_me": {
+    "message": "me"
+  },
+  "rating_title": {
+    "message": "{name}'s rating as the match started: {score}"
+  },
+  "rating_short": {
+    "message": "Rating {score}"
+  },
+  "rating_place": {
+    "message": "#{rank} of {of}, top {top}%"
+  },
+  "rating_provisional": {
+    "message": "provisional"
+  },
   "popup_live": {
     "message": "In progress against {opp}"
   },

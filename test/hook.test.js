@@ -116,5 +116,37 @@ const tick = () => new Promise((r) => setImmediate(r));
   on3.forEach((fn) => fn({ source: win3, data: { [TAG]: 'history-next', cursor: 42 } }));
   await tick();
   assert.equal(calls.length, 3, 'another window, or no cursor: nothing sent');
+
+  // A ranked match: each player's ladder in the match's format, asked once per match, only what is shown.
+  const MID = '22222222-3333-4444-5555-666666666666';
+  const asked = [];
+  const sent = [];
+  const onL = [];
+  const ladder = (u) => ({ username: u, ladders: [{ formatId: 'pauper', score: 1200 }, { formatId: 'duel-commander', rating: 1467, score: 1355, rd: 56, rank: 427, rankedCount: 792, topPercent: 54, provisional: false, series: [1, 2], wins: 32 }] });
+  const matchJson = (ranked) => ({ id: MID, formatId: 'duel-commander', ranked, gamesPerMatch: 3, stateHash: 'secret', participants: [{ userId: 'u1', username: 'Mika' }, { userId: 'u2', username: 'Malpelo96 LPO' }, { userId: 'b', username: 'Forge AI', isBot: true }] });
+  let ranked = true;
+  const winL = { ...window, postMessage: (msg) => sent.push(msg), addEventListener: (type, fn) => { if (type === 'message') onL.push(fn); }, __endstepTrackerHook: false,
+    fetch: async (url) => { asked.push(String(url)); const u = /username=([^&]+)/.exec(url); const body = u ? ladder(decodeURIComponent(u[1])) : matchJson(ranked); return { ok: true, json: async () => body, clone: () => ({ json: async () => body }) }; } };
+  winL.window = winL;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'hook.js'), 'utf8'), { ...sandbox, window: winL });
+  await winL.fetch(`/api/matches/${MID}`);
+  await winL.fetch(`/api/matches/${MID}`); // asked again (a reload of the view): no second lookup
+  for (let i = 0; i < 4; i++) await tick();
+  assert.deepEqual(asked.filter((u) => u.includes('ranked')), ['/api/ranked/players?username=Mika', '/api/ranked/players?username=Malpelo96%20LPO'], 'once per player, never the bot');
+  const ratings = sent.filter((m) => m[TAG] === 'rating').map((m) => m.data);
+  assert.deepEqual(JSON.parse(JSON.stringify(ratings.find((r) => r.username === 'Malpelo96 LPO'))), { matchId: MID, username: 'Malpelo96 LPO', ladder: { score: 1355, rating: 1467, rank: 427, of: 792, top: 54, provisional: false } }, 'the match\'s format, only what is shown');
+  assert.ok(!JSON.stringify(sent).includes('secret'), 'the match response is whitelisted');
+  sent.length = 0;
+  onL.forEach((fn) => fn({ source: winL, data: { [TAG]: 'hello' } }));
+  assert.equal(sent.filter((m) => m[TAG] === 'rating').length, 2, 'replayed to a new content.js');
+  // An unranked match asks nothing.
+  ranked = false;
+  asked.length = 0;
+  const winU = { ...winL, __endstepTrackerHook: false, fetch: winL.fetch };
+  winU.window = winU;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'hook.js'), 'utf8'), { ...sandbox, window: winU });
+  await winU.fetch(`/api/matches/${MID}`);
+  for (let i = 0; i < 4; i++) await tick();
+  assert.deepEqual(asked, [`/api/matches/${MID}`]);
   console.log('hook test: ok');
 })().catch((e) => { console.error(e); process.exit(1); });

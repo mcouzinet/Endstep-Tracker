@@ -10,7 +10,7 @@
   // bits (lobby, deck pick, deck and match details) and every frame since the last full game state.
   const MAX_BUFFER = 3000;
   let buffer = [];
-  const sticky = { lobby: null, deck: null, match: {}, decks: {}, acted: {} };
+  const sticky = { lobby: null, deck: null, match: {}, decks: {}, acted: {}, ratings: {} };
   const post = (kind, data) => {
     const msg = { [TAG]: kind, data, at: Date.now() };
     remember(kind, data, msg);
@@ -26,6 +26,7 @@
     else if (kind === 'deck') sticky.deck = msg;
     else if (kind === 'match') sticky.match[data.id] = msg;
     else if (kind === 'acted') sticky.acted[data] = msg; // this tab plays it: the new copy must keep recording it
+    else if (kind === 'rating') sticky.ratings[`${data.matchId}|${data.username}`] = msg;
     else if (kind === 'decks') for (const d of data) sticky.decks[d.id] = { [TAG]: kind, data: [d], at: msg.at };
     if (buffer.length > MAX_BUFFER) buffer = []; // a game this long is not worth replaying
   }
@@ -33,7 +34,7 @@
     if (e.source !== window || !e.data) return;
     if (e.data[TAG] === 'history-next') { nextHistory(e.data.cursor); return; }
     if (e.data[TAG] !== 'hello') return;
-    const replay = [sticky.lobby, sticky.deck, ...Object.values(sticky.decks), ...Object.values(sticky.match), ...Object.values(sticky.acted), ...buffer];
+    const replay = [sticky.lobby, sticky.deck, ...Object.values(sticky.decks), ...Object.values(sticky.match), ...Object.values(sticky.ratings), ...Object.values(sticky.acted), ...buffer];
     for (const m of replay) if (m) window.postMessage({ ...m, replay: true }, location.origin);
   });
 
@@ -94,6 +95,25 @@
   const MATCH_DECK = new RegExp(`^/api/matches/(${UUID})/deck$`);
   const deckMeta = (d) => ({ id: d.id, name: d.name, format: d.format, formatId: d.formatId });
 
+  // A ranked match: each player's place on the format's ladder as the match starts, asked once per match, the way the
+  // site's player card asks it (it needs my session). Only the ladder of the match's format, and only what is shown.
+  const rated = new Set();
+  function ladders(match) {
+    if (match.ranked !== true || !match.id || rated.has(match.id)) return;
+    rated.add(match.id);
+    const format = String(match.formatId || '').toLowerCase();
+    for (const p of match.participants || []) {
+      if (!p || p.isBot || typeof p.username !== 'string' || !p.username) continue;
+      nativeFetch.call(window, `/api/ranked/players?username=${encodeURIComponent(p.username)}`)
+        .then((res) => (res.ok ? res.json() : null)).then((json) => {
+          const l = json && Array.isArray(json.ladders) && json.ladders.find((x) => x && String(x.formatId).toLowerCase() === format);
+          if (!l) return;
+          post('rating', { matchId: match.id, username: p.username, ladder: {
+            score: l.score, rating: l.rating, rank: l.rank, of: l.rankedCount, top: l.topPercent, provisional: l.provisional } });
+        }).catch(() => {});
+    }
+  }
+
   const nativeFetch = window.fetch;
   window.fetch = function (input, init) {
     const pending = nativeFetch.apply(this, arguments);
@@ -124,7 +144,7 @@
           else {
             // Whitelisted on purpose: this response also carries a server-side state
             // fingerprint that includes the opponent's hidden hand. Never forward it.
-            post('match', {
+            const match = {
               id: json.id,
               lobbyId: json.lobbyId,
               format: json.format,
@@ -134,7 +154,9 @@
               participants: (json.participants || []).map((p) => ({
                 userId: p.userId, username: p.username, isBot: !!p.isBot, aiProfile: p.aiProfile || null,
               })),
-            });
+            };
+            post('match', match);
+            ladders(match);
           }
         }).catch(() => {});
       }

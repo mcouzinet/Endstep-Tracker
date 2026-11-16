@@ -704,6 +704,24 @@
   "history_filled": {
     "message": "completato dalla tua cronologia di endstep"
   },
+  "ratings_at_start": {
+    "message": "Rating a inizio partita"
+  },
+  "rating_me": {
+    "message": "io"
+  },
+  "rating_title": {
+    "message": "Rating di {name} a inizio partita: {score}"
+  },
+  "rating_short": {
+    "message": "Rating {score}"
+  },
+  "rating_place": {
+    "message": "{rank}º su {of}, top {top}%"
+  },
+  "rating_provisional": {
+    "message": "provvisoria"
+  },
   "popup_live": {
     "message": "In corso contro {opp}"
   },

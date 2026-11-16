@@ -115,6 +115,13 @@
       ctx.meta[data.id] = Object.assign(ctx.meta[data.id] || {}, data);
       const entry = store.get(data.id);
       if (entry) { T.applyMeta(entry.rec, ctx.meta[data.id], ctx); if (acted.has(data.id)) save(entry); }
+    } else if (kind === 'rating') {
+      // A player's place on the ladder as the match starts (hook.js): kept with the match, the first one seen wins.
+      if (!data || !isId(data.matchId) || typeof data.username !== 'string' || !data.username || data.username.length > 64 || data.username in Object.prototype) return;
+      const meta = ctx.meta[data.matchId] = ctx.meta[data.matchId] || {};
+      meta.ratings = { ...S.obj(meta.ratings), [data.username]: S.obj(data.ladder) };
+      const entry = store.get(data.matchId);
+      if (entry) { T.applyMeta(entry.rec, ctx.meta[data.matchId], ctx); if (acted.has(data.matchId)) save(entry); }
     } else if (kind === 'acted') {
       // Sent with each of my game actions: the first one makes the record appear at once, the frames save the rest.
       if (!isId(data) || ignored.has(data) || acted.has(data)) return;

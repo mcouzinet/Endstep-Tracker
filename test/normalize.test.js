@@ -24,4 +24,17 @@ assert.deepEqual(S.normalizeNote({ archetype: 12, notes: 'fine', deckId: {}, for
 assert.deepEqual(S.normalizeNote(null), {});
 assert.equal(S.formatOf(m, { ...C, notes: { m1: S.normalizeNote({ formatId: 5 }) } }), S.formatOf(m, C), 'a note\'s odd format is ignored');
 
+// Ranked ladders as the match started (hook.js, by account): numbers only, mine told from the opponent's.
+const T = require('../tracker.js');
+const rated = S.normalizeMatch({ ...base(), ratings: { me: { score: 1343, rank: '<b>', provisional: 'yes' }, opp: { score: 1355, rank: 427, of: 792, top: 54 }, __proto__x: 3, constructor: { score: 1 } } });
+assert.deepEqual(Object.keys(rated.ratings).sort(), ['me', 'opp'], 'an entry is an object, never a prototype name');
+assert.deepEqual(rated.ratings.me, { score: 1343, rating: undefined, rank: undefined, of: undefined, top: undefined, provisional: false });
+const lad = S.ladders(rated, null);
+assert.deepEqual([lad.mine.score, lad.opp.score, lad.oppName], [1343, 1355, 'opp'], 'by the names in the game');
+const renamed = { ...rated, ratings: { Mika: { score: 1 }, 'opp LPO': { score: 2 } } };
+assert.deepEqual([S.ladders(renamed, null).opp, S.ladders(renamed, 'Mika').oppName], [null, 'opp LPO'], 'an account the game shortens: told by my account');
+const rec = { ratings: { opp: { score: 1355 } } };
+T.applyMeta(rec, { ratings: { opp: { score: 1400 }, me: { score: 1343 } } });
+assert.deepEqual(rec.ratings, { opp: { score: 1355 }, me: { score: 1343 } }, 'the first answer, from the start of the match, stays');
+
 console.log('normalize: ok');

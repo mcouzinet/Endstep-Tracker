@@ -92,6 +92,8 @@
     for (const k of ['format', 'formatId', 'ranked', 'gamesPerMatch', 'lobbyId', 'serverStatus', 'participants', 'limitedDeck']) {
       if (m[k] !== undefined && m[k] !== null) rec[k] = m[k];
     }
+    // Each player's ladder as the match started: a later answer (a page reloaded after the match) never replaces it.
+    if (m.ratings) rec.ratings = { ...m.ratings, ...(rec.ratings || {}) };
     if (rec.myDeck && noDeck(rec)) rec.myDeck = null; // format may be learnt after the deck was guessed
     // The match's lobby id can arrive after the deck was guessed from my last pick: prefer that lobby's seat deck.
     if (ctx && rec.lobbyId && rec.myDeck !== undefined && !(rec.myDeck && rec.myDeck.source === 'lobby')) {

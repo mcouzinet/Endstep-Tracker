@@ -704,6 +704,24 @@
   "history_filled": {
     "message": "completada com seu histórico do endstep"
   },
+  "ratings_at_start": {
+    "message": "Rating no início da partida"
+  },
+  "rating_me": {
+    "message": "eu"
+  },
+  "rating_title": {
+    "message": "Rating de {name} no início da partida: {score}"
+  },
+  "rating_short": {
+    "message": "Rating {score}"
+  },
+  "rating_place": {
+    "message": "{rank}º de {of}, top {top}%"
+  },
+  "rating_provisional": {
+    "message": "provisório"
+  },
   "popup_live": {
     "message": "Em andamento contra {opp}"
   },

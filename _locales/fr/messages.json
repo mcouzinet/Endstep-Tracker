@@ -704,6 +704,24 @@
   "history_filled": {
     "message": "complété depuis ton historique endstep"
   },
+  "ratings_at_start": {
+    "message": "Cote au début du match"
+  },
+  "rating_me": {
+    "message": "moi"
+  },
+  "rating_title": {
+    "message": "Cote de {name} au début du match : {score}"
+  },
+  "rating_short": {
+    "message": "Cote {score}"
+  },
+  "rating_place": {
+    "message": "{rank}e sur {of}, top {top} %"
+  },
+  "rating_provisional": {
+    "message": "provisoire"
+  },
   "popup_live": {
     "message": "En cours contre {opp}"
   },

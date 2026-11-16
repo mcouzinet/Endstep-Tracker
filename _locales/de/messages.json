@@ -704,6 +704,24 @@
   "history_filled": {
     "message": "aus deinem endstep-Verlauf ergänzt"
   },
+  "ratings_at_start": {
+    "message": "Wertung zu Matchbeginn"
+  },
+  "rating_me": {
+    "message": "ich"
+  },
+  "rating_title": {
+    "message": "Wertung von {name} zu Matchbeginn: {score}"
+  },
+  "rating_short": {
+    "message": "Wertung {score}"
+  },
+  "rating_place": {
+    "message": "Platz {rank} von {of}, Top {top} %"
+  },
+  "rating_provisional": {
+    "message": "vorläufig"
+  },
   "popup_live": {
     "message": "Läuft gegen {opp}"
   },

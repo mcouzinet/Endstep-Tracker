@@ -599,7 +599,7 @@ function renderView() {
       esc(deckName(m)) + (s.format === null ? ` <span class="muted">· ${esc(formatOf(m))}</span>` : ''), deckName(m)], 'deck');
   }
   $('#history').classList.toggle('one-deck', s.deck !== null);
-  if (state.tab === 'history') renderMatches(list);
+  if (state.tab === 'history') { account = S.myAccount(matches); renderMatches(list); }
   renderDrawer(s, stats, vs);
 }
 
@@ -1165,12 +1165,19 @@ function chip(m, g) {
     + `<span class="g-pos">${p === null ? '—' : p ? 'play' : 'draw'}${k ? `<b>M${esc(k)}</b>` : ''}</span></span>`;
 }
 
+// A ranked match's ladders as it started, from the site's player card (hook.js): the opponent's beside their name.
+let account = null; // my account on the site, to tell my ladder from the opponent's (S.myAccount, at each redraw of the list)
+function oppRating(m) {
+  const { opp, oppName } = S.ladders(m, account);
+  return opp ? S.ladderChip(oppName, opp, I18N) : '';
+}
+
 function row(m) {
   const open = m.id === openId;
   const a = archetype(m);
   return `<button class="match-row" aria-expanded="${open}" aria-controls="d-${esc(m.id)}">
     ${resultBadge(m)}
-    <span class="opp"><span class="opp-name">${esc(oppLabel(m))}</span>${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span>
+    <span class="opp"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span>
     <span class="score">${scoreText(m)}</span>
     <span class="chips">${m.games.map((g) => chip(m, g)).join('')}</span>
     <span class="cell deck">${esc(deckName(m))}</span>
@@ -1178,6 +1185,14 @@ function row(m) {
     <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(ago(m.startedAt))}</time>
     <svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>
   </button>`;
+}
+
+// "Ladders as the match started: me 1,343 · Malpelo96 1,355", each with its place on hover.
+function ladderLine(m) {
+  const { mine, opp, oppName } = S.ladders(m, account);
+  const part = (name, l) => (S.ladderScore(l) !== null ? `<span title="${esc(S.ladderTitle(name, l, I18N))}">${esc(name)} <b>${esc(S.num(S.ladderScore(l), locale))}</b></span>` : '');
+  const parts = [part(t('rating_me'), mine), part(oppName, opp)].filter(Boolean);
+  return parts.length ? `${esc(t('ratings_at_start'))}${esc(t('colon'))}${parts.join(', ')}` : '';
 }
 
 function detail(m) {
@@ -1188,6 +1203,7 @@ function detail(m) {
     esc(fullDate(m.startedAt)),
     esc(minutes(m.startedAt, m.endedAt)),
     `${esc(t('my_deck'))}${esc(t('colon'))}<b>${esc(deckName(m))}</b>`,
+    ladderLine(m),
     Array.isArray(m.historyFilled) && m.historyFilled.length ? esc(t('history_filled')) : '',
   ].filter(Boolean).join(' · ');
   const seen = opps(m).map((p) => `<section><h3>${esc(t('seen_at', { name: p.name }))} ${pips(m.colors[p.seat] || '')}</h3>${cardList(T.seenCards(m, p.seat))}</section>`).join('');

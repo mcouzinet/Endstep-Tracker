@@ -7,6 +7,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Ajouté
 
+- **La cote de l'adversaire dans les matchs classés** (1.7.2) : sa cote au classement du format, telle qu'au début du match, dès la première game dans le panneau sur endstep.cc, puis à côté de son nom dans l'historique (sa place et le top au survol), et les deux cotes dans le détail du match. L'extension la demande une fois par match classé au site, comme sa fiche de joueur. Seulement pour les matchs joués à partir de cette version.
 - **Trier les cartes peu jouées** (1.7.1) : dans « Carte par carte », « Peu jouées » range d'abord les cartes que tu lances ou mets en jeu le moins souvent une fois piochées, avec le pourcentage à côté du nom. Pour repérer celles qui restent en main. Demandé sur le Discord (Sympthom).
 - **Comparer à n'importe quelle version** (1.7.1) : le menu « Comparer à… » sous les matchups propose toutes les autres versions de la liste, pas seulement celle d'avant. Les cartes changées s'affichent par rapport à la version choisie.
 

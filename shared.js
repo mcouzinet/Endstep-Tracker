@@ -44,6 +44,11 @@
     if (!Number.isFinite(m.updatedAt)) m.updatedAt = m.startedAt;
     if (m.myDeck && (typeof m.myDeck !== 'object' || typeof m.myDeck.id !== 'string')) m.myDeck = null;
     if (m.myDeck && typeof m.myDeck.name !== 'string') m.myDeck = { ...m.myDeck, name: null };
+    if (m.ratings !== undefined) {
+      const num = (v) => (Number.isFinite(v) ? v : undefined);
+      m.ratings = Object.fromEntries(Object.entries(obj(m.ratings)).filter(([name, l]) => name && !(name in Object.prototype) && l && typeof l === 'object')
+        .map(([name, l]) => [name, { score: num(l.score), rating: num(l.rating), rank: num(l.rank), of: num(l.of), top: num(l.top), provisional: l.provisional === true }]));
+    }
     return m;
   }
   // A match's note, typed by me or imported: its text fields are text.
@@ -54,6 +59,31 @@
   }
 
   const opps = (m) => m.players.filter((p) => p && p.seat !== m.mySeat);
+  // A ranked match's ladders as it started (m.ratings, by account): { mine, opp }, each null when unknown. The accounts
+  // are matched with the names in the game (the game may shorten an account name) and with my account (me), if known.
+  function ladders(m, me) {
+    const r = obj(m.ratings);
+    const names = Object.keys(r);
+    const low = (n) => String(n || '').toLowerCase();
+    const myName = low((m.players.find((p) => p.seat === m.mySeat) || {}).name);
+    const isMe = (n) => (me ? low(n) === low(me) : !!myName && low(n) === myName);
+    const isOpp = (n) => !isMe(n) && opps(m).some((p) => low(p.name) === low(n));
+    const mine = names.find(isMe) || null;
+    const opp = names.find(isOpp) || (mine && names.length === 2 ? names.find((n) => n !== mine) : null);
+    return { mine: mine ? r[mine] : null, opp: opp ? r[opp] : null, oppName: opp };
+  }
+  // A ladder's score as the site shows it on a player's card, its chip ("Rating 1,613") and its detail on hover.
+  const ladderScore = (l) => (l && Number.isFinite(l.score) ? l.score : l && Number.isFinite(l.rating) ? l.rating : null);
+  const numberFormats = new Map(); // one per language
+  const num = (n, locale) => (numberFormats.get(locale) || numberFormats.set(locale, new Intl.NumberFormat(locale)).get(locale)).format(n);
+  function ladderTitle(name, l, i18n) {
+    const n = (x) => num(x, i18n.locale);
+    const place = Number.isFinite(l.rank) && Number.isFinite(l.of) ? i18n.t('rating_place', { rank: n(l.rank), of: n(l.of), top: Number.isFinite(l.top) ? l.top : '?' }) : '';
+    return i18n.t('rating_title', { name, score: n(ladderScore(l)) }) + [place, l.provisional ? i18n.t('rating_provisional') : ''].filter(Boolean).map((x) => ` · ${x}`).join('');
+  }
+  function ladderChip(name, l, i18n, cls = 'rating') {
+    return ladderScore(l) === null ? '' : `<span class="${cls}" title="${esc(ladderTitle(name, l, i18n))}">${esc(i18n.t('rating_short', { score: num(ladderScore(l), i18n.locale) }))}</span>`;
+  }
   // A match against the site's AI (Forge AI, Auto-Pilot…): kept in the history, left out of every record. The site flags
   // bots in the match's participants; a record without them is judged by the opponent's name.
   const AI_NAME = /^(Forge AI|Bot \(.+\))$/i;
@@ -538,7 +568,7 @@
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, normalizeNote, scoreText, pips, ago,
-    HISTORY_IMPORT_MS, importing, opps, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
+    HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,

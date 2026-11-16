@@ -21,7 +21,7 @@ Après une modification du code : bouton ↻ de l'extension dans `chrome://exten
 
 ## Ce qui est enregistré
 
-Par match : date, format (classé ou non, Bo1/Bo3), adversaire, mon deck (nom + liste), score, résultat, et mon side entre les games : le main deck que je soumets pour chaque game après la première (`mains`, par numéro de game ; celui de la game 1 vient du même écran de side, qui le montre en premier).
+Par match : date, format (classé ou non, Bo1/Bo3), adversaire, mon deck (nom + liste), score, résultat, dans un match classé le classement de chaque joueur au début du match (`ratings`, par compte : `score`, `rating`, `rank` sur `of`, `top`, `provisional` ; `hook.js` le demande une fois par match à `/api/ranked/players?username=`, la requête de la fiche d'un joueur, qui demande d'être connecté ; la première réponse reste ; `S.ladders` distingue le mien de celui de l'adversaire), et mon side entre les games : le main deck que je soumets pour chaque game après la première (`mains`, par numéro de game ; celui de la game 1 vient du même écran de side, qui le montre en premier).
 
 Par game :
 - play/draw, qui a gagné le toss

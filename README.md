@@ -12,7 +12,7 @@ On Android, Firefox runs it; Chrome and Brave on Android have no extensions.
 
 ## Features
 
-- **Every match recorded**: format, Bo1/Bo3, score, play/draw, mulligans, opening hand, turns, life totals, length, full game log.
+- **Every match recorded**: format, Bo1/Bo3, your opponent's ladder score in a ranked match, score, play/draw, mulligans, opening hand, turns, life totals, length, full game log.
 - **The opponent's archetype**, recognized from the cards you saw against endstep's own metagame (Pauper, Modern, Premodern, Legacy, Vintage), named after the commander in Duel Commander, and correctable by hand.
 - **Win rates** by deck and by matchup, on the play and on the draw, per version of your list (and any two versions side by side), ranked or not; in a matchup, game 1 against after sideboarding.
 - **My cards**: for each card of your current list (the ones you cut wait below, the new ones are marked), your win rate in the games where you drew it, where you didn't, in your opening hand, drawn later, played, and in play (a reanimated creature counts), and the cards you draw but rarely play. A card has one name: printed names (Secret Lair, Universes Beyond) and both faces of a card count as one card.
