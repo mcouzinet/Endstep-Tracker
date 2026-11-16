@@ -72,7 +72,8 @@
     p { margin: 0; }
     .muted { color: var(--ink-3); }
     .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--gold-wash); color: var(--gold-hi); font-size: 12px; font-weight: 600; }
-    .rating { flex: none; padding: 0 7px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--ink-2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rating { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: oklch(.7 .12 240 / .18); color: oklch(.82 .09 240);
+      font: 600 12px/1.5 var(--ui); font-variant-numeric: tabular-nums; white-space: nowrap; vertical-align: 2px; } /* a ladder rating: blue beside the gold archetypes */
     .tag.guess { background: none; border: 1px dashed color-mix(in oklab, var(--gold) 55%, transparent); color: var(--ink-2); font-weight: 500; }
     .stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
     .stats b { color: var(--ink); font-weight: 700; }
@@ -153,7 +154,7 @@
     const summary = phase === 'after'
       ? `<span class="dot off"></span><span class="sum"><b class="${esc(m.result)}">${esc(t({ W: 'win', L: 'loss', D: 'draw' }[m.result] || 'unfinished'))}</b> ${esc(S.scoreText(m))}</span>`
       : `<span class="dot"></span><span class="sum"><b>REC</b> · ${esc(t('ov_session', { wl: wl(session) }))}</span>`;
-    // The opponent's ladder as the match started, from its first moments: in the bar, so that it shows folded too.
+    // The opponent's ladder as the match started, beside their name.
     const lad = S.ladders(m, S.myAccount(list));
     const rating = lad.opp ? S.ladderChip(lad.oppName, lad.opp, I) : '';
     const toggle = phase === 'after'
@@ -179,8 +180,8 @@
           : g ? `<span class="tag guess">${esc(g.name)}</span> <span class="muted">${esc(t('recognized_pct', { p: Math.round(g.p * 100) }))}</span>`
             : `<span class="muted">${esc(t('popup_unknown_opp'))}</span>`}</span>${button('data-edit', t('ov_edit_archetype'), PENCIL)}</p>`;
       const head = phase === 'after'
-        ? `<h2>${esc(t('ov_result_' + (m.result || 'D'), { score: S.scoreText(m), opp }))}</h2>`
-        : `<h2>${esc(t('ov_against', { opp }))}</h2>`;
+        ? `<h2>${esc(t('ov_result_' + (m.result || 'D'), { score: S.scoreText(m), opp }))}${rating}</h2>`
+        : `<h2>${esc(t('ov_against', { opp }))}${rating}</h2>`;
       const vs = list.filter((x) => x !== m && !S.vsAI(x) && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
       const r = S.records(vs, now);
       const stat = (label, x) => `<span>${esc(label)} <b>${wl(x)}</b>${x.W + x.L + x.D >= 5 ? ` · ${pct(x)}` : ''}</span>`;
@@ -202,7 +203,7 @@
       body = `<div class="body">${head}${arch}${metBlock}${record}${side}<div class="row">${confirm}<button class="btn" tabindex="-1" data-dashboard>${esc(t('open_dashboard'))}</button></div></div>`;
     }
     box.classList.toggle('open', open);
-    box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${rating}${toggle}</div>${body}`;
+    box.innerHTML = `<div class="bar" title="${esc(t('ov_move'))}">${GRIP}${summary}${toggle}</div>${body}`;
     host.hidden = false;
     shown = { id: m.id, phaseKey, open, current };
     place();

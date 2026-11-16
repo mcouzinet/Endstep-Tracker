@@ -81,7 +81,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     let text = await panelText();
     assert.match(text, /REC · session/);
     assert.match(text, /(Against|Contre) Brisbane/);
-    assert.match(text.replace(/\s/g, ' '), /(Rating 1,613|Cote 1 613)/, 'the opponent\'s rating in the bar');
+    assert.match(text.replace(/\s/g, ' '), /(Against|Contre) Brisbane (Rating 1,613|Cote 1 613)/, 'the opponent\'s rating beside their name');
     assert.match(text, /(My usual sideboarding|Mon side habituel) \+2 Kor Firewalker −2 Lava Spike/, text);
     assert.ok(!text.includes('Keep life high') && !/G1|G2-G3/.test(text), text);
     assert.match(text, /(Déjà croisé|Met before) (Matchs|Matches) \d+–\d+ (Dernière fois :|Last time:) /, 'the same player met before');
