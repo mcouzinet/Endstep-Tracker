@@ -1139,6 +1139,7 @@ function renderMatches(list) {
     return;
   }
   // Re-rendering must not snap shut a journal or deck list the user opened.
+  $('#history').classList.toggle('one-format', new Set(list.map(fmtCell)).size < 2); // the same format on every row: no column
   const open = new Set([...document.querySelectorAll('#matches details[open]')].map((d) => d.dataset.key));
   $('#matches').innerHTML = list.map((m) => `<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`).join('');
   for (const d of document.querySelectorAll('#matches details')) if (open.has(d.dataset.key)) d.open = true;
@@ -1172,16 +1173,20 @@ function oppRating(m) {
   return opp ? S.ladderChip(oppName, opp, I18N) : '';
 }
 
+const fmtCell = (m) => fmt(m) + (m.gamesPerMatch ? ` · Bo${m.gamesPerMatch}` : '');
+
 function row(m) {
   const open = m.id === openId;
   const a = archetype(m);
-  return `<button class="match-row" aria-expanded="${open}" aria-controls="d-${esc(m.id)}">
-    ${resultBadge(m)}
-    <span class="opp"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span>
-    <span class="score">${scoreText(m)}</span>
+  const r = m.status === 'complete' && RESULT[m.result] ? m.result : '';
+  const score = scoreText(m);
+  // The score first, on the row's colour; then the player and their rating, with their colours and deck below.
+  return `<button class="match-row ${r}" aria-expanded="${open}" aria-controls="d-${esc(m.id)}">
+    <span class="res">${score ? `<b class="score">${esc(score)}</b>` : ''}${resultBadge(m)}</span>
+    <span class="opp"><span class="opp-top"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}</span><span class="opp-sub">${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span></span>
     <span class="chips">${m.games.map((g) => chip(m, g)).join('')}</span>
     <span class="cell deck">${esc(deckName(m))}</span>
-    <span class="cell fmt">${esc(fmt(m))}${m.gamesPerMatch ? ` · Bo${esc(m.gamesPerMatch)}` : ''}</span>
+    <span class="cell fmt">${esc(fmtCell(m))}</span>
     <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(ago(m.startedAt))}</time>
     <svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>
   </button>`;
@@ -1199,7 +1204,7 @@ function detail(m) {
   if (state.tab === 'history') resolveNames(rawCardNames([m])); // the names of my list, hands, side and plays shown here
   const n = notes[m.id] || {};
   const meta = [
-    esc(fmt(m)) + (m.gamesPerMatch ? ` · Bo${esc(m.gamesPerMatch)}` : ''),
+    esc(fmtCell(m)),
     esc(fullDate(m.startedAt)),
     esc(minutes(m.startedAt, m.endedAt)),
     `${esc(t('my_deck'))}${esc(t('colon'))}<b>${esc(deckName(m))}</b>`,

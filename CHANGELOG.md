@@ -5,6 +5,10 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## Non publié
 
+### Modifié
+
+- **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes, la colonne Format seulement quand elle change (1.8.1).
+
 ## [1.8] (2026-11-16)
 
 ### Ajouté

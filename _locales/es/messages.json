@@ -164,9 +164,6 @@
   "col_opponent": {
     "message": "Rival"
   },
-  "col_score": {
-    "message": "Marcador"
-  },
   "col_games": {
     "message": "Partidas"
   },

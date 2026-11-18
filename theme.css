@@ -19,6 +19,8 @@
   --win: #1a9f86;
   --loss: #e5664b;
   --draw: #6f685d;
+  --win-wash: rgb(26 159 134 / .22);
+  --loss-wash: rgb(229 102 75 / .2);
   --danger: #f08a73;
   /* A ladder rating: a cool blue beside the gold of the archetypes. */
   --rating: oklch(.82 .09 240);
