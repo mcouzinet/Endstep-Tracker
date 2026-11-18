@@ -791,14 +791,26 @@
   "archetype_renamed_other": {
     "message": "« {to} » : {n} matchs renommés."
   },
-  "ov_met": {
-    "message": "Déjà croisé"
-  },
   "ov_last_arch": {
-    "message": "Dernière fois : {arch}, {when}"
+    "message": "Son deck la dernière fois : {arch}, {when}"
   },
   "ov_last": {
     "message": "Dernière fois : {when}"
+  },
+  "ov_vs_player": {
+    "message": "Ton bilan contre {opp}"
+  },
+  "ov_vs_deck": {
+    "message": "Ton bilan contre ce deck"
+  },
+  "ov_vs_colors": {
+    "message": "Ton bilan contre ces couleurs ({colors})"
+  },
+  "ov_with_deck": {
+    "message": "avec {deck}"
+  },
+  "ov_first_deck": {
+    "message": "Premier match contre ce deck avec {deck}."
   },
   "import_history": {
     "message": "Importer mes anciens matchs"

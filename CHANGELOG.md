@@ -8,6 +8,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 ### Modifié
 
 - **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes, la colonne Format seulement quand elle change (1.8.1).
+- **Panneau en jeu** : le bilan contre le joueur et le bilan contre son deck séparés, pour ne plus les confondre (1.8.2).
 
 ## [1.8] (2026-11-16)
 

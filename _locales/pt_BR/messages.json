@@ -791,14 +791,26 @@
   "archetype_renamed_other": {
     "message": "“{to}”: {n} partidas renomeadas."
   },
-  "ov_met": {
-    "message": "Já enfrentado"
-  },
   "ov_last_arch": {
-    "message": "Última vez: {arch}, {when}"
+    "message": "Deck da última vez: {arch}, {when}"
   },
   "ov_last": {
     "message": "Última vez: {when}"
+  },
+  "ov_vs_player": {
+    "message": "Seu retrospecto contra {opp}"
+  },
+  "ov_vs_deck": {
+    "message": "Seu retrospecto contra este deck"
+  },
+  "ov_vs_colors": {
+    "message": "Seu retrospecto contra estas cores ({colors})"
+  },
+  "ov_with_deck": {
+    "message": "com {deck}"
+  },
+  "ov_first_deck": {
+    "message": "Primeira partida contra este deck com {deck}."
   },
   "import_history": {
     "message": "Importar minhas partidas antigas"

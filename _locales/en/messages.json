@@ -791,14 +791,26 @@
   "archetype_renamed_other": {
     "message": "“{to}”: {n} matches renamed."
   },
-  "ov_met": {
-    "message": "Met before"
-  },
   "ov_last_arch": {
-    "message": "Last time: {arch}, {when}"
+    "message": "Their deck last time: {arch}, {when}"
   },
   "ov_last": {
     "message": "Last time: {when}"
+  },
+  "ov_vs_player": {
+    "message": "Your record vs {opp}"
+  },
+  "ov_vs_deck": {
+    "message": "Your record vs this deck"
+  },
+  "ov_vs_colors": {
+    "message": "Your record vs these colors ({colors})"
+  },
+  "ov_with_deck": {
+    "message": "with {deck}"
+  },
+  "ov_first_deck": {
+    "message": "First match against this deck with {deck}."
   },
   "import_history": {
     "message": "Import my past matches"

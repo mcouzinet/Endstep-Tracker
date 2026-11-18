@@ -84,7 +84,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.match(text.replace(/\s/g, ' '), /(Against|Contre) Brisbane (Rating 1,613|Cote 1 613)/, 'the opponent\'s rating beside their name');
     assert.match(text, /(My usual sideboarding|Mon side habituel) \+2 Kor Firewalker −2 Lava Spike/, text);
     assert.ok(!text.includes('Keep life high') && !/G1|G2-G3/.test(text), text);
-    assert.match(text, /(Déjà croisé|Met before) (Matchs|Matches) \d+–\d+ (Dernière fois :|Last time:) /, 'the same player met before');
+    assert.match(text, /(Ton bilan contre|Your record vs) Brisbane\s?:\s\d+–\d+ (Son deck la dernière fois :|Their deck last time:|Dernière fois :|Last time:) /, 'the same player met before');
+    assert.match(text, /(Ton bilan contre (ce deck|ces couleurs \(\w+\))|Your record vs (this deck|these colors \(\w+\)))\s?:\s\d+–\d+ (avec|with) /, 'my record against their deck, apart');
 
     // Corrected by hand: the field takes the keys, and the game (listening on window, in the capture phase, after
     // the panel as on endstep.cc) gets none of them; Enter saves and gives the keys back, Escape drops the typing,
