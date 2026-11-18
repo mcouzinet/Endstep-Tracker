@@ -156,7 +156,7 @@
     const opp = S.opps(m).map((p) => p.name).join(', ') || '?';
     const summary = phase === 'after'
       ? `<span class="dot off"></span><span class="sum"><b class="${esc(m.result)}">${esc(t({ W: 'win', L: 'loss', D: 'draw' }[m.result] || 'unfinished'))}</b> ${esc(S.scoreText(m))}</span>`
-      : `<span class="dot"></span><span class="sum"><b>REC</b> · ${esc(t('ov_session', { wl: wl(session) }))}</span>`;
+      : `<span class="dot"></span><span class="sum"><b>REC</b>${open ? ` · ${esc(t('ov_session', { wl: wl(session) }))}` : ''}</span>`; // folded: REC alone, as small as it gets
     // The opponent's ladder as the match started, beside their name.
     const lad = S.ladders(m, S.myAccount(list));
     const rating = lad.opp ? S.ladderChip(lad.oppName, lad.opp, I) : '';

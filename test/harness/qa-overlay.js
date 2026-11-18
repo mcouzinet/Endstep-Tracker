@@ -165,8 +165,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await set({ 'match:m-live': live });
     await sleep(300);
     text = await panelText();
-    assert.match(text, /REC · session/);
-    assert.doesNotMatch(text, /(Against|Contre) Brisbane/);
+    assert.match(text, /REC/);
+    assert.doesNotMatch(text, /session|(Against|Contre) Brisbane/, 'folded: REC alone');
 
     // Dragged by its bar, it stays where it was put.
     const before = await p.evaluate(() => getComputedStyle(document.getElementById('endstep-tracker-panel')).right);
