@@ -287,6 +287,10 @@
     .list-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 16px 12px; border-top: 1px solid var(--line); }
     .matches { list-style: none; margin: 0; padding: 0; }
     .match + .match { border-top: 1px solid var(--line); }
+    .session { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 18px 16px 8px; border-bottom: 1px solid var(--line); }
+    .match + .session { border-top: 1px solid var(--line-strong); }
+    .s-day { font-weight: 600; } .s-meta { font-size: 12px; color: var(--ink-3); }
+    .s-rec { margin-left: auto; font-size: 15px; font-weight: 600; }
     .match-row { width: 100%; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
     .match-row:hover { background: var(--surface-2); }
     .match-row[aria-expanded="true"] { background: var(--surface-2); }
@@ -598,6 +602,7 @@
       <div class="panel"><div class="panel-head"><h2 class="panel-title"><span data-i18n="by_archetype"></span><button type="button" class="info-btn" data-info="info_archetypes" aria-expanded="false" aria-controls="info-pop" data-i18n-attr="aria-label:info_label,title:info_label"><svg class="i"><use href="#i-info"/></svg></button></h2><div class="seg" role="group" data-i18n-attr="aria-label:sort_label" data-filter="sort"><button data-value="n" data-i18n="sort_n"></button><button data-value="worst" data-i18n="sort_worst"></button><button data-value="best" data-i18n="sort_best"></button></div></div><p id="versions" class="versions" hidden></p><div id="by-opp"></div></div>
       <div class="side">
         <div id="overview" class="panel context"></div>
+        <div id="lands" class="panel context"></div>
       </div>
     </section>
 

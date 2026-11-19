@@ -86,6 +86,12 @@
   "n_matches_other": {
     "message": "{n} matchs"
   },
+  "n_games_one": {
+    "message": "{n} game"
+  },
+  "n_games_other": {
+    "message": "{n} games"
+  },
   "of_total": {
     "message": " sur {total}"
   },
@@ -109,6 +115,27 @@
   },
   "after_mulligan": {
     "message": "Après mulligan"
+  },
+  "after_two_losses": {
+    "message": "Après deux défaites d’affilée"
+  },
+  "rest_of_time": {
+    "message": "Le reste du temps"
+  },
+  "by_lands": {
+    "message": "Terrains en main de départ"
+  },
+  "col_lands": {
+    "message": "Terrains"
+  },
+  "lands_0_1": {
+    "message": "0 ou 1 terrain"
+  },
+  "lands_n": {
+    "message": "{n} terrains"
+  },
+  "lands_4": {
+    "message": "4 terrains ou plus"
   },
   "min": {
     "message": "min"
@@ -1062,7 +1089,10 @@
     "message": "Ton bilan en matchs contre chaque archétype adverse, reconnu d’après les cartes vues ou corrigé à la main.\nPlay et Draw : selon qui a commencé la première game. Clique sur une ligne pour voir le matchup en détail et ton side habituel contre lui."
   },
   "info_context": {
-    "message": "Ton bilan selon la situation de départ : sur le play ou sur la draw, main de 7 gardée ou après un mulligan.\nTout se lit d’après la première game de chaque match."
+    "message": "Ton bilan selon la situation de départ : sur le play ou sur la draw, main de 7 gardée ou après un mulligan.\nTout se lit d’après la première game de chaque match.\n« Après deux défaites d’affilée » : les matchs joués juste après deux défaites de suite dans la même session, quel que soit le deck."
+  },
+  "info_lands": {
+    "message": "Ton bilan selon le nombre de terrains de ta main de départ, celle que tu as gardée (après un mulligan, sans les cartes mises sous ta bibliothèque).\nCompté en games, sur le play et sur la draw. Une carte compte comme terrain dès que tu l’as jouée comme terrain une fois, dans n’importe quel match."
   },
   "info_cards": {
     "message": "Compté en games, pour chaque carte de ton deck.\nPiochée : la carte est passée par ta main pendant la game, soit Main de départ + Plus tard. Pas piochée : elle est restée dans ta bibliothèque.\nJouée : tu l’as lancée, ou posée pour un terrain. En jeu : elle est arrivée sur ton champ de bataille, même sans être piochée (réanimée, mise en jeu). Ces deux colonnes comptent les games jouées depuis la 1.6.\nL’écart à côté du nom = Piochée moins Pas piochée, en points. C’est un lien avec la victoire, pas une preuve que la carte fait gagner.\nSeules les cartes de la liste affichée sont listées (ta dernière liste, ou la version choisie) ; celles qu’elle n’a plus sont repliées en bas. Chaque carte compte quand même toutes les games où elle était dans ton deck. « nouvelle » : absente de la version d’avant.\nSurvole un chiffre pour son détail ; clique sur un en-tête de colonne pour trier."

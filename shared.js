@@ -312,13 +312,28 @@
   }
 
   const endOf = (m) => m.endedAt || m.updatedAt || m.startedAt;
-  // The latest session: matches following each other with less than SESSION_GAP between them. list: newest first.
-  function lastSession(list) {
+  // Sessions: matches following each other with less than SESSION_GAP between them. list: newest first, and so is each.
+  function sessions(list) {
     const out = [];
     for (const m of list) {
-      if (vsAI(m)) continue;
-      if (out.length && out[out.length - 1].startedAt - endOf(m) > SESSION_GAP) break;
-      out.push(m);
+      const cur = out[out.length - 1];
+      if (cur && cur[cur.length - 1].startedAt - endOf(m) <= SESSION_GAP) cur.push(m);
+      else out.push([m]);
+    }
+    return out;
+  }
+  const lastSession = (list) => sessions(list.filter((m) => !vsAI(m)))[0] || [];
+  // The matches played right after two losses in a row in the same session (ids). A draw ends the run; a match without
+  // a result (live, unfinished) leaves it as it is. list: newest first.
+  function afterTwoLosses(list) {
+    const out = new Set();
+    for (const s of sessions(list.filter((m) => !vsAI(m)))) {
+      let run = 0;
+      for (const m of s.slice().reverse()) {
+        if (!m.result) continue;
+        if (run >= 2) out.add(m.id);
+        run = m.result === 'L' ? run + 1 : 0;
+      }
     }
     return out;
   }
@@ -563,6 +578,33 @@
     return [...by.values()].filter((x) => !BASIC.test(x.name));
   }
 
+  // My lands, by their one name: the cards I ever played as a land (a basic counts even before that).
+  function landNames(list, c) {
+    const canon = canonOf(c);
+    const out = new Set();
+    for (const m of list) for (const g of m.games) for (const [, seat, type, name] of g.log) if (type === 'LAND_PLAYED' && seat === m.mySeat && name) out.add(canon(name));
+    return out;
+  }
+  // My results by the lands in my kept hand, counted in games: [0 or 1, 2, 3, 4 or more], each { all, play, draw }.
+  // Games whose hand the tracker missed count for none.
+  function landRecords(list, lands, c, now = Date.now()) {
+    const canon = canonOf(c);
+    const r = [0, 1, 2, 3].map(() => ({ all: tally(), play: tally(), draw: tally() }));
+    for (const m of list) {
+      if (isLive(m, now) || vsAI(m) || !m.result) continue;
+      for (const g of m.games) {
+        const x = gRes(m, g);
+        if (!x || !Array.isArray(g.openingHand)) continue;
+        const n = g.openingHand.filter((name) => { const k = canon(name); return BASIC.test(k) || lands.has(k); }).length;
+        const b = r[Math.min(3, Math.max(0, n - 1))];
+        b.all[x]++;
+        const p = onPlay(m, g);
+        if (p !== null) b[p ? 'play' : 'draw'][x]++;
+      }
+    }
+    return r;
+  }
+
   // The usual side plan in one line per direction for the in-page panel and the popup: "+2 Pyroblast, +1 Duress".
   const sideLine = (xs, dir, max = 5) => xs.slice(0, max).map((x) => `${dir > 0 ? '+' : '−'}${x.qty} ${x.name}`).join(', ') + (xs.length > max ? ', …' : '');
 
@@ -570,8 +612,8 @@
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, normalizeNote, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, MIN_SAMPLE, pct, wl, isLive,
-    myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, lastSession, lastPlayed, sessionOpen, records, sideRecords,
-    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats,
+    myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
+    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
     loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

@@ -86,6 +86,12 @@
   "n_matches_other": {
     "message": "{n} partidas"
   },
+  "n_games_one": {
+    "message": "{n} game"
+  },
+  "n_games_other": {
+    "message": "{n} games"
+  },
   "of_total": {
     "message": " de {total}"
   },
@@ -109,6 +115,27 @@
   },
   "after_mulligan": {
     "message": "Após mulligan"
+  },
+  "after_two_losses": {
+    "message": "Após duas derrotas seguidas"
+  },
+  "rest_of_time": {
+    "message": "O resto do tempo"
+  },
+  "by_lands": {
+    "message": "Terrenos na mão inicial"
+  },
+  "col_lands": {
+    "message": "Terrenos"
+  },
+  "lands_0_1": {
+    "message": "0 ou 1 terreno"
+  },
+  "lands_n": {
+    "message": "{n} terrenos"
+  },
+  "lands_4": {
+    "message": "4 terrenos ou mais"
   },
   "min": {
     "message": "min"
@@ -1062,7 +1089,10 @@
     "message": "Seus resultados em partidas contra cada arquétipo do oponente, reconhecido pelas cartas que você viu ou corrigido à mão.\nPlay e Draw: por quem começou o primeiro game. Clique em uma linha para ver o matchup em detalhe e seu side habitual contra ele."
   },
   "info_context": {
-    "message": "Seus resultados conforme o começo da partida: on the play ou on the draw, manteve 7 ou após um mulligan.\nTudo segue o primeiro game de cada partida."
+    "message": "Seus resultados conforme o começo da partida: on the play ou on the draw, manteve 7 ou após um mulligan.\nTudo segue o primeiro game de cada partida.\n“Após duas derrotas seguidas”: as partidas jogadas logo depois de duas derrotas seguidas na mesma sessão, seja qual for o deck."
+  },
+  "info_lands": {
+    "message": "Seus resultados conforme o número de terrenos da mão inicial, a que você manteve (após um mulligan, sem as cartas colocadas no fundo).\nContado em games, on the play e on the draw. Uma carta conta como terreno assim que você a jogou como terreno uma vez, em qualquer partida."
   },
   "info_cards": {
     "message": "Contado em games, para cada carta do seu deck.\nComprada: a carta esteve na sua mão durante o game, ou seja, Mão inicial + Depois. Não comprada: ela ficou no seu grimório.\nJogada: você a conjurou, ou a jogou como terreno. Em jogo: ela chegou ao seu campo de batalha, mesmo sem ser comprada (reanimada, colocada no campo de batalha). Essas duas colunas contam os games jogados desde a 1.6.\nA diferença ao lado do nome = Comprada menos Não comprada, em pontos. Uma relação com a vitória, não uma prova de que a carta faz ganhar.\nSó aparecem as cartas da lista exibida (sua última lista, ou a versão escolhida); as que ela não tem mais ficam recolhidas embaixo. Cada carta conta mesmo assim todos os games em que estava no seu deck. “nova”: não estava na versão anterior.\nPasse o mouse sobre um número para ver o detalhe; clique no cabeçalho de uma coluna para ordenar."

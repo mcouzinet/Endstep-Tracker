@@ -124,8 +124,10 @@ const pips = (c) => S.pips(c, t);
 const cardLink = (name) => `<a class="card" data-card="${esc(name)}" href="https://scryfall.com/search?q=${encodeURIComponent(`!"${name}"`)}" target="_blank" rel="noopener">${esc(name)}</a>`;
 
 const ago = (ts) => S.ago(ts, I18N);
-const dateFormats = new Map(); // one formatter per language: building one costs more than formatting a date
-const fullDate = (ts) => (dateFormats.get(locale) || dateFormats.set(locale, new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' })).get(locale)).format(ts);
+const formats = new Map(); // one formatter per language and use: building one costs more than formatting a date
+const formatter = (use, opts, Kind = Intl.DateTimeFormat) => formats.get(locale + use) || formats.set(locale + use, new Kind(locale, opts)).get(locale + use);
+const fullDate = (ts) => formatter('full', { dateStyle: 'full', timeStyle: 'short' }).format(ts);
+const clock = () => formatter('time', { timeStyle: 'short' });
 
 function oppKey(m) {
   const a = archetype(m) || (guessFor(m) || {}).name; // a recognized deck files with the same-named manual tags
@@ -591,6 +593,7 @@ function renderView() {
   renderGlance(stats, cmp);
   renderVersions(vs, cur, prev, base);
   renderOverview(stats);
+  if (state.tab === 'matchups') renderLands(stats); // every log of every match: only when it shows
   if (state.tab === 'cards') renderCards(s, stats, listInView(s, vs, v, base)); // a hidden tab waits for its turn
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
@@ -598,7 +601,7 @@ function renderView() {
     renderBreakdown('#by-deck', stats, (m) => [JSON.stringify([formatOf(m), deckName(m)]), esc(deckName(m)), deckName(m), s.format === null ? formatOf(m) : ''], 'deck');
   }
   $('#history').classList.toggle('one-deck', s.deck !== null);
-  if (state.tab === 'history') { account = S.myAccount(matches); renderMatches(list); }
+  if (state.tab === 'history') { account = S.myAccount(matches); renderMatches(list, shown); }
   renderDrawer(s, stats, vs);
 }
 
@@ -843,7 +846,8 @@ function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false,
 
 function renderOverview(list) {
   // Everything in matches: play/draw and the kept 7 or mulligan are those of game 1.
-  const ctx = { play: tally(), draw: tally(), keep: tally(), mull: tally() };
+  const ctx = { play: tally(), draw: tally(), keep: tally(), mull: tally(), tilt: tally(), rest: tally() };
+  const tilt = S.afterTwoLosses(matches); // the runs go by every match I played, whatever the filters
   for (const x of list) {
     if (isLive(x) || !x.result) continue; // a match in progress has no record yet
     const p = S.matchOnPlay(x);
@@ -851,10 +855,21 @@ function renderOverview(list) {
     const g1 = S.firstGame(x);
     const k = g1 && g1.mulligans[x.mySeat]; // unknown when the tracker missed the hand
     if (Number.isInteger(k)) ctx[k ? 'mull' : 'keep'][x.result]++;
+    ctx[tilt.has(x.id) ? 'tilt' : 'rest'][x.result]++;
   }
   const row = (label, k) => rec(esc(label), ctx[k]);
   $('#overview').innerHTML = `<h2 class="panel-title">${esc(t('by_context'))}${infoBtn('info_context')}</h2>
-    ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}`;
+    ${row(t('on_play'), 'play')}${row(t('on_draw'), 'draw')}${row(t('kept_seven'), 'keep')}${row(t('after_mulligan'), 'mull')}${
+    row(t('after_two_losses'), 'tilt')}${row(t('rest_of_time'), 'rest')}`;
+}
+
+// My results by the lands in my kept hand, in games; a land is a card I once played as one, in any match (S.landNames).
+function renderLands(list) {
+  const r = S.landRecords(list, S.landNames(matches, C), C);
+  const label = [t('lands_0_1'), t('lands_n', { n: 2 }), t('lands_n', { n: 3 }), t('lands_4')];
+  const n = (x) => x.W + x.L + x.D;
+  $('#lands').innerHTML = `<h2 class="panel-title">${esc(t('by_lands'))}${infoBtn('info_lands')}</h2>${recHead(t('col_lands'), t('col_games'), sideCells(S.records([])))}${
+    r.map((x, i) => rec(esc(label[i]), x.all, { note: n(x.all) ? tn('n_games', n(x.all)) : '', cells: sideCells(x) })).join('')}`;
 }
 
 // --- my cards: the results of the games where I drew each card, beside those where it stayed in my library ---
@@ -1131,7 +1146,22 @@ function showMatch(m) {
   });
 }
 
-function renderMatches(list) {
+// A session's caption in the history: its day (today, yesterday, then the date), its hours, its matches and its record.
+function sessionHead(s) {
+  const from = s[s.length - 1].startedAt;
+  const to = Math.max(from, s[0].endedAt || s[0].updatedAt || s[0].startedAt);
+  const days = Math.round((new Date(from).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5); // 23 or 25 h across a clock change
+  const thisYear = new Date(from).getFullYear() === new Date().getFullYear();
+  const day = days === 0 || days === -1 ? formatter('rel', { numeric: 'auto' }, Intl.RelativeTimeFormat).format(days, 'day')
+    : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(from);
+  const r = S.records(s).m; // against the AI or live: no record; a lone match's is its own row's
+  return `<li class="session"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
+    + `<span class="s-meta">${esc(clock().formatRange(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}</li>`;
+}
+
+// The history, grouped by session: shown holds the matches of the filters in view (the search and the result
+// filter only narrow list), so each caption keeps its session's whole record.
+function renderMatches(list, shown) {
   if (!list.length) {
     $('#matches').innerHTML = `<li class="empty">
       <h2>${esc(t('no_match_filters'))}</h2>
@@ -1143,7 +1173,14 @@ function renderMatches(list) {
   // Re-rendering must not snap shut a journal or deck list the user opened.
   $('#history').classList.toggle('one-format', new Set(list.map(fmtCell)).size < 2); // the same format on every row: no column
   const open = new Set([...document.querySelectorAll('#matches details[open]')].map((d) => d.dataset.key));
-  $('#matches').innerHTML = list.map((m) => `<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`).join('');
+  const sessionOf = new Map(S.sessions(shown).flatMap((s) => s.map((m) => [m.id, s])));
+  let cur = null;
+  $('#matches').innerHTML = list.map((m) => {
+    const s = sessionOf.get(m.id);
+    const head = s && s !== cur ? sessionHead(s) : '';
+    cur = s;
+    return `${head}<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`;
+  }).join('');
   for (const d of document.querySelectorAll('#matches details')) if (open.has(d.dataset.key)) d.open = true;
 }
 
@@ -1189,7 +1226,7 @@ function row(m) {
     <span class="opp"><span class="opp-top"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}</span><span class="opp-sub">${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span></span>
     <span class="chips">${m.games.map((g) => chip(m, g)).join('')}${'<span class="g none"></span>'.repeat(m.games.length ? Math.max(0, (m.gamesPerMatch || 0) - m.games.length) : 0)}</span>
     <span class="mine"><b class="cell deck">${esc(deckName(m))}</b><span class="cell fmt">${esc(fmtCell(m))}</span></span>
-    <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(ago(m.startedAt))}</time>
+    <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(clock().format(m.startedAt))}</time>
     <svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>
   </button>`;
 }

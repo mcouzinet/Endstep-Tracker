@@ -86,6 +86,12 @@
   "n_matches_other": {
     "message": "{n} Matches"
   },
+  "n_games_one": {
+    "message": "{n} Game"
+  },
+  "n_games_other": {
+    "message": "{n} Games"
+  },
   "of_total": {
     "message": " von {total}"
   },
@@ -109,6 +115,27 @@
   },
   "after_mulligan": {
     "message": "Nach einem Mulligan"
+  },
+  "after_two_losses": {
+    "message": "Nach zwei Niederlagen in Folge"
+  },
+  "rest_of_time": {
+    "message": "Die übrige Zeit"
+  },
+  "by_lands": {
+    "message": "Länder auf der Starthand"
+  },
+  "col_lands": {
+    "message": "Länder"
+  },
+  "lands_0_1": {
+    "message": "0 oder 1 Land"
+  },
+  "lands_n": {
+    "message": "{n} Länder"
+  },
+  "lands_4": {
+    "message": "4 Länder oder mehr"
   },
   "min": {
     "message": "Min."
@@ -1062,7 +1089,10 @@
     "message": "Deine Match-Bilanz gegen jeden gegnerischen Archetyp, erkannt anhand der gesehenen Karten oder von Hand korrigiert.\nPlay und Draw: danach, wer das erste Game begonnen hat. Klick auf eine Zeile für das Matchup im Detail und dein übliches Siden dagegen."
   },
   "info_context": {
-    "message": "Deine Bilanz danach, wie das Match begann: auf dem Play oder auf dem Draw, sieben behalten oder nach einem Mulligan.\nAlles richtet sich nach dem ersten Game jedes Matches."
+    "message": "Deine Bilanz danach, wie das Match begann: auf dem Play oder auf dem Draw, sieben behalten oder nach einem Mulligan.\nAlles richtet sich nach dem ersten Game jedes Matches.\n„Nach zwei Niederlagen in Folge“: die Matches direkt nach zwei Niederlagen hintereinander in derselben Session, egal mit welchem Deck."
+  },
+  "info_lands": {
+    "message": "Deine Bilanz nach der Zahl der Länder auf deiner Starthand, der behaltenen (nach einem Mulligan, ohne die unter die Bibliothek gelegten Karten).\nIn Games gezählt, auf dem Play und auf dem Draw. Eine Karte zählt als Land, sobald du sie einmal als Land gespielt hast, in irgendeinem Match."
   },
   "info_cards": {
     "message": "In Games gezählt, für jede Karte deines Decks.\nGezogen: Die Karte war während des Games auf deiner Hand, also Starthand + Später. Nicht gezogen: Sie blieb in deiner Bibliothek.\nGespielt: Du hast sie gewirkt oder als Land gespielt. Im Spiel: Sie kam auf dein Schlachtfeld, auch ohne gezogen zu werden (reanimiert, aufs Schlachtfeld gebracht). Diese beiden Spalten zählen die seit 1.6 gespielten Games.\nDie Differenz neben dem Namen = Gezogen minus Nicht gezogen, in Punkten. Ein Zusammenhang mit dem Gewinnen, kein Beweis, dass die Karte gewinnt.\nNur die Karten der angezeigten Liste werden aufgeführt (deine letzte Liste oder die gewählte Version); die, die sie nicht mehr hat, sind unten eingeklappt. Jede Karte zählt trotzdem alle Games, in denen sie in deinem Deck war. „neu“: nicht in der Version davor.\nFahre über eine Zahl für Details; klick auf einen Spaltenkopf zum Sortieren."

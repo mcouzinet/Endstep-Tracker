@@ -86,6 +86,12 @@
   "n_matches_other": {
     "message": "{n} match"
   },
+  "n_games_one": {
+    "message": "{n} partita"
+  },
+  "n_games_other": {
+    "message": "{n} partite"
+  },
   "of_total": {
     "message": " su {total}"
   },
@@ -109,6 +115,27 @@
   },
   "after_mulligan": {
     "message": "Dopo un mulligan"
+  },
+  "after_two_losses": {
+    "message": "Dopo due sconfitte di fila"
+  },
+  "rest_of_time": {
+    "message": "Il resto del tempo"
+  },
+  "by_lands": {
+    "message": "Terre nella mano iniziale"
+  },
+  "col_lands": {
+    "message": "Terre"
+  },
+  "lands_0_1": {
+    "message": "0 o 1 terra"
+  },
+  "lands_n": {
+    "message": "{n} terre"
+  },
+  "lands_4": {
+    "message": "4 terre o più"
   },
   "min": {
     "message": "min"
@@ -1062,7 +1089,10 @@
     "message": "Il tuo bilancio in match contro ogni archetipo avversario, riconosciuto dalle carte che hai visto o corretto a mano.\nPlay e Draw: in base a chi ha iniziato la prima partita. Clicca su una riga per il matchup in dettaglio e il tuo side abituale contro quell’archetipo."
   },
   "info_context": {
-    "message": "Il tuo bilancio in base a come è iniziato il match: on the play o on the draw, mano da 7 tenuta o dopo un mulligan.\nTutto si basa sulla prima partita di ogni match."
+    "message": "Il tuo bilancio in base a come è iniziato il match: on the play o on the draw, mano da 7 tenuta o dopo un mulligan.\nTutto si basa sulla prima partita di ogni match.\n«Dopo due sconfitte di fila»: i match giocati subito dopo due sconfitte consecutive nella stessa sessione, con qualsiasi deck."
+  },
+  "info_lands": {
+    "message": "Il tuo bilancio in base al numero di terre della mano iniziale, quella che hai tenuto (dopo un mulligan, senza le carte messe in fondo).\nConteggio in partite, on the play e on the draw. Una carta conta come terra appena l’hai giocata come terra una volta, in qualsiasi match."
   },
   "info_cards": {
     "message": "Conteggio in partite, per ogni carta del tuo deck.\nPescata: la carta è stata nella tua mano durante la partita, cioè Mano iniziale + Dopo. Non pescata: è rimasta nel tuo grimorio.\nGiocata: l’hai lanciata, o giocata come terra. In gioco: è arrivata sul tuo campo di battaglia, anche senza essere pescata (rianimata, messa sul campo di battaglia). Queste due colonne contano le partite giocate dalla 1.6.\nLo scarto accanto al nome = Pescata meno Non pescata, in punti. Un legame con la vittoria, non la prova che la carta fa vincere.\nSono elencate solo le carte della lista mostrata (la tua ultima lista, o la versione scelta); quelle che non ha più sono raccolte in fondo. Ogni carta conta comunque tutte le partite in cui era nel tuo deck. «nuova»: assente nella versione precedente.\nPassa il mouse su un numero per il dettaglio; clicca sull’intestazione di una colonna per ordinare."

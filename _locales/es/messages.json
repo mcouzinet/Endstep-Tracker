@@ -86,6 +86,12 @@
   "n_matches_other": {
     "message": "{n} matches"
   },
+  "n_games_one": {
+    "message": "{n} partida"
+  },
+  "n_games_other": {
+    "message": "{n} partidas"
+  },
   "of_total": {
     "message": " de {total}"
   },
@@ -109,6 +115,27 @@
   },
   "after_mulligan": {
     "message": "Tras un mulligan"
+  },
+  "after_two_losses": {
+    "message": "Tras dos derrotas seguidas"
+  },
+  "rest_of_time": {
+    "message": "El resto del tiempo"
+  },
+  "by_lands": {
+    "message": "Tierras en la mano inicial"
+  },
+  "col_lands": {
+    "message": "Tierras"
+  },
+  "lands_0_1": {
+    "message": "0 o 1 tierra"
+  },
+  "lands_n": {
+    "message": "{n} tierras"
+  },
+  "lands_4": {
+    "message": "4 tierras o más"
   },
   "min": {
     "message": "min"
@@ -1062,7 +1089,10 @@
     "message": "Tu balance en matches contra cada arquetipo rival, reconocido por las cartas que viste o corregido a mano.\nPlay y Draw: según quién empezó la primera partida. Haz clic en una fila para ver el matchup en detalle y tu side habitual contra él."
   },
   "info_context": {
-    "message": "Tu balance según cómo empezó el match: en el play o en el draw, quedándote con 7 o tras un mulligan.\nTodo se basa en la primera partida de cada match."
+    "message": "Tu balance según cómo empezó el match: en el play o en el draw, quedándote con 7 o tras un mulligan.\nTodo se basa en la primera partida de cada match.\n«Tras dos derrotas seguidas»: los matches jugados justo después de dos derrotas consecutivas en la misma sesión, sea cual sea el deck."
+  },
+  "info_lands": {
+    "message": "Tu balance según el número de tierras de tu mano inicial, la que te quedaste (tras un mulligan, sin las cartas puestas en el fondo).\nContado en partidas, en el play y en el draw. Una carta cuenta como tierra en cuanto la has jugado como tierra una vez, en cualquier match."
   },
   "info_cards": {
     "message": "Contado en partidas, para cada carta de tu deck.\nRobada: la carta pasó por tu mano durante la partida, es decir Mano inicial + Después. No robada: se quedó en tu biblioteca.\nJugada: la lanzaste, o la jugaste como tierra. En juego: llegó a tu campo de batalla, aunque no la hayas robado (reanimada, puesta en el campo de batalla). Esas dos columnas cuentan las partidas jugadas desde la 1.6.\nLa diferencia junto al nombre = Robada menos No robada, en puntos. Una relación con la victoria, no una prueba de que la carta te haga ganar.\nSolo aparecen las cartas de la lista mostrada (tu última lista, o la versión elegida); las que ya no tiene quedan plegadas abajo. Cada carta cuenta igualmente todas las partidas en las que estaba en tu deck. «nueva»: no estaba en la versión anterior.\nPasa el cursor sobre un número para ver su detalle; haz clic en el encabezado de una columna para ordenar."

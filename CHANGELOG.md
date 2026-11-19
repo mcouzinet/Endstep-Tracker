@@ -5,6 +5,11 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## Non publié
 
+### Ajouté
+
+- **Terrains en main de départ** : ton bilan selon le nombre de terrains gardés, sur le play et sur la draw (1.8.7).
+- **Sessions** : l'historique groupé par soirée, avec le bilan de chaque session ; dans « Selon le contexte », ton bilan après deux défaites d'affilée (1.8.7).
+
 ### Modifié
 
 - **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes, la colonne Format seulement quand elle change (1.8.1).
