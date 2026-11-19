@@ -242,37 +242,41 @@
     .others > button.rec { padding-left: 28px; }
     .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--ink-3); font-size: 12px; }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
-    .legend .lg { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; }
+    .legend .lg { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; }
     .legend .lg svg { width: 10px; height: 10px; stroke-width: 3.2; }
     .legend .lg.W { background: var(--win-wash); color: var(--win); } .legend .lg.L { background: var(--loss-wash); color: var(--loss); }
     .legend b { font-weight: 600; color: var(--ink-2); }
-    .legend b.m { color: var(--gold-hi); }
+    .legend b.k { display: inline-block; min-width: 14px; height: 14px; margin-right: 4px; padding: 0 3px; border-radius: 7px; background: var(--surface-3); font-size: 9.5px; line-height: 14px; text-align: center; }
+    .legend b.k.m { color: var(--gold-hi); }
     .legend .txt, .legend .txt span { display: inline; } /* prose entries: no flex gaps or trimmed spaces around the colon */
 
-    /* per-game cells: result icon on its colour, then who started and my mulligans, spelled out */
-    /* fixed-width, left-aligned cells so game N lines up across rows whatever the caption */
-    .chips { display: inline-flex; gap: 6px; }
-    .g { display: inline-grid; justify-items: start; gap: 4px; width: 52px; }
-    .g-res { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; background: var(--surface-3); color: var(--ink-2); }
-    .g-res svg { width: 14px; height: 14px; stroke-width: 3.2; }
-    .g.W .g-res { background: var(--win-wash); color: var(--win); }
-    .g.L .g-res { background: var(--loss-wash); color: var(--loss); }
-    .g.open .g-res { background: none; box-shadow: inset 0 0 0 2px var(--ink-3); }
-    .g-pos { font-size: 11px; line-height: 1; color: var(--ink-3); white-space: nowrap; }
-    .g-pos b { margin-left: 3px; color: var(--gold-hi); font-weight: 600; }
+    .chips { display: flex; flex-wrap: wrap; gap: 12px; padding: 6px 6px 6px 0; } /* one circle per game, the games not played as empty ones */
+    .g { position: relative; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-3); color: var(--ink-2); }
+    .g.W { background: var(--win-wash); color: var(--win); }
+    .g.L { background: var(--loss-wash); color: var(--loss); }
+    .g.open { background: none; box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+    .g.none { background: none; box-shadow: inset 0 0 0 1px var(--line); }
+    .g svg { width: 13px; height: 13px; stroke-width: 3.2; }
+    .g b { position: absolute; right: -6px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--surface-3); box-shadow: 0 0 0 2px var(--surface);
+      font-size: 9.5px; font-weight: 600; line-height: 14px; text-align: center; color: var(--ink-2); }
+    .g .g-pos { top: -6px; }
+    .g .g-mull { bottom: -6px; color: var(--gold-hi); }
+    .match-row:hover .g b, .match-row[aria-expanded="true"] .g b { box-shadow: 0 0 0 2px var(--surface-2); } /* the ring takes the row's colour */
+    .g[aria-label]:hover::after { content: attr(aria-label); position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 3; padding: 5px 8px; border-radius: var(--radius-sm);
+      background: var(--surface-3); box-shadow: var(--shadow-pop); color: var(--ink); font-size: 12px; font-weight: 400; white-space: nowrap; pointer-events: none; }
 
     /* ---- match list ---- */
     .list-head, .match-row {
-      display: grid; grid-template-columns: 6.2rem minmax(0, 1.7fr) 10.8rem minmax(0, 1fr) minmax(0, .9fr) 6.4rem 16px;
+      display: grid; grid-template-columns: 6.2rem minmax(0, 1.7fr) 8rem minmax(0, 1.2fr) 6.4rem 16px;
       align-items: center; gap: 14px; padding: 9px 16px;
     }
     .list-head { padding-top: 12px; padding-bottom: 8px; color: var(--ink-3); font-size: 12px; border-bottom: 1px solid var(--line); }
     .list-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
     .list-tools .panel-title { margin-right: 6px; }
     @media (min-width: 981px) { /* one deck or one format in view: its column would repeat the same name on every row */
-      .one-deck .list-head, .one-deck .match-row, .one-format .list-head, .one-format .match-row { grid-template-columns: 6.2rem minmax(0, 1.9fr) 10.8rem minmax(0, 1fr) 6.4rem 16px; }
-      .one-deck.one-format .list-head, .one-deck.one-format .match-row { grid-template-columns: 6.2rem minmax(0, 1fr) 10.8rem 6.4rem 16px; }
-      .one-deck .deck, .one-deck .h-deck, .one-format .fmt, .one-format .h-fmt { display: none; }
+      .one-deck.one-format .list-head, .one-deck.one-format .match-row { grid-template-columns: 6.2rem minmax(0, 1fr) 8rem 6.4rem 16px; }
+      .one-deck .deck, .one-deck .h-deck, .one-format .fmt, .one-deck.one-format .mine, .one-deck.one-format .h-mine { display: none; }
+      .one-deck .h-fmt { display: inline; } /* the column then holds the format alone */
     }
     .list-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 16px 12px; border-top: 1px solid var(--line); }
     .matches { list-style: none; margin: 0; padding: 0; }
@@ -300,6 +304,10 @@
     .opp-sub .tag.guess { border: 0; color: var(--ink-3); text-decoration: underline dashed oklch(.8 .135 80 / .55); text-underline-offset: 3px; } /* recognized, not confirmed */
     .opp .tag.ai { flex: none; background: var(--surface-3); color: var(--ink-2); } /* not part of any record */
     .cell { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+    .mine { display: grid; gap: 3px; min-width: 0; } /* my deck first, its format small below */
+    .mine .deck { font-weight: 600; color: var(--ink); }
+    .mine .fmt { font-size: 12px; color: var(--ink-3); }
+    .h-fmt { display: none; }
     .when { color: var(--ink-3); font-size: 13px; text-align: right; white-space: nowrap; }
     .score { font-weight: 600; font-variant-numeric: tabular-nums; }
 
@@ -413,7 +421,7 @@
       .match-row { grid-template-columns: 5.4rem minmax(0, 1fr) auto 16px; grid-template-areas: "res opp meta chev" "res games games games"; row-gap: 8px; }
       .match-row .res { grid-area: res; } .match-row .opp { grid-area: opp; }
       .match-row .chev { grid-area: chev; } .match-row .chips { grid-area: games; }
-      .match-row .deck, .match-row .fmt { display: none; }
+      .match-row .mine { display: none; }
       .match-row .when { grid-area: meta; }
       .promo { grid-template-columns: auto minmax(0, 1fr); }
       .promo-shot { display: none; }
@@ -595,15 +603,15 @@
         <span id="count" class="count" aria-live="polite"></span>
       </div>
       <div id="list-head" class="list-head" aria-hidden="true">
-        <span data-i18n="col_result"></span><span data-i18n="col_opponent"></span><span data-i18n="col_games"></span><span class="h-deck" data-i18n="col_my_deck"></span><span class="h-fmt" data-i18n="col_format"></span><span style="text-align:right" data-i18n="col_date"></span><span></span>
+        <span data-i18n="col_result"></span><span data-i18n="col_opponent"></span><span data-i18n="col_games"></span><span class="h-mine"><span class="h-deck" data-i18n="col_my_deck"></span><span class="h-fmt" data-i18n="col_format"></span></span><span style="text-align:right" data-i18n="col_date"></span><span></span>
       </div>
       <ol id="matches" class="matches"></ol>
       <div id="list-foot" class="list-foot">
         <div class="legend" data-i18n-attr="aria-label:legend_aria">
           <span><span class="lg W"><svg class="i"><use href="#i-check"/></svg></span><span data-i18n="win"></span></span>
           <span><span class="lg L"><svg class="i"><use href="#i-x"/></svg></span><span data-i18n="loss"></span></span>
-          <span class="txt"><b>play</b><span data-i18n="colon"></span><span data-i18n="legend_play"></span> · <b>draw</b><span data-i18n="colon"></span><span data-i18n="legend_draw"></span></span>
-          <span class="txt"><b class="m">M1</b><span data-i18n="colon"></span><span data-i18n="legend_mull"></span></span>
+          <span class="txt"><b class="k">P</b>play<span data-i18n="colon"></span><span data-i18n="legend_play"></span> · <b class="k">D</b>draw<span data-i18n="colon"></span><span data-i18n="legend_draw"></span></span>
+          <span class="txt"><b class="k m">1</b><span data-i18n="colon"></span><span data-i18n="legend_mull"></span></span>
         </div>
         <span class="legend"><span data-i18n="hint_hover"></span> · <kbd>/</kbd> <span data-i18n="hint_search"></span> · <kbd>j</kbd> <kbd>k</kbd> <span data-i18n="hint_browse"></span></span>
       </div>

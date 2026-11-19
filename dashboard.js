@@ -1162,8 +1162,9 @@ function chip(m, g) {
   const label = `${t('game_n', { n: g.n })}${t('colon')}${locale === 'de' ? res : res.toLowerCase()}, ${ // German nouns keep their capital
     p === null ? t('pos_unknown') : p ? t('on_play_l') : t('on_draw_l')}${k ? `, ${tn('mulligans', k)}` : ''}`;
   const icon = r ? `<svg class="i"><use href="#${RESULT_ICON[r]}"/></svg>` : '';
-  return `<span class="g ${r || 'open'}" role="img" aria-label="${esc(label)}" title="${esc(label)}"><span class="g-res">${icon}</span>`
-    + `<span class="g-pos">${p === null ? '—' : p ? 'play' : 'draw'}${k ? `<b>M${esc(k)}</b>` : ''}</span></span>`;
+  // A circle with the result; P or D at its top right, the mulligans in gold at its bottom right; the label shows on hover.
+  return `<span class="g ${r || 'open'}" role="img" aria-label="${esc(label)}">${icon}`
+    + `${p === null ? '' : `<b class="g-pos">${p ? 'P' : 'D'}</b>`}${k ? `<b class="g-mull">${esc(k)}</b>` : ''}</span>`;
 }
 
 // A ranked match's ladders as it started, from the site's player card (hook.js): the opponent's beside their name.
@@ -1184,9 +1185,8 @@ function row(m) {
   return `<button class="match-row ${r}" aria-expanded="${open}" aria-controls="d-${esc(m.id)}">
     <span class="res">${score ? `<b class="score">${esc(score)}</b>` : ''}${resultBadge(m)}</span>
     <span class="opp"><span class="opp-top"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}</span><span class="opp-sub">${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span></span>
-    <span class="chips">${m.games.map((g) => chip(m, g)).join('')}</span>
-    <span class="cell deck">${esc(deckName(m))}</span>
-    <span class="cell fmt">${esc(fmtCell(m))}</span>
+    <span class="chips">${m.games.map((g) => chip(m, g)).join('')}${'<span class="g none"></span>'.repeat(m.games.length ? Math.max(0, (m.gamesPerMatch || 0) - m.games.length) : 0)}</span>
+    <span class="mine"><b class="cell deck">${esc(deckName(m))}</b><span class="cell fmt">${esc(fmtCell(m))}</span></span>
     <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(ago(m.startedAt))}</time>
     <svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>
   </button>`;

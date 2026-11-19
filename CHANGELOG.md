@@ -10,6 +10,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes, la colonne Format seulement quand elle change (1.8.1).
 - **Panneau en jeu** : le bilan contre le joueur et le bilan contre son deck séparés, pour ne plus les confondre (1.8.2).
 - **Panneau en jeu** : replié, il n'affiche plus que « REC » ; le bilan de la session apparaît quand on le déplie (1.8.3).
+- **Historique** : un cercle par game, P ou D et mulligans en badges, détail au survol ; ton deck en gras, le format en petit dessous (1.8.4).
 
 ## [1.8] (2026-11-16)
 
