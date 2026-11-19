@@ -233,15 +233,19 @@
 
   // While I type in the field, the game must not get the keys: its shortcuts (Space passes priority, digits and
   // letters pick options) listen on window, several in the capture phase, and their "typing in a field?" check sees
-  // this host, not my input. Added at document_start, these listeners run before any of the page's; stopping the
-  // event leaves its default, the letter typed in the field.
+  // this host, not my input. hook.js stops them first (it listens before the page, even when this copy was re-injected
+  // after an extension update) and hands Enter and Escape on; these listeners do it where hook.js is an older copy.
+  // Stopping the event leaves its default, the letter typed in the field.
+  const onKey = (key) => {
+    if (key === 'Enter') setTimeout(save); // after a suggestion picked with Enter has filled the field
+    else if (key === 'Escape') stopEdit();
+  };
+  host.addEventListener('endstep-tracker-key', (e) => { if (typing()) onKey(e.detail); });
   for (const type of ['keydown', 'keypress', 'keyup']) {
     addEventListener(type, (e) => {
       if (!typing()) return;
       e.stopImmediatePropagation();
-      if (type !== 'keydown' || e.isComposing) return;
-      if (e.key === 'Enter') setTimeout(save); // after a suggestion picked with Enter has filled the field
-      else if (e.key === 'Escape') stopEdit();
+      if (type === 'keydown' && !e.isComposing) onKey(e.key);
     }, true);
   }
   // The site's dialogs keep the focus inside them (Radix FocusScope: a focusin outside the dialog, or a focusout
@@ -269,8 +273,7 @@
       edit = { id: shown.id, value: shown.current };
       render();
       const input = root.querySelector('input');
-      input.focus();
-      input.select();
+      if (input) { input.focus(); input.select(); }
       return;
     }
     const c = e.target.closest('[data-confirm]');
@@ -288,14 +291,15 @@
     const start = { x: e.clientX, y: e.clientY, right: at.right, bottom: at.bottom };
     bar.setPointerCapture(e.pointerId);
     dragging = true;
-    const move = (ev) => { pos.right = start.right - (ev.clientX - start.x); pos.bottom = start.bottom - (ev.clientY - start.y); place(); };
+    let moved = false;
+    const move = (ev) => { moved = true; pos.right = start.right - (ev.clientX - start.x); pos.bottom = start.bottom - (ev.clientY - start.y); place(); };
     const up = () => {
       bar.removeEventListener('pointermove', move);
       bar.removeEventListener('pointerup', up);
       bar.removeEventListener('pointercancel', up);
       dragging = false;
       Object.assign(pos, at); // where it was dropped, as shown
-      if (!orphaned()) chrome.storage.local.set({ settings: { ...data.settings, overlayPos: { right: pos.right, bottom: pos.bottom } } });
+      if (moved && !orphaned()) chrome.storage.local.set({ settings: { ...data.settings, overlayPos: { right: pos.right, bottom: pos.bottom } } });
       if (!typing()) render(); // the updates that waited
     };
     bar.addEventListener('pointermove', move);

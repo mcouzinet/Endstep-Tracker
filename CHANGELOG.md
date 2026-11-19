@@ -26,6 +26,10 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Notes** : enregistrées pendant la frappe, et un archétype confirmé dans le panneau en jeu n'est plus effacé (1.8.9).
 - **Doublons** : le score ne s'inverse plus au siège 2, une revanche n'est plus prise pour le match d'avant, la note suit le match gardé (1.8.9).
 - **Plusieurs onglets** : le side de la game 2 n'est plus perdu quand tu continues le match dans un autre onglet (1.8.9).
+- **Panneau en jeu** : après une mise à jour de l'extension, les touches tapées dans le champ d'archétype ne partent plus vers la partie ; un simple clic sur sa barre ne le déplace plus (1.8.10).
+- **Tableau de bord** : le détail d'un match tient sur tablette et sur iPhone, les libellés ne disparaissent plus en fenêtre moyenne, Mes cartes se trie aussi en étroit (1.8.10).
+- **Sessions** : les heures d'une soirée qui passe minuit, une session qui se replie avec un match ouvert, `j` qui s'arrête sur les sessions repliées (1.8.10).
+- **Mises à jour en direct** : la bulle ⓘ et le menu « Comparer à… » ne se referment plus pendant une partie, Échap ne ferme qu'une couche à la fois (1.8.10).
 
 ## [1.8] (2026-11-16)
 

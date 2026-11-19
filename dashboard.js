@@ -1152,6 +1152,15 @@ function showMatch(m) {
 
 // A session's caption in the history: its day (today, yesterday, then the date), its hours, its matches and its record.
 // fold: null when it cannot fold, else whether it is folded (a button then opens or folds it).
+// From one time to another. Across midnight formatRange writes both dates out: the two times then, with the separator
+// the language puts between two times.
+function hours(from, to) {
+  const f = clock();
+  if (new Date(from).toDateString() === new Date(to).toDateString()) return f.formatRange(from, to);
+  const noon = new Date(2000, 0, 1, 12).getTime();
+  const sep = f.formatRangeToParts(noon, noon + 3600e3).filter((p) => p.source === 'shared').map((p) => p.value).join('');
+  return f.format(from) + sep + f.format(to);
+}
 function sessionHead(s, fold) {
   const from = s[s.length - 1].startedAt;
   const to = Math.max(from, s[0].endedAt || s[0].updatedAt || s[0].startedAt);
@@ -1161,12 +1170,18 @@ function sessionHead(s, fold) {
     : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(from);
   const r = S.records(s).m; // against the AI or live: no record; a lone match's is its own row's
   const body = `<span class="s-what"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
-    + `<span class="s-meta">${esc(clock().formatRange(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
+    + `<span class="s-meta">${esc(hours(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
   const key = esc(sessionKey(s));
   return `<li class="session" data-key="session:${key}">${fold === null ? `<div class="s-head">${body}</div>`
     : `<button type="button" class="s-head" data-session="${key}" aria-expanded="${!fold}">${body}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>`}</li>`;
 }
 const sessionKey = (s) => s[s.length - 1].id; // its first match: a session keeps it as it grows
+// The caption above a match's row in the history.
+function sessionOfRow(id) {
+  let el = $('#matches').querySelector(`.match[data-id="${CSS.escape(id)}"]`);
+  while (el && !el.classList.contains('session')) el = el.previousElementSibling;
+  return el;
+}
 const unfolded = new Map(); // session key -> opened (true) or folded (false) by a click, for as long as the page stays open
 
 // The history, grouped by session: shown holds the matches of the filters in view (the search and the result
@@ -1286,7 +1301,7 @@ function detail(m) {
   return `<div class="detail" id="d-${esc(m.id)}">
     <p class="detail-meta">${meta}</p>
     <div class="detail-grid">
-      <div class="side">
+      <div class="detail-side">
         ${seen}
         <label class="field">${esc(t('opp_archetype'))}<input data-note="archetype" list="archetypes" value="${esc(n.archetype || '')}" placeholder="${esc(S.commanderOf(m) || t('archetype_placeholder'))}"></label>
         ${guessLine(m)}
@@ -1753,6 +1768,7 @@ function closeInfo() {
   $('#info-pop').hidePopover();
   infoFor.setAttribute('aria-expanded', 'false');
   infoFor = null;
+  if (pending) flushPending(); // the updates that waited
 }
 document.addEventListener('click', (e) => {
   const pop = $('#info-pop');
@@ -1768,7 +1784,8 @@ document.addEventListener('click', (e) => {
   b.setAttribute('aria-expanded', 'true');
   infoFor = b;
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoFor) { const b = infoFor; closeInfo(); b.focus(); } });
+// Escape closes the explanation alone, not the panel under it too.
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoFor) { e.stopImmediatePropagation(); const b = infoFor; closeInfo(); b.focus(); } });
 addEventListener('scroll', closeInfo, { passive: true });
 addEventListener('resize', closeInfo);
 
@@ -1835,6 +1852,10 @@ $('#matches').addEventListener('click', (e) => {
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
     const m = matches.find((x) => x.id === id);
+    // Its session's first match (the last row under the caption): the session's fold goes on to the next one, which
+    // now names it.
+    const prev = e.target.closest('.match').previousElementSibling;
+    if (unfolded.has(id) && prev && prev.classList.contains('match')) unfolded.set(prev.dataset.id, unfolded.get(id));
     (async () => {
       // Kept in short, so that importing my history never brings it back: by its id, or as the twin of a recorded match.
       const { deletedMatches } = await chrome.storage.local.get('deletedMatches');
@@ -1847,7 +1868,14 @@ $('#matches').addEventListener('click', (e) => {
     return;
   }
   const head = e.target.closest('[data-session]');
-  if (head) { unfolded.set(head.dataset.session, head.getAttribute('aria-expanded') !== 'true'); render(); return; }
+  if (head) {
+    const open = head.getAttribute('aria-expanded') !== 'true';
+    // Folding the session of the match open closes that match: it would keep the session open.
+    if (!open && openId && sessionOfRow(openId) === head.closest('.session')) openId = null;
+    unfolded.set(head.dataset.session, open);
+    render();
+    return;
+  }
   const btn = e.target.closest('.match-row');
   if (!btn) return;
   const id = btn.closest('.match').dataset.id;
@@ -2001,7 +2029,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { hidePreview(); if (drawer && !e.target.closest('input, textarea, select')) closeDrawer(); }
   // j / k walk the matchups and the history rows
   if ((e.key === 'j' || e.key === 'k') && !e.target.closest('input, textarea, select') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-    const rows = [...document.querySelectorAll('#by-opp > button.rec, #by-opp details[open] > button.rec, #matches .match-row')].filter((r) => r.offsetParent);
+    const rows = [...document.querySelectorAll('#by-opp > button.rec, #by-opp details[open] > button.rec, #matches .match-row, #matches button.s-head[aria-expanded="false"]')].filter((r) => r.offsetParent);
     const i = rows.indexOf(document.activeElement);
     const next = rows[e.key === 'j' ? i + 1 : Math.max(0, i - 1)];
     if (next) { e.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest' }); }
@@ -2029,9 +2057,9 @@ let pressed = false;
 const trackPress = (e) => { const was = pressed; pressed = e.buttons > 0; if (was && !pressed && pending) flushPending(); };
 for (const ev of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) addEventListener(ev, trackPress, true);
 const busy = () => {
-  if (pressed) return true;
+  if (pressed || infoFor) return true; // an explanation open: it would point at a row redrawn under it
   const a = document.activeElement;
-  if (a && a.matches('input, textarea, select') && a.closest('.detail, .drawer, #deck-tools')) return true;
+  if (a && a.matches('input, textarea, select') && a.closest('.detail, .drawer, #deck-tools, #versions')) return true;
   const s = getSelection();
   return !!(s && !s.isCollapsed && s.anchorNode && $('#matches').contains(s.anchorNode));
 };

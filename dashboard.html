@@ -87,7 +87,7 @@
     .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
     .panel-title { font-size: 17px; font-weight: 650; letter-spacing: -.01em; color: var(--ink); } /* section titles: between the page title and the body */
     .split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 16px; align-items: start; }
-    .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; align-items: start; }
+    .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 34rem), 1fr)); gap: 16px; align-items: start; }
     .versions { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 8px 10px; font-size: 13px; color: var(--ink-2); }
     .versions b { color: var(--ink); font-weight: 600; }
     .versions .chg { white-space: nowrap; }
@@ -95,6 +95,7 @@
     .versions .chg .card { color: var(--ink); }
     .versions select { padding-block: 2px; font-size: 13px; }
     .context .rec { padding-left: 8px; padding-right: 8px; } /* aligned with the clickable rows of the other panels */
+    .context .rec-label { white-space: normal; line-height: 1.3; } /* "After two losses in a row" wraps rather than lose its end */
     .split .panel { padding: 16px 12px 10px; }
     .split .panel-title, .cards .panel-title { padding: 0 8px 6px; }
     /* ---- my cards ---- */
@@ -131,8 +132,8 @@
     .rec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 14rem) 4.6rem; align-items: center; gap: 14px; padding: 8px 0; }
     /* records with secondary cells (play, draw, a compared version); --cells = how many */
     /* the name takes the free width, the bar is capped: the numbers stay close to what they describe */
-    .rec.cells { gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)); }
-    .rec.cells.opens { grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)) 16px; }
+    .rec.cells { gap: 10px; grid-template-columns: minmax(9rem, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)); }
+    .rec.cells.opens { grid-template-columns: minmax(9rem, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)) 16px; }
     #by-opp .rec.cells { --bar: 11rem; --cell: 4.6rem; }
     .rec-cells { display: contents; } /* its cells are columns of the row; a line under the name when narrow */
     .rec.head { padding: 0 8px 6px; color: var(--ink-3); font-size: 12px; }
@@ -333,8 +334,8 @@
     .detail-meta { color: var(--ink-3); font-size: 13px; padding: 4px 0 16px; }
     .detail-meta b { color: var(--ink-2); font-weight: 600; }
     .detail-grid { display: grid; grid-template-columns: minmax(250px, 1fr) minmax(0, 2.1fr); gap: 20px; align-items: start; }
-    .side { display: grid; gap: 18px; }
-    .side h3 { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .detail-side { display: grid; gap: 18px; }
+    .detail-side h3 { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
     .cardlist { list-style: none; margin: 0; padding: 0; columns: 2 170px; column-gap: 16px; }
     .cardlist li { break-inside: avoid; display: flex; gap: 8px; padding: 2px 0; }
     .cardlist .qty { width: 1.4em; text-align: right; color: var(--ink-3); font-variant-numeric: tabular-nums; }
@@ -444,7 +445,7 @@
     }
     @media (max-width: 980px) { /* too many columns for the card names: the cells go on one line under the name */
       .cards .rec.cells { grid-template-columns: minmax(0, 1fr) minmax(44px, 9rem) 4.2rem; row-gap: 4px; }
-      .cards .rec.head { display: none; }
+      .cards .rec.head { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-bottom: 10px; } /* the columns sort the list, as one line of buttons */
     }
     @media (max-width: 980px) { /* the cells as one line of details under the name: the W–L, its rate once there is one; nothing for an empty cell */
       .cards .rec-cells { display: flex; flex-wrap: wrap; gap: 2px 14px; grid-column: 1 / -1; }

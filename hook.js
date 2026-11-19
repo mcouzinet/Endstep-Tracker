@@ -38,6 +38,18 @@
     for (const m of replay) if (m) window.postMessage({ ...m, replay: true }, location.origin);
   });
 
+  // While the in-page panel's archetype field has the keys (overlay.js), the game does not get them: its shortcuts
+  // (Space passes priority) listen on window, in the capture phase too. This copy listens before them, even after an
+  // extension update re-injects overlay.js after the page's listeners. Enter and Escape go on to the panel.
+  for (const type of ['keydown', 'keypress', 'keyup']) {
+    window.addEventListener(type, (e) => {
+      const panel = document.activeElement;
+      if (!panel || panel.id !== 'endstep-tracker-panel') return;
+      e.stopImmediatePropagation();
+      if (type === 'keydown' && !e.isComposing && (e.key === 'Enter' || e.key === 'Escape')) panel.dispatchEvent(new CustomEvent('endstep-tracker-key', { detail: e.key }));
+    }, true);
+  }
+
   // --- my match history (/history): each page goes to content.js, cut down to what a match record needs. During an
   // import I started from the dashboard, content.js asks for the next page: the site's own request again (same address
   // and headers, which never leave this page), with the next cursor.

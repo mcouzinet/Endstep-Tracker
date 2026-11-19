@@ -8,6 +8,7 @@ const path = require('path');
 const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
 const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const EXT = path.resolve(__dirname, '../..');
+const S_ = (o) => (o && typeof o === 'object' ? o : {});
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
@@ -17,7 +18,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   try {
     const sw = await b.waitForTarget((x) => x.type() === 'service_worker' && x.url().startsWith('chrome-extension://'), { timeout: 10000 });
     const id = new URL(sw.url()).host;
-    const ext = await b.newPage();
+    let ext = await b.newPage();
     await ext.goto(`chrome-extension://${id}/popup.html`);
     const set = (items) => ext.evaluate((i) => chrome.storage.local.set(i), items);
     const get = (k) => ext.evaluate(async (key) => (await chrome.storage.local.get(key))[key], k);
@@ -211,6 +212,37 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await set({ 'match:m-live': live });
     await sleep(300);
     assert.equal(await hidden(), false);
+
+    // A click on its bar, with no move, keeps the place it had.
+    const placed = async () => S_(await get('settings')).overlayPos;
+    const placeBefore = await placed();
+    const box = await p.evaluate(() => { const r = document.getElementById('endstep-tracker-panel').getBoundingClientRect(); return { x: r.x, y: r.y }; });
+    await p.mouse.click(box.x + 14, box.y + 14);
+    await sleep(300);
+    assert.deepEqual(await placed(), placeBefore, 'a click on the bar saves no place');
+
+    // An extension update injects the panel again, after the game's listeners: the field still keeps the keys.
+    // (Uninstalled and installed again, as e2e-reload.js does: the same onInstalled path as an update, storage emptied.)
+    const all = await ext.evaluate(() => chrome.storage.local.get(null));
+    await b.uninstallExtension(id);
+    await sleep(1000);
+    const id2 = await b.installExtension(EXT);
+    await sleep(2500);
+    ext = await b.newPage();
+    await ext.goto(`chrome-extension://${id2}/popup.html`);
+    await set(all);
+    await sleep(500);
+    await p.evaluate(() => { window.__keys = []; });
+    await clickIn('[data-edit]');
+    await p.keyboard.type('Tron');
+    assert.equal(await input('function () { return this.value; }'), 'Tron');
+    assert.deepEqual(await p.evaluate(() => window.__keys), [], 're-injected: the game gets none of the keys');
+    await p.keyboard.press('Escape');
+    await sleep(200);
+    assert.equal(await input('function () { return 1; }'), null, 'Escape still closes the field');
+    await p.keyboard.press('Space');
+    assert.deepEqual(await p.evaluate(() => window.__keys), [' '], 'and the game has the keys back');
+
     await set({ settings: { ...(await get('settings')), overlay: false } });
     await sleep(300);
     assert.equal(await hidden(), true);
