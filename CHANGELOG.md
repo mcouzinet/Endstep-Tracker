@@ -11,6 +11,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Panneau en jeu** : le bilan contre le joueur et le bilan contre son deck séparés, pour ne plus les confondre (1.8.2).
 - **Panneau en jeu** : replié, il n'affiche plus que « REC » ; le bilan de la session apparaît quand on le déplie (1.8.3).
 - **Historique** : un cercle par game, P ou D et mulligans en badges, détail au survol ; ton deck en gras, le format en petit dessous (1.8.4).
+- **Matchups et Mes cartes** : le nom en gras, le pourcentage en grand avec le bilan dessous, des colonnes alignées ; sur téléphone, une ligne de détail sous chaque carte (1.8.5).
 
 ## [1.8] (2026-11-16)
 

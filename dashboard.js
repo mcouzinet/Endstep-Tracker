@@ -595,8 +595,7 @@ function renderView() {
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
   if (s.deck === null) {
-    renderBreakdown('#by-deck', stats, (m) => [JSON.stringify([formatOf(m), deckName(m)]),
-      esc(deckName(m)) + (s.format === null ? ` <span class="muted">· ${esc(formatOf(m))}</span>` : ''), deckName(m)], 'deck');
+    renderBreakdown('#by-deck', stats, (m) => [JSON.stringify([formatOf(m), deckName(m)]), esc(deckName(m)), deckName(m), s.format === null ? formatOf(m) : ''], 'deck');
   }
   $('#history').classList.toggle('one-deck', s.deck !== null);
   if (state.tab === 'history') { account = S.myAccount(matches); renderMatches(list); }
@@ -815,14 +814,17 @@ const { wl } = S;
 // Their key is read by screen readers and shown in narrow windows, where the column captions are hidden.
 const sideCells = (r) => [{ key: t('col_play'), title: t('on_play'), r: r.play }, { key: t('col_draw'), title: t('on_draw'), r: r.draw }];
 const cmpCell = (label, r) => ({ key: label, title: t('cmp_title', { v: label }), r, cls: ' cmp' });
+// Stacked like the main cell: the rate above the W–L, the W–L alone (on its line) while it is too early.
 function subCell({ key, title, r, cls = '' }) {
   const n = r.W + r.L + r.D;
-  return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>${n >= MIN_SAMPLE ? `<b>${pct(r)}</b> ` : ''}${n ? wl(r) : '—'}</span>`;
+  return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${n ? '' : ' none'}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>`
+    + `<b>${n >= MIN_SAMPLE ? pct(r) : ''}</b><span class="wl">${n ? wl(r) : '—'}</span></span>`;
 }
 // Column captions above records that carry cells; `opens` rows end with an arrow (they open the matchup panel).
 const recHead = (first, main, cells, opens = false) => `<div class="rec${cells.length ? ' cells' : ''} head${opens ? ' opens' : ''}"${cells.length ? ` style="--cells:${cells.length}"` : ''} aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
-  + `${cells.map((c) => `<span title="${esc(c.title)}">${esc(c.key)}</span>`).join('')}${opens ? '<span></span>' : ''}</div>`;
-function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false } = {}) {
+  + `${cells.map((c) => `<span title="${esc(c.title)}">${esc(c.key)}</span>`).join('')}${opens ? '<span></span>' : ''}</div>`; // .main spans the bar and the rate
+// The name in bold with an optional note below (a deck's format, a matchup's size); the rate large with its W–L below.
+function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false, note = '' } = {}) {
   const n = r.W + r.L + r.D;
   const aria = n ? [tn('wins', r.W), tn('losses', r.L), r.D ? tn('draws', r.D) : ''].filter(Boolean).join(', ') : t('no_data');
   const early = n < MIN_SAMPLE;
@@ -833,10 +835,9 @@ function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false 
   const rate = !n ? '<span class="early">—</span>' : early ? `<span class="early" title="${esc(t('too_early_title', { n: MIN_SAMPLE }))}">${esc(t('too_early'))}</span>` : pct(r);
   const cls = `rec${cells.length ? ' cells' : ''}${opens ? ' opens' : ''}`;
   return `<${tag} class="${cls}" ${cells.length ? `style="--cells:${cells.length}" ` : ''}${attrs}>
-    <span class="rec-label">${labelHtml}</span>
+    <span class="rec-name"><span class="rec-label">${labelHtml}</span>${note ? `<span class="rec-note">${esc(note)}</span>` : ''}</span>
     ${marks}
-    <span class="rec-pct">${rate}</span>
-    <span class="rec-count">${wl(r)}</span>${cells.map(subCell).join('')}${opens ? '<svg class="i open-chev" aria-hidden="true"><use href="#i-chevron"/></svg>' : ''}
+    <span class="rec-main"><span class="rec-pct">${rate}</span><span class="rec-count">${wl(r)}</span></span>${cells.length ? `<span class="rec-cells">${cells.map(subCell).join('')}</span>` : ''}${opens ? '<svg class="i open-chev" aria-hidden="true"><use href="#i-chevron"/></svg>' : ''}
   </${tag}>`;
 }
 
@@ -1005,8 +1006,8 @@ function sortRows(rows, how) {
 function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   const groups = new Map();
   const group = (m) => {
-    const [key, label, text] = keyOf(m);
-    if (!groups.has(key)) groups.set(key, { key, label, text, list: [], cmp: [] });
+    const [key, label, text, note = ''] = keyOf(m);
+    if (!groups.has(key)) groups.set(key, { key, label, text, note, list: [], cmp: [] });
     return groups.get(key);
   };
   for (const m of list) group(m).list.push(m);
@@ -1021,7 +1022,8 @@ function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
     const title = opp ? t('open_matchup', { label: e.text }) : t('only_show', { label: e.text });
     const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" title="${esc(title)}"`
       + (opp ? ` aria-controls="drawer" aria-expanded="${!!drawer && drawer.key === e.key}"` : '');
-    return rec(e.label, e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp });
+    const note = opp ? (finished(e.r.m) ? tn('n_matches', finished(e.r.m)) : '') : e.note;
+    return rec(e.label, e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp, note });
   };
   // Up to MAX_ROWS archetypes in the sort order; the ones after fold into one "Others" row (never a fold of one).
   const MAX_ROWS = 20;

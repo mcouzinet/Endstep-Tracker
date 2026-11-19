@@ -100,8 +100,8 @@
     /* ---- my cards ---- */
     .panel.cards { padding: 16px 12px 10px; }
     .cards .rec { padding-left: 8px; padding-right: 8px; }
-    .cards .rec.cells { --bar: 9rem; --cell: 7.2rem; }
-    @media (max-width: 1180px) { .cards .rec.cells { --bar: 5rem; --cell: 5.4rem; } } /* the card names keep their room */
+    .cards .rec.cells { --bar: 9rem; --cell: 6.4rem; }
+    @media (max-width: 1180px) { .cards .rec.cells { --bar: 5rem; --cell: 5rem; } } /* the card names keep their room */
     .cards .rec.head { position: sticky; top: 0; z-index: 1; padding-top: 8px; background: var(--surface); } /* the column names stay in sight down a 100-card list */
     .cards .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* the gap stays visible */
     .cards-note { margin: 0 8px 10px; font-size: 12px; }
@@ -128,20 +128,23 @@
     .side-line .label { color: var(--ink-3); margin-right: 8px; }
 
     /* ---- record rows: one component for every W/L record on the page ---- */
-    .rec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 14rem) 3.8rem 4.6rem; align-items: center; gap: 12px; padding: 7px 0; }
+    .rec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 14rem) 4.6rem; align-items: center; gap: 14px; padding: 8px 0; }
     /* records with secondary cells (play, draw, a compared version); --cells = how many */
     /* the name takes the free width, the bar is capped: the numbers stay close to what they describe */
-    .rec.cells { gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 3.4rem 3.6rem repeat(var(--cells), var(--cell, 4.8rem)); }
-    .rec.cells.opens { grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 3.4rem 3.6rem repeat(var(--cells), var(--cell, 4.8rem)) 16px; }
-    #by-opp .rec.cells { --bar: 11rem; --cell: 5.4rem; }
+    .rec.cells { gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)); }
+    .rec.cells.opens { grid-template-columns: minmax(0, 1fr) minmax(40px, var(--bar, 6rem)) 4.2rem repeat(var(--cells), var(--cell, 4.4rem)) 16px; }
+    #by-opp .rec.cells { --bar: 11rem; --cell: 4.6rem; }
+    .rec-cells { display: contents; } /* its cells are columns of the row; a line under the name when narrow */
     .rec.head { padding: 0 8px 6px; color: var(--ink-3); font-size: 12px; }
     .rec.head span { text-align: right; white-space: nowrap; }
     .rec.head span:first-child, .rec.head .main { text-align: left; }
-    .rec.head .main { grid-column: span 3; }
-    .rec-sub { text-align: right; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .rec-sub b { color: var(--ink); font-weight: 600; }
-    .rec-sub.early, .rec-sub.cmp { color: var(--ink-3); }
-    .rec-sub.cmp b { color: var(--ink-2); }
+    .rec.head .main { grid-column: span 2; }
+    .rec-sub { display: grid; justify-items: end; gap: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rec-sub b { font-size: 12.5px; font-weight: 600; line-height: 1.2; color: var(--ink-2); }
+    .rec-sub .wl { font-size: 11.5px; line-height: 1.2; color: var(--ink-3); }
+    .rec-sub b:empty::before { content: "\00a0"; } /* the W–L stays on its line */
+    .rec-sub.none .wl { color: var(--line-strong); }
+    .rec-sub.cmp b { color: var(--ink-3); }
     .rec-sub .k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } /* for screen readers; shown when narrow */
     .rec .open-chev { color: var(--ink-3); rotate: -90deg; }
     button.rec:hover .open-chev { color: var(--gold-hi); }
@@ -202,7 +205,7 @@
     .drawer-stats dt { font-size: 12px; color: var(--ink-3); }
     .drawer-stats dd { margin: 0; color: var(--ink-2); font-variant-numeric: tabular-nums; }
     .drawer-stats dd b { color: var(--ink); font-weight: 600; }
-    .drawer .rec { grid-template-columns: minmax(8.5rem, 1fr) minmax(40px, 1fr) 3.4rem 3.6rem; gap: 8px; } /* a narrow panel: the label keeps its room, the bar takes the rest */
+    .drawer .rec { grid-template-columns: minmax(8.5rem, 1fr) minmax(40px, 1fr) 4.2rem; gap: 10px; } /* a narrow panel: the label keeps its room, the bar takes the rest */
     .drawer textarea { width: 100%; min-height: 120px; resize: vertical; line-height: 1.45; }
     .versions-list { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; font-variant-numeric: tabular-nums; }
     .seen-list { columns: 2; column-gap: 18px; font-size: 13px; }
@@ -212,19 +215,22 @@
     .drawer-match .who { flex-direction: column; align-items: flex-start; gap: 0; }
     .drawer-match .muted { font-size: 12px; }
     .rec + .rec { border-top: 1px solid rgb(44 38 30 / .6); }
-    .rec-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rec-name { display: grid; gap: 2px; min-width: 0; }
+    .rec-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--ink); }
     button.rec .rec-label { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; } /* archetype names wrap rather than lose their end */
-    .rec-pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .rec-note { font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rec-main { display: grid; justify-items: end; gap: 1px; }
+    .rec-pct { font-size: 16px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; }
     .rec-pct .early { font-size: 12px; font-weight: 400; color: var(--ink-3); white-space: nowrap; }
     .dots { display: flex; flex-wrap: wrap; gap: 4px; }
     .dots i { width: 8px; height: 8px; border-radius: 50%; }
     .dots .w { background: var(--win); } .dots .d { background: var(--draw); } .dots .l { background: var(--loss); }
-    .rec-count { text-align: right; color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .bar { position: relative; display: flex; gap: 2px; height: 8px; border-radius: 4px; background: var(--surface-3); }
+    .rec-count { color: var(--ink-3); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .bar { position: relative; display: flex; gap: 2px; height: 6px; border-radius: 3px; background: var(--surface-3); }
     .bar i { display: block; min-width: 3px; }
-    .bar i:first-child { border-radius: 4px 0 0 4px; }
-    .bar i:last-child { border-radius: 0 4px 4px 0; }
-    .bar i:only-child { border-radius: 4px; }
+    .bar i:first-child { border-radius: 3px 0 0 3px; }
+    .bar i:last-child { border-radius: 0 3px 3px 0; }
+    .bar i:only-child { border-radius: 3px; }
     .bar .w { background: var(--win); }
     .bar .d { background: var(--draw); }
     .bar .l { background: var(--loss); }
@@ -426,26 +432,32 @@
       .promo { grid-template-columns: auto minmax(0, 1fr); }
       .promo-shot { display: none; }
     }
-    @media (min-width: 561px) and (max-width: 980px) { /* too many columns for the card names: the cells go under the name, three to a row */
-      .cards .rec.cells { grid-template-columns: repeat(15, minmax(0, 1fr)); }
-      .cards .rec.cells > :nth-child(1) { grid-column: span 7; }
-      .cards .rec.cells > :nth-child(2) { grid-column: span 4; }
-      .cards .rec.cells > :nth-child(3), .cards .rec.cells > :nth-child(4) { grid-column: span 2; }
+    @media (max-width: 980px) { /* too many columns for the card names: the cells go on one line under the name */
+      .cards .rec.cells { grid-template-columns: minmax(0, 1fr) minmax(44px, 9rem) 4.2rem; row-gap: 4px; }
       .cards .rec.head { display: none; }
-      .cards .rec-sub { grid-column: span 5; text-align: left; }
-      .cards .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 6px; color: var(--ink-3); }
+    }
+    @media (max-width: 980px) { /* the cells as one line of details under the name: the rate when there is one, else the W–L; nothing for an empty cell */
+      .cards .rec-cells { display: flex; flex-wrap: wrap; gap: 2px 14px; grid-column: 1 / -1; }
+      .cards .rec-sub { display: inline; font-size: 12px; color: var(--ink-3); }
+      .cards .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 5px; }
+      .cards .rec-sub b { font-size: 12px; }
+      .cards .rec-sub:not(.early) .wl, .cards .rec-sub.early b, .cards .rec-sub.none { display: none; }
+    }
+    @media (max-width: 560px) {
+      .rec-cells { display: flex; flex-wrap: wrap; gap: 2px 14px; grid-column: 1 / -1; }
+      .rec-sub { display: inline; font-size: 12px; color: var(--ink-3); }
+      .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 5px; }
+      .rec-sub b { font-size: 12px; }
+      .rec-sub:not(.early) .wl, .rec-sub.early b, .rec-sub.none { display: none; }
     }
     @media (max-width: 560px) {
       main { padding: 18px 12px 80px; }
       .match-row { grid-template-columns: 4.6rem minmax(0, 1fr) auto 16px; grid-template-areas: "res opp opp chev" "res games meta meta"; }
-      .rec, #by-opp .rec, .rec.cells, .rec.cells.opens { grid-template-columns: minmax(0, 1fr) minmax(44px, .7fr) 3.4rem 3.2rem; gap: 8px; } /* the sample size stays visible */
+      .rec, #by-opp .rec, .rec.cells, .rec.cells.opens, .cards .rec.cells { grid-template-columns: minmax(0, 1fr) minmax(44px, 5.5rem) 4rem; gap: 4px 10px; } /* the name keeps the room */
       .rec .open-chev { display: none; }
       .toast { left: 12px; right: 12px; translate: none; }
       .toast:not(.show) { translate: 0 8px; }
       .rec.head { display: none; }
-      .rec-sub { grid-column: span 2; text-align: left; }
-      .rec-sub .k { position: static; width: auto; height: auto; clip-path: none; overflow: visible; margin-right: 6px; color: var(--ink-3); }
-      .cards .rec-sub + .rec-sub { justify-self: end; text-align: right; } /* a longer caption: it takes the room left of its cell */
       .count { margin-left: 0; width: 100%; }
       .tabs button { flex: 1; padding: 10px 4px; font-size: 14px; }
       .top { gap: 10px; }
