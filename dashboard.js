@@ -296,11 +296,13 @@ async function load() {
     else if (k === 'deckMerges') merges = obj(v);
     else if (k === 'formatMoves') formatMoves = obj(v);
   }
-  const { fill, drop } = twins(matches);
+  const { fill, drop, moved } = twins(matches);
   if (drop.size) {
     matches = matches.filter((m) => !drop.has(m.id));
-    await chrome.storage.local.set(Object.fromEntries(fill.map((m) => ['match:' + m.id, m])));
-    chrome.storage.local.remove([...drop].map((id) => 'match:' + id));
+    for (const id of drop) delete notes[id];
+    for (const [k, n] of Object.entries(moved)) notes[k.slice(5)] = n;
+    await chrome.storage.local.set({ ...Object.fromEntries(fill.map((m) => ['match:' + m.id, m])), ...moved });
+    chrome.storage.local.remove([...drop].flatMap((id) => ['match:' + id, 'note:' + id]));
   }
   if (addon) addon.load(all);
   showNews(all.newsSeen, all.reviewClosed);
@@ -310,12 +312,14 @@ async function load() {
 
 // Imported from the site's history but recorded by the tracker too, under another id: the recorded one stays, and first
 // takes what the imported one knows and it lacks (a record caught in part has no format, deck or result). fill: the
-// recorded matches completed; drop: the ids of their imported twins.
-function twins(list) {
+// recorded matches completed; drop: the ids of their imported twins; moved: the notes written on a twin, now on the
+// match that stays (its own fields win).
+function twins(list, noteOf = (id) => notes[id]) {
   const byId = new Map(list.map((m) => [m.id, m]));
   const pairs = S.historyPairs(list);
   const fill = pairs.map((p) => [byId.get(p.m), byId.get(p.h)]).filter(([m, h]) => m && h && S.fillFromHistory(m, h).length).map(([m]) => m);
-  return { fill, drop: new Set(pairs.map((p) => p.h)) };
+  const moved = Object.fromEntries(pairs.filter((p) => noteOf(p.h)).map((p) => ['note:' + p.m, { ...noteOf(p.h), ...obj(noteOf(p.m)) }]));
+  return { fill, drop: new Set(pairs.map((p) => p.h)), moved };
 }
 
 // Deck Compare promo, where Deck Compare is listed (Chrome Web Store, Edge Add-ons) and not installed. Closed, it stays
@@ -1802,12 +1806,14 @@ $('#import').addEventListener('change', async (e) => {
     if (Object.keys(obj(data && data.formatMoves)).length) items.formatMoves = { ...obj(data.formatMoves), ...formatMoves }; // so do these moves
     if (Object.keys(obj(data && data.decks)).length) items.decks = { ...obj(data.decks), ...decks }; // my decks' names and lists, as seen here first
     // A backup from another computer may hold the site's history of matches recorded here, or the other way round.
-    const { fill, drop } = twins([...matches.filter((m) => !items['match:' + m.id]), ...list.map((m) => items['match:' + m.id])]);
+    const { fill, drop, moved } = twins([...matches.filter((m) => !items['match:' + m.id]), ...list.map((m) => items['match:' + m.id])],
+      (id) => items['note:' + id] || notes[id]);
     for (const m of fill) items['match:' + m.id] = m;
     for (const id of drop) for (const k of ['match:', 'note:', 'dec:']) delete items[k + id];
+    Object.assign(items, moved);
     await chrome.storage.local.set(items);
     const gone = [...drop].filter((id) => here.has(id));
-    if (gone.length) await chrome.storage.local.remove(gone.map((id) => 'match:' + id));
+    if (gone.length) await chrome.storage.local.remove(gone.flatMap((id) => ['match:' + id, 'note:' + id]));
     const skipped = raw.length - list.length;
     toast(list.length ? tn('imported', list.length) + (skipped ? tn('skipped', skipped) : '') : t('import_empty'), !list.length);
   } catch {
@@ -1820,8 +1826,7 @@ $('#matches').addEventListener('click', (e) => {
   const use = e.target.closest('[data-use-guess]');
   if (use) {
     const id = use.closest('.match').dataset.id;
-    notes[id] = Object.assign({}, notes[id], { archetype: use.dataset.useGuess });
-    chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t('archetype_saved')));
+    saveNote(id, { archetype: use.dataset.useGuess }).then(() => toast(t('archetype_saved')));
     return;
   }
   if (addon && addon.onClick(e)) return;
@@ -1864,15 +1869,36 @@ $('#cards-panel').addEventListener('click', (e) => {
   if (again) again.focus(); // the head was redrawn: the keyboard stays on it
 });
 
+// A note is written from what storage holds now, not from notes[id]: while a field is being edited, changes made
+// elsewhere (an archetype confirmed in the in-game panel) wait in pending and notes[id] does not have them yet.
+let noteChain = Promise.resolve();
+function saveNote(id, patch) {
+  const run = noteChain.then(async () => {
+    const n = { ...S.normalizeNote((await chrome.storage.local.get('note:' + id))['note:' + id]), ...patch };
+    for (const [k, v] of Object.entries(patch)) if (!v) delete n[k];
+    notes[id] = n;
+    await chrome.storage.local.set({ ['note:' + id]: n });
+  });
+  noteChain = run.catch(() => {});
+  return run;
+}
+// The notes text is saved as it is typed too: closing the tab or an extension update mid-sentence keeps it.
+const typing = new Map(); // match id -> { timer, value }
+const typed = (id) => { const x = typing.get(id); if (!x) return; clearTimeout(x.timer); typing.delete(id); saveNote(id, { notes: x.value }); };
+$('#matches').addEventListener('input', (e) => {
+  if (e.target.dataset.note !== 'notes') return;
+  const id = e.target.closest('.match').dataset.id;
+  clearTimeout(typing.has(id) && typing.get(id).timer);
+  typing.set(id, { value: e.target.value.trim(), timer: setTimeout(() => typed(id), 800) });
+});
+addEventListener('pagehide', () => { for (const id of [...typing.keys()]) typed(id); });
 $('#matches').addEventListener('change', (e) => {
   const field = e.target.dataset.note;
   if (!field) return;
   const id = e.target.closest('.match').dataset.id;
-  const value = e.target.value.trim();
-  notes[id] = Object.assign({}, notes[id], { [field]: value });
-  if (!value) delete notes[id][field];
+  if (field === 'notes') { const x = typing.get(id); if (x) { clearTimeout(x.timer); typing.delete(id); } }
   const saved = { archetype: 'archetype_saved', notes: 'notes_saved', deckId: 'deck_saved' }[field] || 'notes_saved';
-  chrome.storage.local.set({ ['note:' + id]: notes[id] }).then(() => toast(t(saved)));
+  saveNote(id, { [field]: e.target.value.trim() }).then(() => toast(t(saved)));
 });
 
 for (const ev of ['pointerover', 'focusin']) $('#glance').addEventListener(ev, formCard);

@@ -107,9 +107,12 @@
     for (const h of list) {
       if (h.source !== 'history') continue;
       const who = opps(h).map((p) => low(p.name));
+      if (!who.length) continue;
       for (const m of recorded) {
         const dt = Math.abs(m.startedAt - h.startedAt);
-        if (dt <= TWIN_MS && who.every((n) => names.get(m).has(n)) && (!h.result || !m.result || h.result === m.result)) pairs.push({ dt, h: h.id, m: m.id });
+        // One that was over before the other began is another match (a rematch): a minute allowed for the clocks.
+        const apart = (h.endedAt && h.endedAt + 60e3 < m.startedAt) || (m.endedAt && m.endedAt + 60e3 < h.startedAt);
+        if (dt <= TWIN_MS && !apart && who.every((n) => names.get(m).has(n)) && (!h.result || !m.result || h.result === m.result)) pairs.push({ dt, h: h.id, m: m.id });
       }
     }
     const used = new Set();
@@ -125,11 +128,13 @@
     if (!m.myDeck && !m.limitedDeck && h.myDeck) { m.myDeck = h.myDeck; filled.push('myDeck'); }
     if (m.status !== 'complete' && h.result) {
       Object.assign(m, { status: 'complete', result: h.result });
+      // Each score by its own seats: an imported one has mine at 0, another recorded copy may not.
       const others = opps(m);
-      if (others.length === 1 && Number.isInteger(m.mySeat) && Array.isArray(h.score) && h.score.length === 2) {
+      const theirs = opps(h);
+      if (others.length === 1 && theirs.length === 1 && Number.isInteger(m.mySeat) && Number.isInteger(h.mySeat) && Array.isArray(h.score) && h.score.length) {
         const score = [];
-        score[m.mySeat] = h.score[0];
-        score[others[0].seat] = h.score[1];
+        score[m.mySeat] = h.score[h.mySeat];
+        score[others[0].seat] = h.score[theirs[0].seat];
         m.score = Array.from(score, (x) => x || 0);
       }
       filled.push('result');

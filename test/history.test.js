@@ -64,6 +64,13 @@ assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), imp('h1', H + 2 * 60e3, 'Bar
 assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), rec('r2', H + 50 * 60e3, 'Bartok', 'W'), imp('h2', H + 52 * 60e3, 'Bartok', 'won'), imp('h1', H + 2 * 60e3, 'Bartok', 'won')]),
   ['h1', 'h2'], 'two and two: each with its own');
 assert.deepEqual(dups([imp('h1', H, 'Bartok', 'won'), imp('h2', H, 'Bartok', 'won')]), [], 'two imported ones are not duplicates of each other');
+const over = Object.assign(imp('h1', H, 'Bartok', 'won'), { endedAt: H + 30 * 60e3 });
+const rematch = Object.assign(rec('r1', H + 40 * 60e3, 'Bartok', undefined), { status: 'active' });
+assert.deepEqual(dups([rematch, over]), [], 'a rematch: the imported one was over before it began');
+assert.deepEqual(dups([Object.assign(rec('r1', H, 'Bartok', 'W'), { endedAt: H + 20 * 60e3 }), imp('h1', H + 30 * 60e3, 'Bartok', 'won')]), [],
+  'the recorded one was over before the imported one began');
+assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), imp('h1', H, '', 'won')].map((m) => (m.source === 'history' ? Object.assign(m, { players: [m.players[0]] }) : m))), [],
+  'an imported one with no opponent pairs with nothing');
 
 // A recorded match the tracker caught only in part (it woke up mid-match): its hist in the history fills what is missing,
 // never what it has.
@@ -99,6 +106,10 @@ for (const [a, b] of [[seenAll, ghost()], [ghost(), seenAll]]) {
   assert.equal('historyFilled' in kept, false, 'not marked as coming from the history');
 }
 assert.equal(S.mergeMatch(undefined, seenAll), seenAll, 'nothing here: the imported one');
+// Both copies recorded at seat 1: the score keeps its seats.
+const atSeat1 = (log) => S.normalizeMatch({ id: 'y1', startedAt: H, status: log ? 'active' : 'complete', result: log ? undefined : 'W', mySeat: 1, score: log ? [] : [1, 2],
+  players: [{ seat: 0, name: 'Bartok' }, { seat: 1, name: 'me' }], games: [{ n: 1, firstSeat: 1, mulligans: {}, life: {}, seen: {}, log: log || [] }] });
+assert.deepEqual(S.mergeMatch(atSeat1([[1, 1, 'LAND_PLAYED'], [2, 0, 'SPELL_CAST']]), atSeat1()).score, [1, 2], 'two copies at seat 1: the score as it was');
 
 // Nothing to make a record of.
 assert.equal(T.fromHistory(row({ id: undefined }), decks), null);

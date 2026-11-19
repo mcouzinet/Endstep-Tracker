@@ -6,18 +6,25 @@
   const store = new Map(); // matchId -> { rec, rt, dec }
   const looked = new Set(); // matchIds already looked up in storage
   const ignored = new Set(); // matchIds the user deleted from the dashboard while this page was open
+  // Ids come from the page's world, where any script can post: the site's are UUIDs. A name every object has
+  // ("__proto__", "constructor") never becomes a key: it would reach every object of this world.
+  const isId = (id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id) && !(id in Object.prototype);
   // Matches this tab plays (it sent a game action). endstep sends a match to every open tab of the account, on every
   // computer: a tab that only watches it, another tab or a computer left open, records nothing (it would write a
   // half-seen copy over the real one). Frames are followed all the same, and saved from the first action on.
-  const acted = new Set();
+  // Kept in the tab's sessionStorage: after a reload (F5) mid-match, the end of the match is saved even when it comes
+  // before my next action (the opponent concedes).
+  const ACTED = 'endstep-tracker.acted';
+  const acted = new Set((() => { try { const ids = JSON.parse(sessionStorage.getItem(ACTED)); return Array.isArray(ids) ? ids.filter(isId) : []; } catch { return []; } })());
+  const markActed = (id) => {
+    acted.add(id);
+    try { sessionStorage.setItem(ACTED, JSON.stringify([...acted].slice(-50))); } catch { /* storage blocked */ }
+  };
   const timers = new Map();
   const ctx = { meta: {}, lobby: null, lastDeck: null, decks: {} };
   let live = false;
   const HISTORY_PAGE_MS = 1000; // between two pages of my history while importing it: far below the site's 300 requests a minute
   let nextPage = null;
-  // Ids come from the page's world, where any script can post: the site's are UUIDs. A name every object has
-  // ("__proto__", "constructor") never becomes a key: it would reach every object of this world.
-  const isId = (id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id) && !(id in Object.prototype);
 
   let chain = chrome.storage.local.get(['lastDeck', 'decks']).then((s) => {
     ctx.lastDeck = s.lastDeck || null;
@@ -47,7 +54,7 @@
       try { msg = JSON.parse(data); } catch { return; }
       const a = msg.payload;
       if (!a || !isId(a.matchId) || ignored.has(a.matchId)) return;
-      acted.add(a.matchId);
+      if (!acted.has(a.matchId)) markActed(a.matchId);
       const side = T.onSideboard(store, a, at);
       if (side) save(side, true);
       // dev-only { the decision journal
@@ -125,9 +132,19 @@
     } else if (kind === 'acted') {
       // Sent with each of my game actions: the first one makes the record appear at once, the frames save the rest.
       if (!isId(data) || ignored.has(data) || acted.has(data)) return;
-      acted.add(data);
+      markActed(data);
       const entry = store.get(data);
-      if (entry) { save(entry, true); setLive(entry.rec.status === 'active'); }
+      if (!entry) return;
+      // This tab only watched until now: another tab of this browser may have played the match since this one read
+      // it, and recorded what only the playing tab sees (the main deck submitted for a game, the decisions). Taken in
+      // before this copy writes over it.
+      const saved = await chrome.storage.local.get(['match:' + data, 'dec:' + data]);
+      const rec = saved['match:' + data];
+      if (rec && rec.mains) entry.rec.mains = { ...S.obj(entry.rec.mains), ...S.obj(rec.mains) };
+      if (saved['dec:' + data]) entry.dec = { ...S.obj(entry.dec), ...S.obj(saved['dec:' + data]) };
+      if (orphaned()) return;
+      save(entry, true);
+      setLive(entry.rec.status === 'active');
     }
   }
 

@@ -53,6 +53,36 @@ const started = { type: 'GAME_EVENT', matchId: A, timestamp: now + 150, payload:
     const rec = await get('match:' + A);
     assert.ok(rec && rec.games.length === 1 && rec.games[0].firstSeat === 0 && rec.players.some((x) => x.name === 'Bartok'), JSON.stringify(rec));
 
+    // The page reloaded (F5) mid-match, and the match ends before my next action: its end is saved all the same.
+    await p.reload();
+    await sleep(600);
+    const over = state(3);
+    Object.assign(over.payload, { status: 'COMPLETE', matchScore: { winsBySeat: [1, 0], gameNumber: 1, gamesPlayed: 1, gamesPerMatch: 1, isMatchOver: true } });
+    await hook('ws', JSON.stringify(over));
+    await sleep(800);
+    assert.equal((await get('match:' + A)).status, 'complete', 'reloaded, then over before any action: recorded as over');
+
+    // Another tab watched B while this one played it and saved the main deck of game 2; then the user plays on in the
+    // other tab: its first action keeps what this one saved.
+    const B = 'bbbbbbbb-0000-4000-8000-000000000002';
+    const q = await b.newPage();
+    await q.setRequestInterception(true);
+    q.on('request', (r) => (new URL(r.url()).hostname === 'endstep.cc'
+      ? r.respond({ status: 200, contentType: 'text/html', body: '<!doctype html><title>endstep (stub)</title><body></body>' }) : r.continue()));
+    await q.goto('https://endstep.cc/play');
+    await sleep(600);
+    const hookQ = (kind, data) => q.evaluate((t, k, d) => window.postMessage({ [t]: k, data: d, at: Date.now() }, location.origin), TAG, kind, data);
+    const sB = (seq) => { const s = state(seq); s.matchId = B; return s; };
+    await hookQ('ws', JSON.stringify(sB(1)));
+    await sleep(300);
+    const played = { v: 1, id: B, status: 'active', startedAt: now, updatedAt: now + 500, mySeat: 0, players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'Bartok' }],
+      games: [{ n: 1, mulligans: {}, life: {}, seen: {}, log: [] }], score: [], colors: {}, mains: { 2: { 'Lightning Bolt': 4 } } };
+    await ext.evaluate((m) => chrome.storage.local.set({ ['match:' + m.id]: m }), played);
+    await hookQ('acted', B);
+    await sleep(800);
+    assert.deepEqual((await get('match:' + B)).mains, { 2: { 'Lightning Bolt': 4 } }, 'the main deck saved by the other tab stays');
+    await q.close();
+
     // A backup from another computer: a half-seen copy of A (it was watching there) and a match only it has (C).
     const ghostA = { v: 1, id: A, status: 'active', startedAt: now + 60000, updatedAt: now + 60000, mySeat: 0, formatId: 'pauper',
       players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'Bartok' }], games: [{ n: 1, mulligans: {}, life: {}, seen: {}, log: [] }], score: [], colors: {} };

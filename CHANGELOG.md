@@ -20,6 +20,13 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Matchups et Mes cartes** : le nom en gras, des colonnes alignées ; sur téléphone, une ligne de détail sous chaque carte (1.8.5).
 - **Bilans** : le bilan en grand, le pourcentage en petit dessous, affiché à partir de 10 matchs au lieu de 5 (1.8.6).
 
+### Corrigé
+
+- **Page rechargée en plein match** : la fin du match est enregistrée même si elle arrive avant ta prochaine action (1.8.9).
+- **Notes** : enregistrées pendant la frappe, et un archétype confirmé dans le panneau en jeu n'est plus effacé (1.8.9).
+- **Doublons** : le score ne s'inverse plus au siège 2, une revanche n'est plus prise pour le match d'avant, la note suit le match gardé (1.8.9).
+- **Plusieurs onglets** : le side de la game 2 n'est plus perdu quand tu continues le match dans un autre onglet (1.8.9).
+
 ## [1.8] (2026-11-16)
 
 ### Ajouté

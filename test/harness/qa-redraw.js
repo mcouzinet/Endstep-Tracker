@@ -172,6 +172,25 @@ const FIELD = '.match[data-id="m1"] textarea[data-note="notes"]';
     await p.close();
   }
 
+  // An archetype confirmed in the in-game panel while I type a note: both stay. The note is saved as it is typed,
+  // before I leave the field (closing the tab then loses nothing).
+  {
+    const { p, answer } = await open();
+    answer();
+    await openMatch(p);
+    await p.waitForFunction(() => !resolving);
+    await typeInNote(p);
+    await p.evaluate(() => chrome.storage.local.set({ 'note:m1': { ...window.__DATA['note:m1'], archetype: 'Affinity' } }));
+    await sleep(1100);
+    const note = () => p.evaluate(() => { const n = window.__DATA['note:m1']; return [n.notes, n.archetype]; });
+    assert.deepEqual(await note(), [`${NOTE} avant`, 'Affinity'], 'saved while typing, the archetype kept');
+    await p.keyboard.type(' après');
+    await p.click('#q');
+    await sleep(300);
+    assert.deepEqual(await note(), [`${NOTE} avant après`, 'Affinity'], 'saved on leaving the field, the archetype kept');
+    await p.close();
+  }
+
   assert.deepEqual(errors, []);
   console.log('qa-redraw: ok');
   await b.close();
