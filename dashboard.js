@@ -1147,7 +1147,8 @@ function showMatch(m) {
 }
 
 // A session's caption in the history: its day (today, yesterday, then the date), its hours, its matches and its record.
-function sessionHead(s) {
+// fold: null when it cannot fold, else whether it is folded (a button then opens or folds it).
+function sessionHead(s, fold) {
   const from = s[s.length - 1].startedAt;
   const to = Math.max(from, s[0].endedAt || s[0].updatedAt || s[0].startedAt);
   const days = Math.round((new Date(from).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5); // 23 or 25 h across a clock change
@@ -1155,12 +1156,19 @@ function sessionHead(s) {
   const day = days === 0 || days === -1 ? formatter('rel', { numeric: 'auto' }, Intl.RelativeTimeFormat).format(days, 'day')
     : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(from);
   const r = S.records(s).m; // against the AI or live: no record; a lone match's is its own row's
-  return `<li class="session"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
-    + `<span class="s-meta">${esc(clock().formatRange(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}</li>`;
+  const body = `<span class="s-what"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
+    + `<span class="s-meta">${esc(clock().formatRange(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
+  const key = esc(sessionKey(s));
+  return `<li class="session" data-key="session:${key}">${fold === null ? `<div class="s-head">${body}</div>`
+    : `<button type="button" class="s-head" data-session="${key}" aria-expanded="${!fold}">${body}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>`}</li>`;
 }
+const sessionKey = (s) => s[s.length - 1].id; // its first match: a session keeps it as it grows
+const unfolded = new Map(); // session key -> opened (true) or folded (false) by a click, for as long as the page stays open
 
 // The history, grouped by session: shown holds the matches of the filters in view (the search and the result
-// filter only narrow list), so each caption keeps its session's whole record.
+// filter only narrow list), so each caption keeps its session's whole record. Every session of several matches but
+// the latest folds to its caption until opened; a search or a result filter shows every row it finds, and the
+// session of the match open stays open (opened from the summary or a matchup's panel).
 function renderMatches(list, shown) {
   if (!list.length) {
     $('#matches').innerHTML = `<li class="empty">
@@ -1173,13 +1181,21 @@ function renderMatches(list, shown) {
   // Re-rendering must not snap shut a journal or deck list the user opened.
   $('#history').classList.toggle('one-format', new Set(list.map(fmtCell)).size < 2); // the same format on every row: no column
   const open = new Set([...document.querySelectorAll('#matches details[open]')].map((d) => d.dataset.key));
-  const sessionOf = new Map(S.sessions(shown).flatMap((s) => s.map((m) => [m.id, s])));
-  let cur = null;
+  const all = S.sessions(shown);
+  const sessionOf = new Map(all.flatMap((s) => s.map((m) => [m.id, s])));
+  const narrowed = state.q.trim() !== '' || state.result !== 'all';
+  const folded = (s) => {
+    if (s.length < 2 || narrowed) return null;
+    if (openId && s.some((m) => m.id === openId)) unfolded.set(sessionKey(s), true);
+    return !(unfolded.has(sessionKey(s)) ? unfolded.get(sessionKey(s)) : s === all[0]);
+  };
+  let cur = null; let hide = false;
   $('#matches').innerHTML = list.map((m) => {
     const s = sessionOf.get(m.id);
-    const head = s && s !== cur ? sessionHead(s) : '';
+    let head = '';
+    if (s && s !== cur) { const f = folded(s); head = sessionHead(s, f); hide = f === true; }
     cur = s;
-    return `${head}<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`;
+    return hide ? head : `${head}<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`;
   }).join('');
   for (const d of document.querySelectorAll('#matches details')) if (open.has(d.dataset.key)) d.open = true;
 }
@@ -1825,6 +1841,8 @@ $('#matches').addEventListener('click', (e) => {
     })();
     return;
   }
+  const head = e.target.closest('[data-session]');
+  if (head) { unfolded.set(head.dataset.session, head.getAttribute('aria-expanded') !== 'true'); render(); return; }
   const btn = e.target.closest('.match-row');
   if (!btn) return;
   const id = btn.closest('.match').dataset.id;

@@ -9,6 +9,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 - **Terrains en main de départ** : ton bilan selon le nombre de terrains gardés, sur le play et sur la draw (1.8.7).
 - **Sessions** : l'historique groupé par soirée, avec le bilan de chaque session ; dans « Selon le contexte », ton bilan après deux défaites d'affilée (1.8.7).
+- **Sessions repliées** : seule la dernière reste dépliée, un clic ouvre les autres (1.8.8).
 
 ### Modifié
 

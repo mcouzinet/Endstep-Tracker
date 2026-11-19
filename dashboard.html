@@ -287,8 +287,14 @@
     .list-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 16px 12px; border-top: 1px solid var(--line); }
     .matches { list-style: none; margin: 0; padding: 0; }
     .match + .match { border-top: 1px solid var(--line); }
-    .session { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 18px 16px 8px; border-bottom: 1px solid var(--line); }
+    .session { border-bottom: 1px solid var(--line); }
     .match + .session { border-top: 1px solid var(--line-strong); }
+    .s-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 18px 16px 8px; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+    .s-what { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; } /* the day and its hours wrap; the record and the arrow keep their place */
+    button.s-head { cursor: pointer; } button.s-head:hover { background: var(--surface-2); }
+    button.s-head[aria-expanded="false"] { padding-block: 12px; } /* a folded session: one line among the others */
+    .s-head .chev { align-self: center; color: var(--ink-3); transition: rotate .2s var(--ease-out); }
+    .s-head[aria-expanded="true"] .chev { rotate: 180deg; color: var(--ink); }
     .s-day { font-weight: 600; } .s-meta { font-size: 12px; color: var(--ink-3); }
     .s-rec { margin-left: auto; font-size: 15px; font-weight: 600; }
     .match-row { width: 100%; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
