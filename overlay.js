@@ -12,7 +12,7 @@
   const HOST = 'endstep-tracker-panel';
   const AFTER_MS = 10 * 60e3; // how long the end-of-match card stays up
   const orphaned = () => !(chrome.runtime && chrome.runtime.id);
-  const { esc, wl, pct } = S;
+  const { esc, wl, pct, MIN_SAMPLE } = S;
   const I = S.browserI18n(); // content scripts cannot read the dashboard's language choice: the browser's language
   const t = I.t;
 
@@ -188,7 +188,7 @@
       const vs = list.filter((x) => x !== m && !S.vsAI(x) && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
       const r = S.records(vs, now);
       const n = (x) => x.W + x.L + x.D;
-      const stat = (label, x) => `<p class="stats"><span>${esc(label)}${esc(t('colon'))}<b>${wl(x)}</b>${n(x) >= 5 ? ` · ${pct(x)}` : ''}</span></p>`;
+      const stat = (label, x) => `<p class="stats"><span>${esc(label)}${esc(t('colon'))}<b>${wl(x)}</b>${n(x) >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</span></p>`;
       // Two blocks, so that no record reads as the other's. The player: my record against them, whatever they
       // played, and their deck last time.
       const met = S.vsAI(m) ? [] : S.metBefore(m, list);

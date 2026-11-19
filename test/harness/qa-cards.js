@@ -42,7 +42,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.deepEqual(await pressed(), ['opening↓']);
   const opening = await p.evaluate(() => [...document.querySelectorAll('#cards-panel .rec:not(.head)')].map((r) => {
     const c = r.querySelectorAll('.rec-sub')[1];
-    const m = c && c.textContent.match(/(\d+) %/);
+    const m = c && c.querySelector('b').textContent.match(/(\d+) %/); // the rate, under the W–L
     return m ? Number(m[1]) : null;
   }));
   const ranked = opening.filter((x) => x !== null);

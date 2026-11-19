@@ -102,7 +102,7 @@ const rawCardNames = (list) => list.flatMap((m) => {
     .concat(Object.values(m.mains || {}).flatMap(Object.keys), m.games.flatMap((g) => [...Object.keys(g.drawn || {}), ...Object.keys(g.played || {}),
       ...Object.keys(g.board || {}), ...(g.openingHand || [])]));
 });
-const { opps, colorsOf, gRes, onPlay, tally, pct } = S;
+const { opps, colorsOf, gRes, onPlay, tally, pct, MIN_SAMPLE } = S;
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
 const archetype = (m) => S.archetype(m, C);
 const myDeck = (m) => S.myDeck(m, C);
@@ -805,8 +805,7 @@ function renderFilters(s, shown, list, vs, v) {
 }
 
 // One component for every win/loss record: label, proportional bar (50 % tick), win rate, W–L.
-// Below MIN_SAMPLE results a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
-const MIN_SAMPLE = 5;
+// Below MIN_SAMPLE results (shared.js) a rate is noise: one dot per result and "too early" instead of a bar and a percentage.
 // The ⓘ beside a table's title: a click, or a tap on a phone where nothing hovers, opens its explanation (#info-pop).
 const infoBtn = (key) => `<button type="button" class="info-btn" data-info="${key}" aria-expanded="false" aria-controls="info-pop" aria-label="${esc(t('info_label'))}" title="${esc(t('info_label'))}"><svg class="i"><use href="#i-info"/></svg></button>`;
 const { wl } = S;
@@ -814,16 +813,17 @@ const { wl } = S;
 // Their key is read by screen readers and shown in narrow windows, where the column captions are hidden.
 const sideCells = (r) => [{ key: t('col_play'), title: t('on_play'), r: r.play }, { key: t('col_draw'), title: t('on_draw'), r: r.draw }];
 const cmpCell = (label, r) => ({ key: label, title: t('cmp_title', { v: label }), r, cls: ' cmp' });
-// Stacked like the main cell: the rate above the W–L, the W–L alone (on its line) while it is too early.
+// Stacked like the main cell: the W–L, the rate below it once the sample allows one.
 function subCell({ key, title, r, cls = '' }) {
   const n = r.W + r.L + r.D;
   return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${n ? '' : ' none'}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>`
-    + `<b>${n >= MIN_SAMPLE ? pct(r) : ''}</b><span class="wl">${n ? wl(r) : '—'}</span></span>`;
+    + `<span class="wl">${n ? wl(r) : '—'}</span><b>${n >= MIN_SAMPLE ? pct(r) : ''}</b></span>`;
 }
 // Column captions above records that carry cells; `opens` rows end with an arrow (they open the matchup panel).
 const recHead = (first, main, cells, opens = false) => `<div class="rec${cells.length ? ' cells' : ''} head${opens ? ' opens' : ''}"${cells.length ? ` style="--cells:${cells.length}"` : ''} aria-hidden="true"><span>${esc(first)}</span><span class="main">${esc(main)}</span>`
   + `${cells.map((c) => `<span title="${esc(c.title)}">${esc(c.key)}</span>`).join('')}${opens ? '<span></span>' : ''}</div>`; // .main spans the bar and the rate
-// The name in bold with an optional note below (a deck's format, a matchup's size); the rate large with its W–L below.
+// The name in bold with an optional note below (a deck's format, a matchup's size); the W–L large with the rate below:
+// over a few dozen matches the record is the fact, the rate an estimate.
 function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false, note = '' } = {}) {
   const n = r.W + r.L + r.D;
   const aria = n ? [tn('wins', r.W), tn('losses', r.L), r.D ? tn('draws', r.D) : ''].filter(Boolean).join(', ') : t('no_data');
@@ -837,7 +837,7 @@ function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false,
   return `<${tag} class="${cls}" ${cells.length ? `style="--cells:${cells.length}" ` : ''}${attrs}>
     <span class="rec-name"><span class="rec-label">${labelHtml}</span>${note ? `<span class="rec-note">${esc(note)}</span>` : ''}</span>
     ${marks}
-    <span class="rec-main"><span class="rec-pct">${rate}</span><span class="rec-count">${wl(r)}</span></span>${cells.length ? `<span class="rec-cells">${cells.map(subCell).join('')}</span>` : ''}${opens ? '<svg class="i open-chev" aria-hidden="true"><use href="#i-chevron"/></svg>' : ''}
+    <span class="rec-main"><span class="rec-count">${wl(r)}</span><span class="rec-pct">${rate}</span></span>${cells.length ? `<span class="rec-cells">${cells.map(subCell).join('')}</span>` : ''}${opens ? '<svg class="i open-chev" aria-hidden="true"><use href="#i-chevron"/></svg>' : ''}
   </${tag}>`;
 }
 

@@ -4,7 +4,7 @@ const S = self.EndstepShared;
 const T = self.EndstepTracker;
 const Meta = self.EndstepMeta;
 const $ = (s) => document.querySelector(s);
-const { esc, wl, pct } = S;
+const { esc, wl, pct, MIN_SAMPLE } = S;
 let I18N;
 const t = (k, v) => I18N.t(k, v);
 
@@ -31,7 +31,7 @@ function render(d) {
   const C = { notes: d.notes, decks: d.decks, merges: d.merges, formatMoves: d.formatMoves, t, canon: (n) => names[n] || n };
   const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
-  const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= 5 ? ` · ${pct(r)}` : ''}</dd></div>`;
+  const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</dd></div>`;
   const live = d.matches.find((m) => S.isLive(m));
   let html;
   if (live) {
