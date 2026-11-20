@@ -34,7 +34,8 @@
   }
 
   function classify(seen, decks, { minConfidence = 0.6, minCards = 2 } = {}) {
-    if (!Array.isArray(decks) || !decks.length) return null;
+    // One archetype alone always wins (its certainty is 1 by construction): nothing to tell it apart from.
+    if (!Array.isArray(decks) || decks.length < 2) return null;
     const { known, rates: allRates, total } = prepare(decks);
     const shown = {}; // normalized -> name as the opponent showed it (front face), for display
     for (const s of seen || []) { const c = norm(s); if (known.has(c) && !shown[c]) shown[c] = String(s).split(' // ')[0].trim(); }
@@ -114,7 +115,9 @@
           break;
         }
         const cards = {};
-        for (const x of (c.cards && c.cards.items) || []) cards[x.name] = Math.round(x.playRate.rate * 1000) / 1000;
+        for (const x of (c.cards && c.cards.items) || []) {
+          if (x && typeof x.name === 'string' && x.playRate && Number.isFinite(x.playRate.rate)) cards[x.name] = Math.round(x.playRate.rate * 1000) / 1000;
+        }
         decks[k] = { name: d.name, slug: d.slug, colours: d.colours || [], registrations: (d.share && d.share.registrations) || 0, cards };
       }
     }));

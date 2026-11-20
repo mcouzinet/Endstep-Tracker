@@ -30,6 +30,11 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Tableau de bord** : le détail d'un match tient sur tablette et sur iPhone, les libellés ne disparaissent plus en fenêtre moyenne, Mes cartes se trie aussi en étroit (1.8.10).
 - **Sessions** : les heures d'une soirée qui passe minuit, une session qui se replie avec un match ouvert, `j` qui s'arrête sur les sessions repliées (1.8.10).
 - **Mises à jour en direct** : la bulle ⓘ et le menu « Comparer à… » ne se referment plus pendant une partie, Échap ne ferme qu'une couche à la fois (1.8.10).
+- **Sauvegardes retouchées** : un deck, une fusion ou un match mal formé ne bloque plus le tableau de bord, la popup ni le panneau en jeu (1.8.11).
+- **Export CSV** : un pseudo qui commence par « = » reste du texte dans Excel (1.8.11).
+- **Reconnaissance** : plus de deck « reconnu à 100 % » dans un format qui n'a qu'un archétype publié, et une carte sans taux ne bloque plus le format (1.8.11).
+- **Mes cartes** : le match en cours n'est plus compté avant sa fin (1.8.11).
+- **Portugais du Portugal** : le nom et le panneau en jeu en portugais (1.8.11).
 
 ## [1.8] (2026-11-16)
 

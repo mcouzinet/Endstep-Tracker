@@ -13,6 +13,23 @@
   const esc = (s) => String(s === undefined || s === null ? '' : s)
     .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  // A deck list: card names, or { name, quantity } (anything else dropped).
+  const cardList = (v) => (Array.isArray(v)
+    ? v.filter((x) => typeof x === 'string' || (x && typeof x.name === 'string' && (x.quantity === undefined || Number.isInteger(x.quantity)))) : null);
+  // A map by id, read from storage or a backup: no name every object has ("constructor"), values checked by fix (null drops one).
+  const byId = (v, fix) => Object.fromEntries(Object.entries(obj(v)).filter(([k]) => !(k in Object.prototype)).map(([k, x]) => [k, fix(x)]).filter(([, x]) => x));
+  // My decks as seen on the site: { id: { name, format, formatId, cards, sideboard } }.
+  const normalizeDecks = (v) => byId(v, (d) => {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
+    const out = { ...d };
+    for (const k of ['name', 'format', 'formatId']) if (out[k] !== undefined && out[k] !== null && typeof out[k] !== 'string') delete out[k];
+    for (const k of ['cards', 'sideboard']) if (out[k] !== undefined && out[k] !== null) out[k] = cardList(out[k]);
+    return out;
+  });
+  // Decks merged into another one (deck tools): { id: { id, name, from } }.
+  const normalizeMerges = (v) => byId(v, (to) => (to && typeof to.id === 'string' && to.id ? { ...to, name: typeof to.name === 'string' ? to.name : null } : null));
+  // Decks moved to another format (same tools): { id: { format on the site: my format } }.
+  const normalizeMoves = (v) => byId(v, (r) => { const to = byId(r, (x) => (typeof x === 'string' && x ? x : null)); return Object.keys(to).length ? to : null; });
   // Records come from the tracker or from an imported file: keep only what the pages can render. A field of the wrong
   // type is dropped, so that one odd record (a hand-edited backup) can neither stop the pages nor slip markup into them.
   const ids = (v) => Object.fromEntries(Object.entries(obj(v)).filter(([, x]) => Array.isArray(x))); // { card: [ids] }
@@ -35,15 +52,20 @@
     for (const k of ['updatedAt', 'endedAt']) if (m[k] !== undefined && !(Number.isFinite(m[k]) && Math.abs(m[k]) <= MAX_DATE)) delete m[k];
     if (m.mains !== undefined) {
       m.mains = Object.fromEntries(Object.entries(obj(m.mains))
-        .map(([n, c]) => [n, Object.fromEntries(Object.entries(obj(c)).filter(([, k]) => Number.isFinite(k) && k > 0))]));
+        .map(([n, c]) => [n, Object.fromEntries(Object.entries(obj(c)).filter(([, k]) => Number.isFinite(k) && k > 0))])
+        .filter(([, c]) => Object.keys(c).length)); // an empty main is no main (it would read as every card taken out)
     }
     m.mySeat = Number.isInteger(m.mySeat) ? m.mySeat : null;
-    m.score = Array.isArray(m.score) ? m.score.map(Number) : [];
+    const score = Array.isArray(m.score) ? m.score.map(Number) : [];
+    m.score = score.every((x) => Number.isInteger(x) && x >= 0) ? score : [];
+    if (m.gamesPerMatch !== undefined && !(Number.isInteger(m.gamesPerMatch) && m.gamesPerMatch > 0 && m.gamesPerMatch <= 9)) delete m.gamesPerMatch;
+    if (m.participants !== undefined) m.participants = Array.isArray(m.participants) ? m.participants.filter((p) => p && typeof p.username === 'string') : [];
     m.colors = obj(m.colors);
     m.status = m.status === 'complete' || m.status === 'abandoned' ? m.status : 'active';
     if (!Number.isFinite(m.updatedAt)) m.updatedAt = m.startedAt;
     if (m.myDeck && (typeof m.myDeck !== 'object' || typeof m.myDeck.id !== 'string')) m.myDeck = null;
     if (m.myDeck && typeof m.myDeck.name !== 'string') m.myDeck = { ...m.myDeck, name: null };
+    if (m.myDeck) m.myDeck = { ...m.myDeck, cards: cardList(m.myDeck.cards), sideboard: cardList(m.myDeck.sideboard) };
     if (m.ratings !== undefined) {
       const num = (v) => (Number.isFinite(v) ? v : undefined);
       m.ratings = Object.fromEntries(Object.entries(obj(m.ratings)).filter(([name, l]) => name && !(name in Object.prototype) && l && typeof l === 'object')
@@ -182,7 +204,7 @@
       .sort((a, b) => b.startedAt - a.startedAt);
   }
   const colorsOf = (m) => [...new Set(opps(m).map((p) => m.colors[p.seat] || '').join(''))].join('');
-  const gRes = (m, g) => (g.winnerSeat === undefined ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
+  const gRes = (m, g) => (g.winnerSeat === undefined || m.mySeat === null ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
   const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
   const tally = () => ({ W: 0, L: 0, D: 0 });
   const MIN_SAMPLE = 10; // below this many results a win rate is noise: the W–L alone
@@ -205,18 +227,21 @@
     const diff = (ts - Date.now()) / 1000;
     const a = Math.abs(diff);
     if (a < 60) return i18n.t('just_now');
-    if (a < 3600) return rtf.format(Math.round(diff / 60), 'minute');
-    if (a < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
-    if (a < 7 * 86400) return rtf.format(Math.round(diff / 86400), 'day');
+    const sign = Math.sign(diff); // the unit is chosen on the rounded value: 59.6 minutes is an hour, not "60 minutes"
+    if (Math.round(a / 60) < 60) return rtf.format(sign * Math.round(a / 60), 'minute');
+    if (Math.round(a / 3600) < 24) return rtf.format(sign * Math.round(a / 3600), 'hour');
+    if (Math.round(a / 86400) < 7) return rtf.format(sign * Math.round(a / 86400), 'day');
     return (new Date(ts).getFullYear() === new Date().getFullYear() ? day : year).format(ts);
   }
 
   // A deck picked by hand in the match detail (note.deckId) wins over what the tracker attributed.
   // A deck merged into another (the dashboard's deck tools, c.merges: { deckId: { id, name, from } }) counts as that one;
-  // each match keeps its own list, so the merged deck's lists show as versions. A merge of a merge is followed.
+  // each match keeps its own list, so the merged deck's lists show as versions. A merge of a merge is followed; merges
+  // that go round (A into B here, B into A in an imported backup) merge nothing.
   function mergedInto(id, c) {
     let to = null;
-    for (let hop = 0, at = id; hop < 5 && at && obj(c.merges)[at]; hop++) { to = obj(c.merges)[at]; at = to.id; }
+    const seen = new Set([id]);
+    for (let hop = 0, at = id; hop < 5 && at && Object.hasOwn(obj(c.merges), at); hop++) { to = c.merges[at]; at = to.id; if (seen.has(at)) return null; seen.add(at); }
     return to;
   }
   function myDeck(m, c) {
@@ -225,7 +250,7 @@
       const to = m.myDeck && mergedInto(m.myDeck.id, c);
       return to ? { ...m.myDeck, id: to.id, name: to.name, source: 'merged' } : m.myDeck;
     }
-    const d = c.decks[id] || {};
+    const d = (Object.hasOwn(obj(c.decks), id) && c.decks[id]) || {};
     const to = mergedInto(id, c);
     return { id: to ? to.id : id, name: (to && to.name) || d.name || null, cards: d.cards || null, sideboard: d.sideboard || null, source: 'manual' };
   }
@@ -236,7 +261,7 @@
   function deckName(m, c) {
     const d = myDeck(m, c);
     if (!d) return m.limitedDeck ? c.t('limited_deck') : c.t('unknown');
-    const name = (obj(c.decks)[d.id] || {}).name || d.name || `Deck ${d.id.slice(0, 8)}`;
+    const name = ((Object.hasOwn(obj(c.decks), d.id) && c.decks[d.id]) || {}).name || d.name || `Deck ${d.id.slice(0, 8)}`;
     return sitePool(name) ? c.t('limited_deck') : name;
   }
   // The format as the site names it: its formatId, else its game kind ('casual' is constructed without a banlist). When
@@ -266,13 +291,13 @@
   }
   const formatKey = (m, c) => movedFormat(m, c) || siteFormat(m, c);
   function formatLabel(key, c) {
-    return key === 'casual' ? c.t('casual') : key ? key.charAt(0).toUpperCase() + key.slice(1) : c.t('format_unknown');
+    return key === 'casual' ? c.t('casual') : key ? String(key).charAt(0).toUpperCase() + String(key).slice(1) : c.t('format_unknown');
   }
   const formatOf = (m, c) => formatLabel(formatKey(m, c), c);
   // The format of the deck I played, when it fits the game (a Duel Commander deck does not name a constructed game).
   function deckFormatOf(m, c) {
     const d = myDeck(m, c);
-    const f = d && obj(c.decks)[d.id] && obj(c.decks)[d.id].formatId;
+    const f = d && Object.hasOwn(obj(c.decks), d.id) && obj(c.decks[d.id]).formatId;
     const commander = (x) => /commander/i.test(x || '');
     return f && commander(f) === commander(`${m.gameType} ${m.format}`) ? f : null;
   }
@@ -387,7 +412,7 @@
     const rules = new Intl.PluralRules(locale);
     const t = (key, vars) => {
       let s = lookup(key) || key;
-      if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(v);
+      if (vars) s = s.replace(/\{(\w+)\}/g, (all, k) => (Object.hasOwn(vars, k) ? String(vars[k] ?? '') : all)); // one pass: a value holding "{x}" stays as it is
       return s;
     };
     return { locale, t, tn: (key, n, vars) => t(`${key}_${rules.select(n)}`, { n, ...vars }) };
@@ -545,11 +570,12 @@
   // hand. Drawn cards are recorded since 1.1 (g.drawn): older games count for the opening hand only.
   // [{ name, drawn, notDrawn, opening, later, played, drawnTracked, used, board, boardOnly }], each a W/L/D tally; basic
   // lands left out.
-  function cardStats(list, c) {
+  function cardStats(list, c, now = Date.now()) {
     const by = new Map();
     const canon = canonOf(c);
     const row = (name) => by.get(name) || by.set(name, { name, drawn: tally(), notDrawn: tally(), opening: tally(), later: tally(), played: tally(), drawnTracked: tally(), used: tally(), board: tally(), boardOnly: tally() }).get(name);
     for (const m of list) {
+      if (isLive(m, now)) continue; // as the other records: the match in play waits for its end
       const own = m.games.length ? deckNames(m, c) : null;
       for (const g of m.games) {
         const r = gRes(m, g);
@@ -615,7 +641,7 @@
 
   const Shared = {
     STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
-    esc, obj, normalizeMatch, normalizeNote, scoreText, pips, ago,
+    esc, obj, normalizeMatch, normalizeNote, normalizeDecks, normalizeMerges, normalizeMoves, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, MIN_SAMPLE, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,

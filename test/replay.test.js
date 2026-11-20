@@ -193,5 +193,8 @@ assert.equal(lateRec.myDeck.id, 'deck-burn', 'the lobby seat deck replaces the g
 const reloaded = new Map([[M, { rec: JSON.parse(JSON.stringify(rec)), rt: {} }]]);
 T.handle(reloaded, attach(state(48, { n: 2, turn: 3, wins: [0, 2], status: 'COMPLETE', winnerId: '1', matchOver: true })).payload.frames[0], ctx, clock);
 assert.equal(reloaded.get(M).rec.games.length, 2);
+// An older event replayed after the match ended (an extension reload, a late event) opens no phantom game.
+T.handle(reloaded, ev(3, 'TURN_BEGAN', { turnNumber: 1, playerIndex: '0' }), ctx, clock);
+assert.equal(reloaded.get(M).rec.games.length, 2, 'no phantom game after the end');
 
 console.log('replay test: ok');

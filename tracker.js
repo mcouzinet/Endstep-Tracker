@@ -29,7 +29,8 @@
   }
 
   function matchIdOf(f) {
-    return f.matchId || (f.payload && f.payload.matchId) || null;
+    const id = f.matchId || (f.payload && f.payload.matchId);
+    return typeof id === 'string' && id ? id : null;
   }
 
   // store: Map matchId -> { rec, rt }. rec is persisted, rt is per-page runtime state.
@@ -269,7 +270,9 @@
     if (typeof seq === 'number' && seq < UNSEQUENCED) {
       if (seq <= g.lastSeq) {
         // Sequence numbers restart with each game of the match; anything else is a replay.
-        const nextGame = seq < g.lastSeq && (g.outcome || (rt.gameNumber || 0) > g.n);
+        // The score may name the next game late, hence g.outcome; a match over has no next game (an event replayed after
+        // its end opens no phantom one).
+        const nextGame = seq < g.lastSeq && rec.status !== 'complete' && (g.outcome || (rt.gameNumber || 0) > g.n);
         if (!nextGame) return;
         g = newGame(rec, Math.max(g.n + 1, rt.gameNumber || 0), now);
         rt.collectHand = false;

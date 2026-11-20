@@ -292,9 +292,9 @@ async function load() {
       if (m) matches.push(m);
       else console.warn('[endstep-tracker] unreadable record skipped:', k);
     } else if (k.startsWith('note:')) notes[k.slice(5)] = S.normalizeNote(v);
-    else if (k === 'decks') decks = obj(v);
-    else if (k === 'deckMerges') merges = obj(v);
-    else if (k === 'formatMoves') formatMoves = obj(v);
+    else if (k === 'decks') decks = S.normalizeDecks(v);
+    else if (k === 'deckMerges') merges = S.normalizeMerges(v);
+    else if (k === 'formatMoves') formatMoves = S.normalizeMoves(v);
   }
   const { fill, drop, moved } = twins(matches);
   if (drop.size) {
@@ -425,9 +425,9 @@ function applyChanges(changes) {
       const id = k.slice(4);
       if (c.newValue === undefined) delete decisions[id];
       else if (id === openId) decisions[id] = obj(c.newValue);
-    } else if (k === 'decks') decks = obj(c.newValue);
-    else if (k === 'deckMerges') merges = obj(c.newValue);
-    else if (k === 'formatMoves') formatMoves = obj(c.newValue);
+    } else if (k === 'decks') decks = S.normalizeDecks(c.newValue);
+    else if (k === 'deckMerges') merges = S.normalizeMerges(c.newValue);
+    else if (k === 'formatMoves') formatMoves = S.normalizeMoves(c.newValue);
     else if (k === 'meta') useMeta(c.newValue); // loaded by another dashboard tab
   }
   refresh();
@@ -697,7 +697,10 @@ function renderDeckTools(s) {
   for (const m of inView) if (S.formatKey(m, C) !== S.siteFormat(m, C)) moved.set(formatBefore(m), (moved.get(formatBefore(m)) || 0) + 1);
   const within = [...new Set(Object.values(merges).filter((to) => ids.has(to.id)).map((to) => to.from).filter(Boolean)), ...[...moved].map(([f, n]) => `${f} (${n})`)];
   const others = otherDecks(s);
-  const opt = (o, i) => `<option value="${i}">${esc(o.here ? o.name : `${o.name} · ${o.label}`)}</option>`;
+  const label = (o) => (o.here ? o.name : `${o.name} · ${o.label}`);
+  const pick = el.querySelector('#dt-merge');
+  const picked = pick && pick.selectedOptions[0] ? pick.selectedOptions[0].textContent : null; // kept when an update redraws the tools
+  const opt = (o, i) => `<option value="${i}"${label(o) === picked ? ' selected' : ''}>${esc(label(o))}</option>`;
   const options = others.map(opt).filter((_, i) => others[i].here).join('')
     + (others.some((o) => !o.here) ? `<optgroup label="${esc(t('deck_other_formats'))}">${others.map(opt).filter((_, i) => !others[i].here).join('')}</optgroup>` : '');
   el.innerHTML = (within.length ? `<span class="muted">${esc(t('deck_includes', { list: within.join(', ') }))}</span><button type="button" class="link" data-dt="split">${esc(t('deck_split'))}</button>` : '')
@@ -1497,7 +1500,12 @@ function download(name, data, type) { // data: text, or a Blob (the stats image)
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 const stamp = () => new Date().toISOString().slice(0, 10);
-const csvCell = (v) => { const s = String(v === undefined || v === null ? '' : v); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+// Text starting like a formula (a player named "=HYPERLINK(…)") stays text in a spreadsheet: an apostrophe before it.
+const csvCell = (v) => {
+  let s = String(v === undefined || v === null ? '' : v);
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
 
 // Anonymous usage statistics (telemetry.js): on unless switched off here; the menu item says which. On Firefox they
 // also need the "technical and interaction data" permission (offered at install time): without it they are off, and
@@ -1819,9 +1827,10 @@ $('#import').addEventListener('change', async (e) => {
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id] && !here.has(id)) items['dec:' + id] = obj(d);
     if (addon) addon.importItems(data, items);
     for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
-    if (Object.keys(obj(data && data.deckMerges)).length) items.deckMerges = { ...obj(data.deckMerges), ...merges }; // the merges made here win
-    if (Object.keys(obj(data && data.formatMoves)).length) items.formatMoves = { ...obj(data.formatMoves), ...formatMoves }; // so do these moves
-    if (Object.keys(obj(data && data.decks)).length) items.decks = { ...obj(data.decks), ...decks }; // my decks' names and lists, as seen here first
+    const theirs = { merges: S.normalizeMerges(data && data.deckMerges), moves: S.normalizeMoves(data && data.formatMoves), decks: S.normalizeDecks(data && data.decks) };
+    if (Object.keys(theirs.merges).length) items.deckMerges = { ...theirs.merges, ...merges }; // the merges made here win
+    if (Object.keys(theirs.moves).length) items.formatMoves = { ...theirs.moves, ...formatMoves }; // so do these moves
+    if (Object.keys(theirs.decks).length) items.decks = { ...theirs.decks, ...decks }; // my decks' names and lists, as seen here first
     // A backup from another computer may hold the site's history of matches recorded here, or the other way round.
     const { fill, drop, moved } = twins([...matches.filter((m) => !items['match:' + m.id]), ...list.map((m) => items['match:' + m.id])],
       (id) => items['note:' + id] || notes[id]);
@@ -1968,15 +1977,17 @@ function stopRename() {
 // Every match filed under this archetype, in any deck or format, takes the new name as a hand-set one.
 $('#drawer').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const from = drawer.key.slice(2);
+  const key = drawer.key;
+  const from = key.slice(2);
   const to = e.target.elements.to.value.trim();
   if (!to || to === from) { stopRename(); return; }
-  const targets = matches.filter((m) => oppKey(m)[0] === drawer.key);
+  const targets = matches.filter((m) => oppKey(m)[0] === key);
   if (!confirm(tn('confirm_rename', targets.length, { from, to }))) return;
   for (const m of targets) notes[m.id] = Object.assign({}, notes[m.id], { archetype: to });
-  await chrome.storage.local.set(Object.fromEntries(targets.map((m) => ['note:' + m.id, notes[m.id]])));
-  if (state.opp && state.opp.key === drawer.key) state.opp = { key: 'a:' + to, label: to }; // the filter follows the name
+  // The panel and the filter follow the name before the write: its own update may redraw the page meanwhile.
+  if (state.opp && state.opp.key === key) state.opp = { key: 'a:' + to, label: to };
   drawer = { key: 'a:' + to };
+  await chrome.storage.local.set(Object.fromEntries(targets.map((m) => ['note:' + m.id, notes[m.id]])));
   setFilter({});
   toast(tn('archetype_renamed', targets.length, { to }));
 });

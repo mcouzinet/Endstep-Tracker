@@ -24,7 +24,7 @@
       buffer.push(msg);
     } else if (kind === 'out') buffer.push(msg);
     else if (kind === 'deck') sticky.deck = msg;
-    else if (kind === 'match') sticky.match[data.id] = msg;
+    else if (kind === 'match') sticky.match[data.id] = { ...msg, data: { ...(sticky.match[data.id] && sticky.match[data.id].data), ...data } }; // limited deck and details
     else if (kind === 'acted') sticky.acted[data] = msg; // this tab plays it: the new copy must keep recording it
     else if (kind === 'rating') sticky.ratings[`${data.matchId}|${data.username}`] = msg;
     else if (kind === 'decks') for (const d of data) sticky.decks[d.id] = { [TAG]: kind, data: [d], at: msg.at };

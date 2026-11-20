@@ -4,6 +4,7 @@
 const assert = require('node:assert/strict');
 const T = require('../tracker.js');
 const S = require('../shared.js');
+const LATER = Date.now() + 864e5; // a day on: the matches built here, still "active", are no longer the match in play
 
 const M = 'match-1';
 let clock = 1790000000000;
@@ -92,7 +93,7 @@ assert.deepEqual(plan.in, [{ name: 'Pyroblast', times: 3, qty: 2 }, { name: 'Dur
 assert.deepEqual(plan.out, [{ name: 'Galvanic Blast', times: 3, qty: 2 }, { name: 'Island', times: 1, qty: 1 }], 'usual copies: the most frequent (2 twice, 1 once)');
 
 // Card results in games: game 1 won, game 2 lost; game 3 is not finished.
-const stats = Object.fromEntries(S.cardStats([m], C).map((x) => [x.name, x]));
+const stats = Object.fromEntries(S.cardStats([m], C, LATER).map((x) => [x.name, x]));
 assert.deepEqual(stats.Thoughtcast.drawn, { W: 1, L: 0, D: 0 }, 'drawn in game 1 only');
 assert.deepEqual(stats.Thoughtcast.notDrawn, { W: 0, L: 1, D: 0 }, 'in my deck for game 2, not drawn');
 assert.deepEqual(stats.Pyroblast.drawn, { W: 0, L: 1, D: 0 });
@@ -104,7 +105,7 @@ assert.ok(!stats.Island, 'basic lands are left out');
 // Played and in play (recorded since 1.5.6): game 2 has the buckets, game 1 (recorded before) does not count for them.
 const pm = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(pm.games.find((g) => g.n === 2), { played: { Pyroblast: [7] }, board: { 'Myr Enforcer': [4], 'Stolen Thing': [99] } });
-const ps = Object.fromEntries(S.cardStats([pm], C).map((x) => [x.name, x]));
+const ps = Object.fromEntries(S.cardStats([pm], C, LATER).map((x) => [x.name, x]));
 assert.deepEqual(ps.Pyroblast.played, { W: 0, L: 1, D: 0 });
 assert.deepEqual(ps.Pyroblast.drawnTracked, { W: 0, L: 1, D: 0 }, 'drawn in a game that records plays');
 assert.deepEqual(ps.Thoughtcast.played, { W: 0, L: 0, D: 0 }, 'game 1 has no record of plays');
@@ -112,11 +113,11 @@ assert.deepEqual([ps['Myr Enforcer'].board, ps['Myr Enforcer'].boardOnly], [{ W:
 assert.ok(!ps['Stolen Thing'], 'a card in play that is not in my deck is left out');
 const stolen = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(stolen.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "Mishra's Bauble": [55] } });
-assert.ok(!S.cardStats([stolen], C).some((x) => x.name === "Mishra's Bauble"), 'an opponent\'s card that went through my hand is not drawn');
+assert.ok(!S.cardStats([stolen], C, LATER).some((x) => x.name === "Mishra's Bauble"), 'an opponent\'s card that went through my hand is not drawn');
 // Used (the "Rarely played" sort): drawn, then cast or put onto my battlefield; drawn and kept in hand is not.
 const um = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(um.games.find((g) => g.n === 2), { drawn: { Pyroblast: [20], Thoughtcast: [23], Frogmite: [24] }, played: { Pyroblast: [20] }, board: { Frogmite: [24] } });
-const us = Object.fromEntries(S.cardStats([um], C).map((x) => [x.name, x]));
+const us = Object.fromEntries(S.cardStats([um], C, LATER).map((x) => [x.name, x]));
 const lost = { W: 0, L: 1, D: 0 };
 assert.deepEqual(us.Pyroblast.used, lost, 'drawn and cast');
 assert.deepEqual(us.Frogmite.used, { W: 1, L: 1, D: 0 }, 'cast in game 1; in game 2 put onto the battlefield without being cast');
@@ -130,14 +131,14 @@ assert.equal(S.deckNames({ ...m, myDeck: null }, C).size, 0, 'no list recorded')
 const dfc = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(dfc.games.find((g) => g.n === 2), { drawn: { Pyroblast: [7], "King T'Challa": [42], 'Black Panther': [42] }, played: { "King T'Challa": [42] }, board: { 'Black Panther': [42] } });
 dfc.mains[2] = { ...dfc.mains[2], "King T'Challa": 1 }; // in my deck, under its front name
-const ds = Object.fromEntries(S.cardStats([dfc], C).map((x) => [x.name, x]));
+const ds = Object.fromEntries(S.cardStats([dfc], C, LATER).map((x) => [x.name, x]));
 assert.ok(!ds['Black Panther'], 'the back face is not a card of its own');
 // Names as Scryfall knows them (C.canon): a printing with its own name and the other face of a card count as that card.
 const cn = S.normalizeMatch(JSON.parse(JSON.stringify(m)));
 Object.assign(cn.games.find((g) => g.n === 2), { drawn: { "Beholder's Sleep Ray": [3], 'Black Panther, Hope Enduring': [8] }, played: {}, board: { 'Black Panther, Hope Enduring': [8] } });
 cn.mains[2] = { ...cn.mains[2], "Beholder's Sleep Ray": 1, "King T'Challa": 1 }; // the deck list as the site gives it
 const canonC = { ...C, canon: (n) => ({ "Beholder's Sleep Ray": 'Stifle', 'Black Panther, Hope Enduring': "King T'Challa" })[n] || n };
-const cs = Object.fromEntries(S.cardStats([cn], canonC).map((x) => [x.name, x]));
+const cs = Object.fromEntries(S.cardStats([cn], canonC, LATER).map((x) => [x.name, x]));
 assert.ok(!cs["Beholder's Sleep Ray"] && !cs['Black Panther, Hope Enduring'], 'no row under the printed or back-face name');
 assert.deepEqual([cs.Stifle.drawn, cs["King T'Challa"].board], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }]);
 assert.deepEqual([ds["King T'Challa"].drawn, ds["King T'Challa"].board, ds["King T'Challa"].boardOnly], [{ W: 0, L: 1, D: 0 }, { W: 0, L: 1, D: 0 }, { W: 0, L: 0, D: 0 }], 'drawn once, in play under its front name, drawn before');
@@ -163,11 +164,11 @@ assert.deepEqual(S.gameCards(gc, 'played', C), {});
 
 // A game recorded before 1.1 (no drawn cards) counts for the opening hand only.
 const old = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: undefined, games: [{ ...rec.games[0], drawn: undefined }] });
-const oldStats = Object.fromEntries(S.cardStats([old], C).map((x) => [x.name, x]));
+const oldStats = Object.fromEntries(S.cardStats([old], C, LATER).map((x) => [x.name, x]));
 assert.deepEqual(oldStats.Thoughtcast.opening, { W: 1, L: 0, D: 0 });
 assert.deepEqual(oldStats.Thoughtcast.drawn, { W: 0, L: 0, D: 0 });
 const noHand = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), games: [{ ...rec.games[0], openingHand: undefined }] });
-assert.ok(S.cardStats([noHand], C).every((x) => x.later.W + x.later.L === 0), 'opening hand missed: nothing counts as drawn later');
+assert.ok(S.cardStats([noHand], C, LATER).every((x) => x.later.W + x.later.L === 0), 'opening hand missed: nothing counts as drawn later');
 
 // Imported records: unreadable draws, opening hands and sideboarding entries are dropped, not fatal.
 const junk = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: { 1: { Bolt: 4, Zero: 0, Text: 'x' } },
@@ -175,6 +176,10 @@ const junk = S.normalizeMatch({ ...JSON.parse(JSON.stringify(rec)), mains: { 1: 
 assert.deepEqual(junk.games[0].drawn, { Guide: [1] });
 assert.deepEqual(junk.games[0].openingHand, ['Guide']);
 assert.deepEqual(junk.mains[1], { Bolt: 4 });
-assert.ok(S.cardStats([junk], C).every((x) => typeof x.name === 'string'));
+assert.ok(S.cardStats([junk], C, LATER).every((x) => typeof x.name === 'string'));
+
+// The match in play waits for its end, as in the other records.
+assert.equal(m.status, 'active');
+assert.equal(S.cardStats([m], C, m.updatedAt + 60e3).length, 0, 'the match in play does not count yet');
 
 console.log('cards: ok');

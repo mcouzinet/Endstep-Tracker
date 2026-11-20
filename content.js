@@ -28,7 +28,7 @@
 
   let chain = chrome.storage.local.get(['lastDeck', 'decks']).then((s) => {
     ctx.lastDeck = s.lastDeck || null;
-    ctx.decks = s.decks || {};
+    ctx.decks = S.normalizeDecks(s.decks);
   });
 
   // After an extension reload this copy is orphaned: every chrome.* call throws "Extension context invalidated"
@@ -68,7 +68,7 @@
     } else if (kind === 'decks') {
       if (!Array.isArray(data)) return;
       // Read again before writing: another endstep.cc tab, or a backup imported in the dashboard, may have added decks.
-      ctx.decks = S.obj((await chrome.storage.local.get('decks')).decks);
+      ctx.decks = S.normalizeDecks((await chrome.storage.local.get('decks')).decks);
       for (const d of data) if (d && isId(d.id)) ctx.decks[d.id] = Object.assign(ctx.decks[d.id] || {}, d);
       if (orphaned()) return;
       await chrome.storage.local.set({ decks: ctx.decks });
@@ -151,14 +151,14 @@
   async function onFrame(f) {
     if (f.type === 'LOBBY_UPDATE') { ctx.lobby = f.payload; return; }
     const id = T.matchIdOf(f);
-    if (!id || ignored.has(id)) return;
+    if (!isId(id) || ignored.has(id)) return; // frames come from the page's world too
     if (!store.has(id) && !looked.has(id)) {
       looked.add(id);
       const saved = await chrome.storage.local.get(['match:' + id, 'dec:' + id, 'deletedMatches']);
       if (S.obj(saved.deletedMatches)[id]) { ignored.add(id); return; } // deleted from the dashboard before this page was loaded
       if (saved['match:' + id]) store.set(id, { rec: saved['match:' + id], rt: {}, dec: saved['dec:' + id] || {} });
     }
-    const entry = T.handle(store, f, ctx, f.timestamp || Date.now());
+    const entry = T.handle(store, f, ctx, Number.isFinite(f.timestamp) ? f.timestamp : Date.now());
     if (!entry) return;
     const gameEnded = f.type === 'GAME_EVENT' && f.payload && f.payload.type === 'GAME_OUTCOME';
     if (!acted.has(id)) return;
@@ -183,7 +183,7 @@
   // deck picked, which another endstep.cc tab may have changed, are taken in.
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local' || orphaned()) return;
-    if (changes.decks) ctx.decks = S.obj(changes.decks.newValue);
+    if (changes.decks) ctx.decks = S.normalizeDecks(changes.decks.newValue);
     if (changes.lastDeck) ctx.lastDeck = changes.lastDeck.newValue || null;
     for (const [k, c] of Object.entries(changes)) {
       if (!k.startsWith('match:') || c.newValue !== undefined) continue;
