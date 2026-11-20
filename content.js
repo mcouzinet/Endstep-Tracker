@@ -25,6 +25,10 @@
   let live = false;
   const HISTORY_PAGE_MS = 1000; // between two pages of my history while importing it: far below the site's 300 requests a minute
   let nextPage = null;
+  // While my history is imported: the stored matches without their games (what pairing them needs), read once for the
+  // whole import and kept up to date from storage.onChanged. null otherwise.
+  let index = null;
+  const light = (v) => S.normalizeMatch({ ...S.obj(v), games: [] });
 
   let chain = chrome.storage.local.get(['lastDeck', 'decks']).then((s) => {
     ctx.lastDeck = s.lastDeck || null;
@@ -89,9 +93,10 @@
       // page is open, is left. Then the next page, one a second, to the last one or until I stop; the count and how far
       // it got show in the in-page panel.
       const { historyImport: on, deletedMatches } = await chrome.storage.local.get(['historyImport', 'deletedMatches']);
-      if (!S.importing(on)) return;
+      if (!S.importing(on)) { index = null; return; }
       const recs = (Array.isArray(data.rows) ? data.rows : []).map((row) => T.fromHistory(row, ctx.decks)).filter(Boolean);
-      const all = Object.entries(await S.loadStore()).filter(([k]) => k.startsWith('match:')).map(([, v]) => S.normalizeMatch(v)).filter(Boolean);
+      if (!index) index = new Map(Object.entries(await S.loadStore()).filter(([k]) => k.startsWith('match:')).map(([, v]) => light(v)).filter(Boolean).map((m) => [m.id, m]));
+      const all = [...index.values()];
       // Matches I deleted from the dashboard stay deleted: by their id, or as the twin of a recorded one.
       const gone = Object.entries(S.obj(deletedMatches)).map(([id, f]) => S.normalizeMatch({ ...S.obj(f), id, games: [] })).filter(Boolean);
       const known = new Set([...all, ...gone].map((m) => m.id));
@@ -99,10 +104,13 @@
       const pairs = S.historyPairs([...all, ...gone.filter((g) => g.source !== 'history'), ...fresh]);
       const twins = new Set(pairs.map((p) => p.h));
       const add = fresh.filter((r) => !twins.has(r.id));
-      // A recorded twin the tracker caught only in part gets what the history knows: format, deck, ranked, result.
+      // A recorded twin the tracker caught only in part gets what the history knows: format, deck, ranked, result. Told
+      // on a copy of its light record, then filled in full.
       const byId = new Map([...all, ...fresh].map((m) => [m.id, m]));
-      const completed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)])
-        .filter(([m, h]) => m && h && m.source !== 'history' && !store.has(m.id) && S.fillFromHistory(m, h).length).map(([m]) => m);
+      const owed = pairs.map((p) => [byId.get(p.m), byId.get(p.h)])
+        .filter(([m, h]) => m && h && m.source !== 'history' && !store.has(m.id) && S.fillFromHistory({ ...m }, h, false).length);
+      const full = owed.length ? await chrome.storage.local.get(owed.map(([m]) => 'match:' + m.id)) : {};
+      const completed = owed.map(([m, h]) => [S.normalizeMatch(full['match:' + m.id]), h]).filter(([m, h]) => m && S.fillFromHistory(m, h).length).map(([m]) => m);
       if (orphaned()) return;
       // "Done" may have been clicked in the panel while the matches were being read: the import stays stopped.
       const { historyImport: now } = await chrome.storage.local.get('historyImport');
@@ -110,6 +118,8 @@
       await chrome.storage.local.set({ ...Object.fromEntries([...add, ...completed].map((r) => ['match:' + r.id, r])),
         ...(going ? { historyImport: { until: Date.now() + S.HISTORY_IMPORT_MS, read: (now.read || 0) + recs.length, added: (now.added || 0) + add.length,
           completed: (now.completed || 0) + completed.length, done: !data.next, failed: !!data.failed } } : {}) });
+      for (const r of [...add, ...completed]) index.set(r.id, light(r));
+      if (!going || !data.next) index = null; // over: read afresh next time
       clearTimeout(nextPage); // the site's own "Older matches" and this chain make one chain
       if (going && data.next) {
         nextPage = setTimeout(async () => {
@@ -185,6 +195,13 @@
     if (area !== 'local' || orphaned()) return;
     if (changes.decks) ctx.decks = S.normalizeDecks(changes.decks.newValue);
     if (changes.lastDeck) ctx.lastDeck = changes.lastDeck.newValue || null;
+    if (index) {
+      for (const [k, c] of Object.entries(changes)) {
+        if (!k.startsWith('match:')) continue;
+        const m = c.newValue === undefined ? null : light(c.newValue);
+        if (m) index.set(m.id, m); else index.delete(k.slice(6));
+      }
+    }
     for (const [k, c] of Object.entries(changes)) {
       if (!k.startsWith('match:') || c.newValue !== undefined) continue;
       const id = k.slice(6);

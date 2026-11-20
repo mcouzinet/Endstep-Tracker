@@ -122,7 +122,9 @@
   const TWIN_MS = 2 * 3600e3;
   function historyPairs(list) {
     const low = (n) => String(n).toLowerCase();
-    const recorded = list.filter((m) => m.source !== 'history');
+    const at = new Map(list.map((m, i) => [m, i])); // ties go by the order of the list
+    const recorded = list.filter((m) => m.source !== 'history').sort((a, b) => a.startedAt - b.startedAt);
+    const first = (t) => { let lo = 0, hi = recorded.length; while (lo < hi) { const k = (lo + hi) >> 1; if (recorded[k].startedAt < t) lo = k + 1; else hi = k; } return lo; };
     const names = new Map(recorded.map((m) => [m, new Set([...opps(m).map((p) => p.name),
       ...(Array.isArray(m.participants) ? m.participants.map((p) => p && p.username) : [])].filter(Boolean).map(low))]));
     const pairs = [];
@@ -130,15 +132,16 @@
       if (h.source !== 'history') continue;
       const who = opps(h).map((p) => low(p.name));
       if (!who.length) continue;
-      for (const m of recorded) {
+      for (let i = first(h.startedAt - TWIN_MS); i < recorded.length && recorded[i].startedAt <= h.startedAt + TWIN_MS; i++) {
+        const m = recorded[i];
         const dt = Math.abs(m.startedAt - h.startedAt);
         // One that was over before the other began is another match (a rematch): a minute allowed for the clocks.
         const apart = (h.endedAt && h.endedAt + 60e3 < m.startedAt) || (m.endedAt && m.endedAt + 60e3 < h.startedAt);
-        if (dt <= TWIN_MS && !apart && who.every((n) => names.get(m).has(n)) && (!h.result || !m.result || h.result === m.result)) pairs.push({ dt, h: h.id, m: m.id });
+        if (dt <= TWIN_MS && !apart && who.every((n) => names.get(m).has(n)) && (!h.result || !m.result || h.result === m.result)) pairs.push({ dt, h: h.id, m: m.id, o: [at.get(h), at.get(m)] });
       }
     }
     const used = new Set();
-    return pairs.sort((a, b) => a.dt - b.dt).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map(({ h, m }) => ({ h, m }));
+    return pairs.sort((a, b) => a.dt - b.dt || a.o[0] - b.o[0] || a.o[1] - b.o[1]).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map(({ h, m }) => ({ h, m }));
   }
   const historyDuplicates = (list) => historyPairs(list).map((p) => p.h);
   // A recorded match the tracker caught only in part (it woke up mid-match: no format, no deck, no result), completed
@@ -465,6 +468,23 @@
   const newsDue = (releases, seen, running) => releases.filter((r) => byRelease(r, seen || '0') > 0 && byRelease(r, running) <= 0)
     .sort(byRelease).pop() || null;
 
+  // The popup's and the in-page panel's copy of storage, kept up to date key by key: d = { matches: Map, notes, decks,
+  // merges, formatMoves, meta, settings }. The matches lose their logs, never shown there and the heaviest part of a
+  // record. Returns false for a key it does not keep.
+  function applyStored(d, k, v) {
+    if (k.startsWith('match:')) {
+      const m = v === undefined ? null : normalizeMatch(v);
+      if (m) { for (const g of m.games) g.log = []; d.matches.set(m.id, m); } else d.matches.delete(k.slice(6));
+    } else if (k.startsWith('note:')) { if (v === undefined) delete d.notes[k.slice(5)]; else d.notes[k.slice(5)] = normalizeNote(v); }
+    else if (k === 'decks') d.decks = normalizeDecks(v);
+    else if (k === 'deckMerges') d.merges = normalizeMerges(v); // decks merged in the dashboard
+    else if (k === 'formatMoves') d.formatMoves = normalizeMoves(v); // decks moved to another format in the dashboard
+    else if (k === 'meta') d.meta = v ? { formats: v.formats, byFormat: obj(v.byFormat) } : null;
+    else if (k === 'settings') d.settings = obj(v);
+    else return false;
+    return true;
+  }
+
   // All of chrome.storage but the decision logs (dec:*), the bulk of it: those load one match at a time.
   async function loadStore() {
     const keys = (await chrome.storage.local.getKeys()).filter((k) => !k.startsWith('dec:'));
@@ -506,12 +526,15 @@
   // My cards of one bucket of game g (key: drawn, played or board) as { name: copies }, one name per card: a transformed
   // double-faced card shows its other face (King T'Challa becomes Black Panther) under the same id within the game, and
   // the name it was first recorded under, in my hand, wins; then its one name (c.canon).
-  function gameCards(g, key, c) {
-    const canon = canonOf(c);
+  function cardAliases(g) {
     const alias = new Map(); // card id -> name
     for (const bucket of [g.drawn, g.played, g.board]) {
       for (const [name, ids] of Object.entries(bucket || {})) for (const id of ids) if (id !== '?' && !alias.has(id)) alias.set(id, name);
     }
+    return alias;
+  }
+  function gameCards(g, key, c, alias = cardAliases(g)) {
+    const canon = canonOf(c);
     const copies = new Map(); // name -> distinct copies (an unknown id is one copy of the name it was recorded under)
     for (const [name, ids] of Object.entries(g[key] || {})) {
       for (const id of ids) {
@@ -577,17 +600,27 @@
     for (const m of list) {
       if (isLive(m, now)) continue; // as the other records: the match in play waits for its end
       const own = m.games.length ? deckNames(m, c) : null;
+      const lists = new Map(); // game n (0: not sided) -> its main's cards, and my deck's
+      const listOf = (n) => {
+        const k = m.mains && m.mains[n] && Object.keys(m.mains[n]).length ? n : 0;
+        if (!lists.has(k)) {
+          const main = mainOf(m, n, c);
+          const inMain = main && new Set(Object.keys(main).map(canon));
+          lists.set(k, { inMain, inDeck: inMain && new Set([...inMain, ...own]) });
+        }
+        return lists.get(k);
+      };
       for (const g of m.games) {
         const r = gRes(m, g);
         if (!r) continue;
         if (Array.isArray(g.openingHand)) for (const name of new Set(g.openingHand.map(canon))) row(name).opening[r]++;
         if (!g.drawn) continue;
-        const names = (key) => new Set(Object.keys(gameCards(g, key, c))); // one card, one name
+        const alias = cardAliases(g);
+        // A bucket's cards, one card one name (gameCards' names, without counting the copies).
+        const names = (key) => new Set(Object.entries(g[key] || {}).flatMap(([name, ids]) => ids.map((id) => canon(alias.get(id) || name))));
         // Only cards of my deck: its main for that game, its sideboard (a companion, a wish target) and its commanders; an
         // opponent's card that went through my hand, or that I cast or took, is not one (unknown main: all count).
-        const main = mainOf(m, g.n, c);
-        const inMain = main && new Set(Object.keys(main).map(canon));
-        const inDeck = inMain && new Set([...inMain, ...own]);
+        const { inMain, inDeck } = listOf(g.n);
         const mine = (name) => !inDeck || inDeck.has(name);
         const drawn = new Set([...names('drawn')].filter(mine));
         // Drawn later: in my hand during the game but not in the kept seven (unknown when the opening hand was missed).
@@ -610,10 +643,18 @@
   }
 
   // My lands, by their one name: the cards I ever played as a land (a basic counts even before that).
+  const landsOf = new WeakMap(); // match -> the names I played as a land in it
   function landNames(list, c) {
     const canon = canonOf(c);
     const out = new Set();
-    for (const m of list) for (const g of m.games) for (const [, seat, type, name] of g.log) if (type === 'LAND_PLAYED' && seat === m.mySeat && name) out.add(canon(name));
+    for (const m of list) {
+      if (!landsOf.has(m)) {
+        const names = new Set();
+        for (const g of m.games) for (const [, seat, type, name] of g.log) if (type === 'LAND_PLAYED' && seat === m.mySeat && name) names.add(name);
+        landsOf.set(m, names);
+      }
+      for (const name of landsOf.get(m)) out.add(canon(name));
+    }
     return out;
   }
   // My results by the lands in my kept hand, counted in games: [0 or 1, 2, 3, 4 or more], each { all, play, draw }.
@@ -644,8 +685,8 @@
     esc, obj, normalizeMatch, normalizeNote, normalizeDecks, normalizeMerges, normalizeMoves, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, MIN_SAMPLE, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
-    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
-    loadI18n, browserI18n, translator, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
+    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, cardAliases, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
+    loadI18n, browserI18n, translator, applyStored, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;
   else root.EndstepShared = Shared;

@@ -96,11 +96,17 @@ async function resolveNames(names) {
 }
 // Every name my cards were recorded under in these matches, as the site gave them: my list, my main decks after side,
 // my opening hands and the cards I drew, played or had in play.
+// Read once per record (a match written again is a new object here), again when its list changes (a deck picked by hand).
+const rawNames = new WeakMap();
 const rawCardNames = (list) => list.flatMap((m) => {
   const d = myDeck(m);
-  return [d && d.cards, m.limitedDeck && m.limitedDeck.deck].flatMap((x) => Object.keys(S.deckCounts(x) || {}))
+  const memo = rawNames.get(m);
+  if (memo && memo.cards === (d && d.cards)) return memo.names;
+  const names = [d && d.cards, m.limitedDeck && m.limitedDeck.deck].flatMap((x) => Object.keys(S.deckCounts(x) || {}))
     .concat(Object.values(m.mains || {}).flatMap(Object.keys), m.games.flatMap((g) => [...Object.keys(g.drawn || {}), ...Object.keys(g.played || {}),
       ...Object.keys(g.board || {}), ...(g.openingHand || [])]));
+  rawNames.set(m, { cards: d && d.cards, names });
+  return names;
 });
 const { opps, colorsOf, gRes, onPlay, tally, pct, MIN_SAMPLE } = S;
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
@@ -256,7 +262,7 @@ function listed(list) {
 
 function haystack(m) {
   const n = notes[m.id] || {};
-  const seen = opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)));
+  const seen = oppCards(m);
   return [oppLabel(m), n.archetype, (guessFor(m) || {}).name, n.notes, deckName(m), fmt(m), ...seen].join('\n').toLowerCase();
 }
 
@@ -467,7 +473,7 @@ let metaFormatsAt = 0;
 let metaBusy = false;
 let metaRetryAt = 0;
 let metaTold = false; // the player was told recognition is unavailable: the next tries stay quiet
-const guessMemo = new Map();
+const guessMemo = new Map(); // match id -> { key, guess }
 
 function useMeta(s) {
   if (!s) return;
@@ -477,7 +483,8 @@ function useMeta(s) {
 const initMeta = async () => useMeta((await chrome.storage.local.get('meta')).meta);
 const persistMeta = () => chrome.storage.local.set({ meta: { formats: metaFormats, formatsAt: metaFormatsAt, byFormat: metaData } });
 
-const oppCards = (m) => opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)));
+const seenMemo = new WeakMap(); // match -> the opponents' cards seen (a match written again is a new object here)
+const oppCards = (m) => seenMemo.get(m) || seenMemo.set(m, opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat)))).get(m);
 const recognizable = (m) => !archetype(m) && !S.NO_RECOGNITION.test(`${m.format || ''} ${m.formatId || ''}`)
   && oppCards(m).filter((c) => !S.BASIC.test(c)).length >= 2;
 const metaFormatOf = (m) => S.metaFormat(m, C, metaFormats); // the one format a match is compared with (see shared.js)
@@ -487,9 +494,12 @@ function guessFor(m) {
   if (!recognizable(m)) return null;
   const f = metaFormatOf(m);
   if (!f || !metaData[f]) return null;
-  const key = `${m.id}|${m.updatedAt}|${f}${metaData[f].at}`;
-  if (!guessMemo.has(key)) guessMemo.set(key, S.recognize(m, C, { formats: metaFormats, byFormat: metaData }, Meta, T));
-  return guessMemo.get(key);
+  const key = `${m.updatedAt}|${f}${metaData[f].at}`;
+  const memo = guessMemo.get(m.id);
+  if (memo && memo.key === key) return memo.guess;
+  const guess = S.recognize(m, C, { formats: metaFormats, byFormat: metaData }, Meta, T);
+  guessMemo.set(m.id, { key, guess });
+  return guess;
 }
 
 // Load what the current matches need, one format at a time (about one request per archetype), then re-render.
@@ -1080,7 +1090,7 @@ function renderDrawer(s, stats, vs) {
     return rr.W + rr.L + rr.D ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
   }).join('') : '';
   const seen = new Map(); // card -> number of these matches where it showed up
-  for (const m of list) for (const name of new Set(opps(m).flatMap((p) => Object.keys(T.seenCards(m, p.seat))))) seen.set(name, (seen.get(name) || 0) + 1);
+  for (const m of list) for (const name of new Set(oppCards(m))) seen.set(name, (seen.get(name) || 0) + 1);
   const cards = [...seen].filter(([n]) => !S.BASIC.test(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale)).slice(0, 24)
     .map(([name, n]) => `<li>${cardLink(name)} <span class="muted">${esc(t('seen_in', { n, total: list.length }))}</span></li>`).join('');
   const where = s.deck !== null ? t('scope_deck', { deck: s.deck, format: s.format }) : s.format !== null ? t('scope_all_format', { format: s.format }) : t('scope_all');
@@ -1157,12 +1167,21 @@ function showMatch(m) {
 // fold: null when it cannot fold, else whether it is folded (a button then opens or folds it).
 // From one time to another. Across midnight formatRange writes both dates out: the two times then, with the separator
 // the language puts between two times.
+const hoursMemo = new Map();
 function hours(from, to) {
+  const key = `${locale}|${from}|${to}`;
+  if (hoursMemo.has(key)) return hoursMemo.get(key);
+  if (hoursMemo.size > 20000) hoursMemo.clear(); // ponytail: the session in play adds one a write; dropped all at once past a long history's worth
   const f = clock();
-  if (new Date(from).toDateString() === new Date(to).toDateString()) return f.formatRange(from, to);
-  const noon = new Date(2000, 0, 1, 12).getTime();
-  const sep = f.formatRangeToParts(noon, noon + 3600e3).filter((p) => p.source === 'shared').map((p) => p.value).join('');
-  return f.format(from) + sep + f.format(to);
+  let out;
+  if (new Date(from).toDateString() === new Date(to).toDateString()) out = f.formatRange(from, to);
+  else {
+    const noon = new Date(2000, 0, 1, 12).getTime();
+    const sep = f.formatRangeToParts(noon, noon + 3600e3).filter((p) => p.source === 'shared').map((p) => p.value).join('');
+    out = f.format(from) + sep + f.format(to);
+  }
+  hoursMemo.set(key, out);
+  return out;
 }
 function sessionHead(s, fold) {
   const from = s[s.length - 1].startedAt;

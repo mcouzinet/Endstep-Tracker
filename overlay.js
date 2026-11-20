@@ -309,18 +309,8 @@
 
   function apply(k, v) {
     if (/^note:|^(decks|deckMerges|formatMoves|meta)$/.test(k)) guesses = new WeakMap();
-    if (k.startsWith('match:')) {
-      const m = v === undefined ? null : S.normalizeMatch(v);
-      if (m) for (const g of m.games) g.log = []; // never shown here, and the heaviest part of a record
-      if (m) data.matches.set(m.id, m); else data.matches.delete(k.slice(6));
-    } else if (k.startsWith('note:')) { if (v === undefined) delete data.notes[k.slice(5)]; else data.notes[k.slice(5)] = S.normalizeNote(v); }
-    else if (k === 'decks') data.decks = S.normalizeDecks(v);
-    else if (k === 'deckMerges') data.merges = S.normalizeMerges(v); // decks merged in the dashboard
-    else if (k === 'formatMoves') data.formatMoves = S.normalizeMoves(v); // decks moved to another format in the dashboard
-    else if (k === 'historyImport') data.historyImport = v || null;
-    else if (k === 'meta') data.meta = v ? { formats: v.formats, byFormat: S.obj(v.byFormat) } : null;
-    else if (k === 'settings') {
-      data.settings = S.obj(v);
+    if (k === 'historyImport') data.historyImport = v || null;
+    else if (S.applyStored(data, k, v) && k === 'settings') {
       const p = data.settings.overlayPos;
       if (p && Number.isFinite(p.right) && Number.isFinite(p.bottom)) Object.assign(pos, { right: p.right, bottom: p.bottom });
     }

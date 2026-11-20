@@ -50,6 +50,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.match(await text('main h2'), /^In progress against Brisbane/);
     assert.equal(await p.evaluate(() => /G1|G2-G3/.test(document.body.textContent)), false);
 
+    // Kept up to date key by key: a write of the match in play reads nothing again, a deck merged in the dashboard is
+    // followed.
+    await p.evaluate(() => { const st = chrome.storage.local; const keys = st.getKeys.bind(st); window.qaReads = 0; st.getKeys = () => { window.qaReads++; return keys(); }; });
+    await p.evaluate(async () => { const m = (await chrome.storage.local.get('match:m-live'))['match:m-live']; m.updatedAt = Date.now(); await chrome.storage.local.set({ 'match:m-live': m }); });
+    await sleep(200);
+    assert.equal(await p.evaluate(() => window.qaReads), 0, 'a write of the match in play: storage not read again');
+    assert.match(await text('main section:nth-of-type(2) h3'), /with Burn$/);
+    await p.evaluate(async (id) => chrome.storage.local.set({ deckMerges: { [id]: { id: 'deck-merged', name: 'Mono-Red Burn' } } }), live.myDeck.id);
+    await sleep(200);
+    assert.match(await text('main section:nth-of-type(2) h3'), /with Mono-Red Burn$/, 'a merge made in the dashboard');
+
     // The in-page panel switch: on by default, stored when turned off.
     assert.equal(await p.evaluate(() => document.getElementById('overlay').checked), true);
     await p.click('#overlay');

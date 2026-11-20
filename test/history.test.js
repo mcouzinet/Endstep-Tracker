@@ -116,4 +116,12 @@ assert.equal(T.fromHistory(row({ id: undefined }), decks), null);
 assert.equal(T.fromHistory(row({ createdAt: 'yesterday' }), decks), null);
 assert.equal(T.fromHistory(null, decks), null);
 
+const TWIN = 2 * 3600e3; // shared.js TWIN_MS
+// Only the recorded matches started within TWIN_MS are compared, whatever the order of the list; the nearest pairs first,
+// ties in the order of the list.
+const edge = [rec('late', H + TWIN + 1, 'Bartok', 'W'), rec('at', H - TWIN, 'Bartok', 'W'), imp('h1', H, 'Bartok', 'won'), rec('far', H - 9 * TWIN, 'Bartok', 'W')];
+assert.deepEqual(S.historyPairs(edge), [{ h: 'h1', m: 'at' }], 'two hours apart at most');
+const tie = [rec('after', H + 60e3, 'Bartok', 'W'), rec('before', H - 60e3, 'Bartok', 'W'), imp('h1', H, 'Bartok', 'won')];
+assert.deepEqual(S.historyPairs(tie), [{ h: 'h1', m: 'after' }], 'as far before as after: the first one listed');
+
 console.log('history: ok');

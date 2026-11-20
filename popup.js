@@ -14,25 +14,25 @@ async function openDashboard() {
   window.close();
 }
 
+// Read once, then kept up to date key by key (the match in play is written every second).
 async function load() {
-  const all = await S.loadStore();
-  const d = { matches: [], notes: {}, decks: S.normalizeDecks(all.decks), merges: S.normalizeMerges(all.deckMerges), formatMoves: S.normalizeMoves(all.formatMoves), settings: S.obj(all.settings) };
-  for (const [k, v] of Object.entries(all)) {
-    if (k.startsWith('match:')) { const m = S.normalizeMatch(v); if (m) d.matches.push(m); }
-    else if (k.startsWith('note:')) d.notes[k.slice(5)] = S.normalizeNote(v);
-  }
-  d.matches.sort((a, b) => b.startedAt - a.startedAt);
-  d.meta = all.meta ? { formats: all.meta.formats, byFormat: S.obj(all.meta.byFormat) } : null;
+  const d = { matches: new Map(), notes: {}, decks: {}, merges: {}, formatMoves: {}, meta: null, settings: {} };
+  for (const [k, v] of Object.entries(await S.loadStore())) S.applyStored(d, k, v);
   return d;
 }
+let guesses = new WeakMap(); // match -> its recognized deck, until a note, the decks or the metagame change
 
 function render(d) {
   const names = S.savedCardNames(); // my cards' one names as the dashboard looked them up: the popup never asks Scryfall
   const C = { notes: d.notes, decks: d.decks, merges: d.merges, formatMoves: d.formatMoves, t, canon: (n) => names[n] || n };
-  const guess = (m) => (S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
+  const matches = [...d.matches.values()].sort((a, b) => b.startedAt - a.startedAt);
+  const guess = (m) => {
+    if (!guesses.has(m)) guesses.set(m, S.archetype(m, C) ? null : S.recognize(m, C, d.meta, Meta, T));
+    return guesses.get(m);
+  };
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
   const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</dd></div>`;
-  const live = d.matches.find((m) => S.isLive(m));
+  const live = matches.find((m) => S.isLive(m));
   let html;
   if (live) {
     const a = S.archetype(live, C);
@@ -40,7 +40,7 @@ function render(d) {
     const format = S.formatOf(live, C);
     const deck = S.deckName(live, C);
     const key = keyOf(live);
-    const vs = d.matches.filter((m) => m !== live && !S.vsAI(m) && S.formatOf(m, C) === format && S.deckName(m, C) === deck && keyOf(m) === key);
+    const vs = matches.filter((m) => m !== live && !S.vsAI(m) && S.formatOf(m, C) === format && S.deckName(m, C) === deck && keyOf(m) === key);
     const r = S.records(vs);
     const opp = S.opps(live).map((p) => p.name).join(', ') || '?';
     const game = live.games.length ? ` · ${t('game_n', { n: live.games[live.games.length - 1].n })}` : '';
@@ -55,10 +55,10 @@ function render(d) {
     </section>
     ${key === '?' ? '' : `<section><h3>${esc(t('popup_vs_record', { deck }))}</h3>${vs.some((m) => m.result)
       ? `<dl class="stats">${stat(t('matches'), r.m)}</dl>` : `<p class="note">${esc(t('popup_first_time'))}</p>`}</section>`}${side}`;
-  } else if (d.matches.length) {
+  } else if (matches.length) {
     // A session leaves out the matches against the AI: with nothing else recorded, there is none to sum up.
-    const sess = S.lastSession(d.matches);
-    const recent = (sess.length ? sess : d.matches).slice(0, 3).map((m) => {
+    const sess = S.lastSession(matches);
+    const recent = (sess.length ? sess : matches).slice(0, 3).map((m) => {
       const r = m.status === 'complete' && ['W', 'L', 'D'].includes(m.result) ? m.result : '';
       const a = S.archetype(m, C) || (guess(m) || {}).name || '';
       return `<li><span class="result ${r || 'open'}"><i></i>${esc(r ? t({ W: 'win', L: 'loss', D: 'draw' }[r]) : t('unfinished'))}</span>`
@@ -84,11 +84,17 @@ function render(d) {
   const access = async () => { $('#access').hidden = await S.hasSiteAccess(); };
   access();
   $('#access-btn').addEventListener('click', () => S.askSiteAccess().then(access));
-  let d = await load();
+  const d = await load();
   render(d);
   document.body.classList.remove('loading');
   $('#overlay').addEventListener('change', (e) => chrome.storage.local.set({ settings: { ...d.settings, overlay: e.target.checked } }));
-  chrome.storage.onChanged.addListener(async (changes, area) => {
-    if (area === 'local' && Object.keys(changes).some((k) => /^(match|note):|^settings$/.test(k))) { d = await load(); render(d); }
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    let touched = false;
+    for (const [k, c] of Object.entries(changes)) {
+      if (/^note:|^(decks|deckMerges|formatMoves|meta)$/.test(k)) guesses = new WeakMap();
+      if (S.applyStored(d, k, c.newValue)) touched = true;
+    }
+    if (touched) render(d);
   });
 })();

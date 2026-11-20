@@ -19,6 +19,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Historique** : un cercle par game, P ou D et mulligans en badges, détail au survol ; ton deck en gras, le format en petit dessous (1.8.4).
 - **Matchups et Mes cartes** : le nom en gras, des colonnes alignées ; sur téléphone, une ligne de détail sous chaque carte (1.8.5).
 - **Bilans** : le bilan en grand, le pourcentage en petit dessous, affiché à partir de 10 matchs au lieu de 5 (1.8.6).
+- **Gros historiques** : l'import de l'historique lit tes matchs une fois au lieu d'une fois par page ; Mes cartes, les doublons et les mises à jour en direct du tableau de bord vont plus vite (1.8.12).
 
 ### Corrigé
 
@@ -35,6 +36,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Reconnaissance** : plus de deck « reconnu à 100 % » dans un format qui n'a qu'un archétype publié, et une carte sans taux ne bloque plus le format (1.8.11).
 - **Mes cartes** : le match en cours n'est plus compté avant sa fin (1.8.11).
 - **Portugais du Portugal** : le nom et le panneau en jeu en portugais (1.8.11).
+- **Popup** : elle ne relit plus tout à chaque écriture du match en cours, et suit les fusions, les changements de format et le métagame faits dans le tableau de bord (1.8.12).
 
 ## [1.8] (2026-11-16)
 

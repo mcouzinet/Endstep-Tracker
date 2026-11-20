@@ -52,6 +52,7 @@ const older = { nextCursor: null, matches: [
     p.on('pageerror', (e) => errors.push(e.message));
     const served = [];
     const api = []; // [query, Authorization] of each history request
+    let held = null; // while set, the history requests wait for it (the QA first counts the extension's storage reads)
     await p.setRequestInterception(true);
     p.on('request', (r) => {
       const u = new URL(r.url());
@@ -59,11 +60,18 @@ const older = { nextCursor: null, matches: [
       served.push(u.pathname);
       if (u.pathname === '/api/me/matches') {
         api.push([u.search, r.headers().authorization]);
-        return r.respond({ status: 200, contentType: 'application/json', body: JSON.stringify(u.searchParams.get('before') === 'c1' ? older : page) });
+        const send = () => r.respond({ status: 200, contentType: 'application/json', body: JSON.stringify(u.searchParams.get('before') === 'c1' ? older : page) });
+        return held ? held.then(send) : send();
       }
       r.respond({ status: 200, contentType: 'text/html', body: '<!doctype html><title>endstep (stub)</title><body><script>fetch("/api/me/matches?limit=25", { headers: { Authorization: "Bearer qa-token" } })</script></body>' });
     });
     const cdp = await p.createCDPSession();
+    // The extension's world in the page (content.js, overlay.js): its storage reads are counted there.
+    const worlds = new Set();
+    cdp.on('Runtime.executionContextCreated', ({ context }) => { if (context.origin.startsWith('chrome-extension://')) worlds.add(context.id); });
+    cdp.on('Runtime.executionContextsCleared', () => worlds.clear());
+    await cdp.send('Runtime.enable');
+    const inWorld = async (expression) => (await cdp.send('Runtime.evaluate', { contextId: [...worlds][0], expression, returnByValue: true })).result.value;
     const shadow = async () => {
       const { root } = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
       const find = (n) => (n.attributes && n.attributes.includes('endstep-tracker-panel') ? n : (n.children || []).map(find).find(Boolean) || null);
@@ -106,9 +114,16 @@ const older = { nextCursor: null, matches: [
 
     // The history page, asked for: the next page loads by itself (the site's request, its token), the matches never
     // recorded are added, the recorded ones are not (h3, recorded under another id), and the panel counts them.
+    let release;
+    held = new Promise((r) => { release = r; });
     await p.reload();
+    for (let i = 0; i < 40 && !worlds.size; i++) await sleep(50);
+    await inWorld('(() => { const a = chrome.storage.local; const keys = a.getKeys.bind(a); globalThis.qaReads = 0; a.getKeys = () => { globalThis.qaReads++; return keys(); }; })()');
+    held = null;
+    release();
     await sleep(2500);
     assert.deepEqual(api.splice(0), [['?limit=25', 'Bearer qa-token'], ['?limit=25&before=c1', 'Bearer qa-token']]);
+    assert.equal(await inWorld('globalThis.qaReads'), 1, 'all of storage read once for the whole import, not once a page');
     assert.equal(await get('match:h4'), undefined, 'the twin of a match recorded in part: not added');
     const done = await get('match:m-part');
     assert.ok(done.formatId === 'pauper' && done.ranked === true && done.myDeck.id === 'deck-1' && done.result === 'W' && done.status === 'complete', JSON.stringify(done));
