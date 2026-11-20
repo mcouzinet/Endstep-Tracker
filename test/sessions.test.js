@@ -11,6 +11,12 @@ const list = [match('f', 'W', 20 * H), match('e', 'L', 19 * H), match('d', 'L', 
 assert.deepEqual(S.sessions(list).map((s) => s.map((m) => m.id)), [['f', 'e', 'd', 'c'], ['b', 'a']]);
 assert.deepEqual(S.lastSession(list).map((m) => m.id), ['f', 'e', 'd', 'c']);
 
+// By day: a night past midnight stays with its evening (before 5 o'clock is the day before), the next morning is a day of its own.
+const at = (d, h, m = 0) => new Date(2026, 10, d, h, m).getTime();
+const nights = [match('n5', 'W', at(19, 9)), match('n4', 'L', at(19, 4, 50)), match('n3', 'W', at(19, 0, 30)), match('n2', 'L', at(18, 23)), match('n1', 'W', at(18, 5)), match('n0', 'W', at(18, 4, 59))];
+assert.deepEqual(S.days(nights).map((d) => d.map((m) => m.id)), [['n5'], ['n4', 'n3', 'n2', 'n1'], ['n0']]);
+assert.equal(S.dayOf(nights[1]), new Date(2026, 10, 18).toDateString());
+
 // c follows two losses but in an earlier session: not counted; f follows d and e.
 assert.deepEqual([...S.afterTwoLosses(list)], ['f']);
 // A draw ends the run; an unfinished match leaves it as it is.

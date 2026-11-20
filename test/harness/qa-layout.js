@@ -1,6 +1,7 @@
-// QA of the dashboard's layout and history sessions, on harness-cards.html (run `node gen-demo.js` first): labels keep
-// their room at every width, the match detail keeps its two columns, Mes cartes sorts when narrow; sessions fold,
-// a session past midnight gives its hours alone, j reaches a folded session, Escape closes one layer. Run: node qa-layout.js
+// QA of the dashboard's layout and history views, on harness-cards.html (run `node gen-demo.js` first): labels keep
+// their room at every width, the match detail keeps its two columns, Mes cartes sorts when narrow; the history is a list
+// by default, by day on a click (a night past midnight with its evening, every day open, a click folds one, j reaches a
+// folded day, the choice kept), Escape closes one layer. Run: node qa-layout.js
 const assert = require('node:assert/strict');
 const { puppeteer, CHROME } = require('./browser.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -50,33 +51,57 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   });
   await p.click('#tab-history');
   await sleep(600);
-  const heads = () => p.evaluate(() => [...document.querySelectorAll('.session')].map((x) => { const h = x.querySelector('button'); return h ? h.getAttribute('aria-expanded') : 'fixed'; }));
+  // A list by default: no caption, each row says how long ago.
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#matches .day').length), 0, 'a list by default');
+  assert.doesNotMatch(await p.evaluate(() => document.querySelector('#matches .when').textContent), /^\d{1,2}:\d{2}/);
+  // By day: the latest night, past midnight, is one day, labeled as its evening.
+  await p.click('[data-filter="view"] [data-value="day"]');
+  await sleep(300);
+  const heads = () => p.evaluate(() => [...document.querySelectorAll('#matches .day')].map((x) => { const h = x.querySelector('button'); return h ? h.getAttribute('aria-expanded') : 'fixed'; }));
   let h = await heads();
-  assert.equal(h[0], 'true', 'the latest session open');
-  assert.ok(h.slice(1).every((x) => x === 'false' || x === 'fixed'), 'the others folded');
-  const meta = await p.evaluate(() => document.querySelector('.session .s-meta').textContent);
-  assert.match(meta, /^\d{1,2}:\d{2}\D{1,5}\d{1,2}:\d{2} · /, `past midnight, the hours alone: ${meta}`);
+  assert.ok(h.length > 1 && h.every((x) => x === 'true' || x === 'fixed'), 'every day open: ' + h);
+  const first = await p.evaluate(() => {
+    const day = document.querySelector('#matches .day');
+    const hours = [];
+    for (let el = day.nextElementSibling; el && el.classList.contains('match'); el = el.nextElementSibling) hours.push(new Date(matches.find((m) => m.id === el.dataset.id).startedAt).getHours());
+    const back = new Date().getHours() < 5 ? 0 : -1; // the night's matches count for the evening before 00:40
+    const label = new Intl.RelativeTimeFormat(document.documentElement.lang, { numeric: 'auto' }).format(back, 'day');
+    return { hours, day: day.querySelector('.s-day').textContent, label, time: document.querySelector('#matches .when').textContent };
+  });
+  assert.ok(first.hours.some((x) => x < 5) && first.hours.some((x) => x >= 12), 'the night past midnight, one day: ' + first.hours);
+  assert.equal(first.day.toLowerCase(), first.label.toLowerCase());
+  assert.match(first.time, /^\d{1,2}:\d{2}/, 'under a day, the time of each match');
 
-  // A match open in the latest session: its caption still folds it, the match closing.
+  // A match open in the first day: its caption folds it, the match closing; a click opens it again.
   await p.evaluate(() => document.querySelector('#matches .match-row').click());
   await sleep(200);
-  await (await p.$('.session button')).click();
+  await (await p.$('#matches .day button')).click();
   await sleep(200);
   h = await heads();
-  assert.equal(h[0], 'false', 'a session folds with one of its matches open');
+  assert.equal(h[0], 'false', 'a day folds with one of its matches open');
   assert.equal(await p.evaluate(() => openId), null);
-  await (await p.$('.session button')).click();
+  await (await p.$('#matches .day button')).click();
   await sleep(200);
 
-  // j walks the rows and stops on a folded session's caption; Enter opens it.
+  // j walks the rows and stops on a folded day's caption; Enter opens it.
+  await p.evaluate(() => document.querySelectorAll('#matches .day button')[1].click());
+  await sleep(200);
   await p.focus('#matches .match-row');
-  const onCaption = () => p.evaluate(() => (document.activeElement.matches('button.s-head') ? [...document.querySelectorAll('.session')].indexOf(document.activeElement.closest('.session')) : -1));
+  const onCaption = () => p.evaluate(() => (document.activeElement.matches('button.s-head') ? [...document.querySelectorAll('#matches .day')].indexOf(document.activeElement.closest('.day')) : -1));
   for (let i = 0; i < 10 && (await onCaption()) < 0; i++) { await p.keyboard.press('j'); await sleep(40); }
   const at = await onCaption();
-  assert.ok(at > 0, 'j reaches a folded session');
+  assert.ok(at > 0, 'j reaches a folded day');
   await p.keyboard.press('Enter');
   await sleep(200);
   assert.equal((await heads())[at], 'true', 'Enter opens it');
+
+  // The choice is kept; the list comes back on a click.
+  await p.reload();
+  await sleep(600);
+  assert.ok(await p.evaluate(() => document.querySelectorAll('#matches .day').length > 1), 'by day after a reload');
+  await p.click('[data-filter="view"] [data-value="list"]');
+  await sleep(200);
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#matches .day').length), 0);
 
   // The detail: its fields beside the games from 981 px on, under them below, never past the panel.
   await p.evaluate(() => document.querySelector('#matches .match-row').click());

@@ -62,6 +62,15 @@
   "result": {
     "message": "Risultato"
   },
+  "view_label": {
+    "message": "Vista della cronologia"
+  },
+  "view_list": {
+    "message": "Elenco"
+  },
+  "view_day": {
+    "message": "Per giorno"
+  },
   "result_all": {
     "message": "Tutti"
   },

@@ -40,7 +40,7 @@ const PREFS = 'endstep-tracker.filters';
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
 // tab: the view shown, one of TABS; kept across visits, never reset with the filters.
 const TABS = ['matchups', 'cards', 'history'];
-const state = { q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false };
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false, view: 'list' };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
@@ -152,6 +152,7 @@ function loadPrefs() {
   try { Object.assign(state, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch { /* storage unavailable */ }
   for (const k of ['format', 'formats', 'deck']) delete state[k]; // filters of earlier versions, replaced by the scope
   if (!TABS.includes(state.tab)) state.tab = 'matchups';
+  if (!['list', 'day'].includes(state.view)) state.view = 'list';
   $('#q').value = state.q;
 }
 function savePrefs() {
@@ -1162,53 +1163,33 @@ function showMatch(m) {
   });
 }
 
-// A session's caption in the history: its day (today, yesterday, then the date), its hours, its matches and its record.
-// fold: null when it cannot fold, else whether it is folded (a button then opens or folds it).
-// From one time to another. Across midnight formatRange writes both dates out: the two times then, with the separator
-// the language puts between two times.
-const hoursMemo = new Map();
-function hours(from, to) {
-  const key = `${locale}|${from}|${to}`;
-  if (hoursMemo.has(key)) return hoursMemo.get(key);
-  if (hoursMemo.size > 20000) hoursMemo.clear(); // ponytail: the session in play adds one a write; dropped all at once past a long history's worth
-  const f = clock();
-  let out;
-  if (new Date(from).toDateString() === new Date(to).toDateString()) out = f.formatRange(from, to);
-  else {
-    const noon = new Date(2000, 0, 1, 12).getTime();
-    const sep = f.formatRangeToParts(noon, noon + 3600e3).filter((p) => p.source === 'shared').map((p) => p.value).join('');
-    out = f.format(from) + sep + f.format(to);
-  }
-  hoursMemo.set(key, out);
-  return out;
-}
-function sessionHead(s, fold) {
-  const from = s[s.length - 1].startedAt;
-  const to = Math.max(from, s[0].endedAt || s[0].updatedAt || s[0].startedAt);
-  const days = Math.round((new Date(from).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5); // 23 or 25 h across a clock change
-  const thisYear = new Date(from).getFullYear() === new Date().getFullYear();
+// A day's caption in the history by day: the day (today, yesterday, then the date), and from two matches on their number
+// and the day's record. fold: null when it cannot fold, else whether it is folded (a button then opens or folds it).
+function dayHead(s, fold) {
+  const at = s[0].startedAt - S.DAY_START_MS; // a night past midnight is its evening's
+  const days = Math.round((new Date(at).setHours(0, 0, 0, 0) - new Date(Date.now() - S.DAY_START_MS).setHours(0, 0, 0, 0)) / 864e5); // 23 or 25 h across a clock change
+  const thisYear = new Date(at).getFullYear() === new Date().getFullYear();
   const day = days === 0 || days === -1 ? formatter('rel', { numeric: 'auto' }, Intl.RelativeTimeFormat).format(days, 'day')
-    : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(from);
+    : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(at);
   const r = S.records(s).m; // against the AI or live: no record; a lone match's is its own row's
   const body = `<span class="s-what"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
-    + `<span class="s-meta">${esc(hours(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && count(r) ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
-  const key = esc(sessionKey(s));
-  return `<li class="session" data-key="session:${key}">${fold === null ? `<div class="s-head">${body}</div>`
-    : `<button type="button" class="s-head" data-session="${key}" aria-expanded="${!fold}">${body}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>`}</li>`;
+    + `${s.length > 1 ? `<span class="s-meta">${esc(tn('n_matches', s.length))}</span>` : ''}</span>${s.length > 1 && count(r) ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
+  const key = esc(S.dayOf(s[0]));
+  return `<li class="day" data-key="day:${key}">${fold === null ? `<div class="s-head">${body}</div>`
+    : `<button type="button" class="s-head" data-day="${key}" aria-expanded="${!fold}">${body}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>`}</li>`;
 }
-const sessionKey = (s) => s[s.length - 1].id; // its first match: a session keeps it as it grows
-// The caption above a match's row in the history.
-function sessionOfRow(id) {
+// The caption above a match's row in the history by day.
+function dayOfRow(id) {
   let el = $('#matches').querySelector(`.match[data-id="${CSS.escape(id)}"]`);
-  while (el && !el.classList.contains('session')) el = el.previousElementSibling;
+  while (el && !el.classList.contains('day')) el = el.previousElementSibling;
   return el;
 }
-const unfolded = new Map(); // session key -> opened (true) or folded (false) by a click, for as long as the page stays open
+const folds = new Set(); // the days folded by a click on their caption, for as long as the page stays open
 
-// The history, grouped by session: shown holds the matches of the filters in view (the search and the result
-// filter only narrow list), so each caption keeps its session's whole record. Every session of several matches but
-// the latest folds to its caption until opened; a search or a result filter shows every row it finds, and the
-// session of the match open stays open (opened from the summary or a matchup's panel).
+// The history: a list of matches (the default), or by day (state.view), under a caption per day. shown holds the
+// matches of the filters in view (the search and the result filter only narrow list), so each caption keeps its day's
+// whole record. Every day stays open until its caption is clicked; a search or a result filter shows every row it finds,
+// and the day of the match open stays open (opened from the summary or a matchup's panel).
 function renderMatches(list, shown) {
   if (!list.length) {
     $('#matches').innerHTML = `<li class="empty">
@@ -1221,19 +1202,18 @@ function renderMatches(list, shown) {
   // Re-rendering must not snap shut a journal or deck list the user opened.
   $('#history').classList.toggle('one-format', new Set(list.map(fmtCell)).size < 2); // the same format on every row: no column
   const open = new Set([...document.querySelectorAll('#matches details[open]')].map((d) => d.dataset.key));
-  const all = S.sessions(shown);
-  const sessionOf = new Map(all.flatMap((s) => s.map((m) => [m.id, s])));
+  const byDay = new Map(state.view === 'day' ? S.days(shown).flatMap((s) => s.map((m) => [m.id, s])) : []);
   const narrowed = state.q.trim() !== '' || state.result !== 'all';
   const folded = (s) => {
     if (s.length < 2 || narrowed) return null;
-    if (openId && s.some((m) => m.id === openId)) unfolded.set(sessionKey(s), true);
-    return !(unfolded.has(sessionKey(s)) ? unfolded.get(sessionKey(s)) : s === all[0]);
+    if (openId && s.some((m) => m.id === openId)) folds.delete(S.dayOf(s[0]));
+    return folds.has(S.dayOf(s[0]));
   };
   let cur = null; let hide = false;
   $('#matches').innerHTML = list.map((m) => {
-    const s = sessionOf.get(m.id);
+    const s = byDay.get(m.id);
     let head = '';
-    if (s && s !== cur) { const f = folded(s); head = sessionHead(s, f); hide = f === true; }
+    if (s && s !== cur) { const f = folded(s); head = dayHead(s, f); hide = f === true; }
     cur = s;
     return hide ? head : `${head}<li class="match" data-id="${esc(m.id)}">${row(m)}${m.id === openId ? detail(m) : ''}</li>`;
   }).join('');
@@ -1282,7 +1262,7 @@ function row(m) {
     <span class="opp"><span class="opp-top"><span class="opp-name">${esc(oppLabel(m))}</span>${oppRating(m)}</span><span class="opp-sub">${pips(colorsOf(m))}${S.vsAI(m) ? `<span class="tag ai" title="${esc(t('ai_tag_title'))}">${esc(t('ai_tag'))}</span>` : ''}${a ? `<span class="tag">${esc(a)}</span>` : guessTag(m)}</span></span>
     <span class="chips">${m.games.map((g) => chip(m, g)).join('')}${'<span class="g none"></span>'.repeat(m.games.length ? Math.max(0, (m.gamesPerMatch || 0) - m.games.length) : 0)}</span>
     <span class="mine"><b class="cell deck">${esc(deckName(m))}</b><span class="cell fmt">${esc(fmtCell(m))}</span></span>
-    <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(clock().format(m.startedAt))}</time>
+    <time class="when" datetime="${new Date(m.startedAt).toISOString()}" title="${esc(fullDate(m.startedAt))}">${esc(state.view === 'day' ? clock().format(m.startedAt) : ago(m.startedAt))}</time>
     <svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg>
   </button>`;
 }
@@ -1879,10 +1859,6 @@ $('#matches').addEventListener('click', (e) => {
     if (!confirm(t('confirm_delete_match'))) return;
     openId = null;
     const m = matches.find((x) => x.id === id);
-    // Its session's first match (the last row under the caption): the session's fold goes on to the next one, which
-    // now names it.
-    const prev = e.target.closest('.match').previousElementSibling;
-    if (unfolded.has(id) && prev && prev.classList.contains('match')) unfolded.set(prev.dataset.id, unfolded.get(id));
     (async () => {
       // Kept in short, so that importing my history never brings it back: by its id, or as the twin of a recorded match.
       const { deletedMatches } = await chrome.storage.local.get('deletedMatches');
@@ -1894,12 +1870,12 @@ $('#matches').addEventListener('click', (e) => {
     })();
     return;
   }
-  const head = e.target.closest('[data-session]');
+  const head = e.target.closest('[data-day]');
   if (head) {
     const open = head.getAttribute('aria-expanded') !== 'true';
-    // Folding the session of the match open closes that match: it would keep the session open.
-    if (!open && openId && sessionOfRow(openId) === head.closest('.session')) openId = null;
-    unfolded.set(head.dataset.session, open);
+    // Folding the day of the match open closes that match: it would keep the day open.
+    if (!open && openId && dayOfRow(openId) === head.closest('.day')) openId = null;
+    if (open) folds.delete(head.dataset.day); else folds.add(head.dataset.day);
     render();
     return;
   }

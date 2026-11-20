@@ -361,6 +361,19 @@
     return out;
   }
   const lastSession = (list) => sessions(list.filter((m) => !vsAI(m)))[0] || [];
+  // The history by day: a match counts for the day it was played, a night past midnight for its evening (one started
+  // before 5 o'clock goes to the day before). dayOf: that day's key. list: newest first, and so is each day.
+  const DAY_START_MS = 5 * 3600e3;
+  const dayOf = (m) => new Date(m.startedAt - DAY_START_MS).toDateString();
+  function days(list) {
+    const out = [];
+    for (const m of list) {
+      const cur = out[out.length - 1];
+      if (cur && dayOf(cur[0]) === dayOf(m)) cur.push(m);
+      else out.push([m]);
+    }
+    return out;
+  }
   // The matches played right after two losses in a row in the same session (ids). A draw ends the run; a match without
   // a result (live, unfinished) leaves it as it is. list: newest first.
   function afterTwoLosses(list) {
@@ -689,7 +702,7 @@
     STALE_MS, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, normalizeNote, normalizeDecks, normalizeMerges, normalizeMoves, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, count, MIN_SAMPLE, percent, pct, wl, isLive,
-    myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
+    myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, DAY_START_MS, dayOf, days, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, cardAliases, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
     loadI18n, browserI18n, translator, applyStored, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };

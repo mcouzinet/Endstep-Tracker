@@ -62,6 +62,15 @@
   "result": {
     "message": "Ergebnis"
   },
+  "view_label": {
+    "message": "Ansicht des Verlaufs"
+  },
+  "view_list": {
+    "message": "Liste"
+  },
+  "view_day": {
+    "message": "Nach Tag"
+  },
   "result_all": {
     "message": "Alle"
   },

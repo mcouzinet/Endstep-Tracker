@@ -31,7 +31,7 @@ The dashboard opens on the deck of your last match:
 
 • List versions: when your main deck changes, compare any two versions of your list, matchup by matchup.
 
-• Match history, grouped by session with each session's record: date, format, opponent and their rating in ranked matches, your deck, score, result.
+• Match history, as a list or by day with each day's record: date, format, opponent and their rating in ranked matches, your deck, score, result.
 
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
 
@@ -69,7 +69,7 @@ Le tableau de bord s'ouvre sur le deck de ton dernier match :
 
 • Versions de liste : quand ton main deck change, compare n'importe quelles versions de ta liste, matchup par matchup.
 
-• Historique des matchs, groupé par session avec le bilan de chacune : date, format, adversaire et sa cote dans les matchs classés, ton deck, score, résultat.
+• Historique des matchs, en liste ou par journée avec le bilan de chacune : date, format, adversaire et sa cote dans les matchs classés, ton deck, score, résultat.
 
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
 

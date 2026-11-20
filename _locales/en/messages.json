@@ -62,6 +62,15 @@
   "result": {
     "message": "Result"
   },
+  "view_label": {
+    "message": "History view"
+  },
+  "view_list": {
+    "message": "List"
+  },
+  "view_day": {
+    "message": "By day"
+  },
   "result_all": {
     "message": "All"
   },
