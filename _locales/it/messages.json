@@ -395,23 +395,23 @@
   "news_title": {
     "message": "Novità della {v}"
   },
-  "news_18_rating": {
-    "message": "Il rating del tuo avversario nei match classificati, nel pannello e nella cronologia."
+  "news_19_theirs": {
+    "message": "Nuova scheda «Le loro carte»: le carte avversarie che ti costano più game."
   },
-  "news_18_cards": {
-    "message": "Le mie carte mostra solo la tua lista attuale."
+  "news_19_lands": {
+    "message": "Il tuo bilancio secondo le terre nella mano iniziale, e dopo due sconfitte di fila."
   },
-  "news_18_used": {
-    "message": "Nuovo ordinamento «Poco usate» in Le mie carte."
+  "news_19_days": {
+    "message": "La cronologia per giorno, o in elenco come prima."
   },
-  "news_18_versions": {
-    "message": "Confronta due versioni qualsiasi della tua lista."
+  "news_19_look": {
+    "message": "Una dashboard più chiara, con il tuo deck come titolo."
   },
-  "news_18_fast": {
-    "message": "Più veloce, e i deck in ordine alfabetico."
+  "news_19_panel": {
+    "message": "Chiuso, il pannello su endstep.cc mostra solo «REC»."
   },
-  "news_18_fixes": {
-    "message": "Corretto: un match bloccato «in corso» dopo un aggiornamento, e match a volte registrati due volte."
+  "news_19_fixes": {
+    "message": "Corretto: la fine di un match persa dopo aver ricaricato la pagina, il side perso con più schede, e note che potevano cancellarsi."
   },
   "news_all": {
     "message": "Changelog completo (in francese)"

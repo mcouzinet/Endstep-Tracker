@@ -395,23 +395,23 @@
   "news_title": {
     "message": "Neu in {v}"
   },
-  "news_18_rating": {
-    "message": "Die Wertung deines Gegners in gewerteten Matches, im Panel und im Verlauf."
+  "news_19_theirs": {
+    "message": "Neuer Tab „Ihre Karten“: die gegnerischen Karten, die dich die meisten Games kosten."
   },
-  "news_18_cards": {
-    "message": "Meine Karten zeigt nur deine aktuelle Liste."
+  "news_19_lands": {
+    "message": "Deine Bilanz nach Ländern auf der Starthand und nach zwei Niederlagen in Folge."
   },
-  "news_18_used": {
-    "message": "Neue Sortierung „Selten genutzt“ in Meine Karten."
+  "news_19_days": {
+    "message": "Der Verlauf nach Tag oder als Liste wie bisher."
   },
-  "news_18_versions": {
-    "message": "Vergleiche zwei beliebige Versionen deiner Liste."
+  "news_19_look": {
+    "message": "Ein übersichtlicheres Dashboard, mit deinem Deck als Titel."
   },
-  "news_18_fast": {
-    "message": "Schneller, und Decks in alphabetischer Reihenfolge."
+  "news_19_panel": {
+    "message": "Eingeklappt zeigt das Panel auf endstep.cc nur noch „REC“."
   },
-  "news_18_fixes": {
-    "message": "Behoben: ein Match, das nach einem Update „laufend“ blieb, und manchmal doppelt aufgezeichnete Matches."
+  "news_19_fixes": {
+    "message": "Behoben: das Ende eines Matches nach dem Neuladen der Seite, das Sideboard bei mehreren Tabs und Notizen, die verloren gehen konnten."
   },
   "news_all": {
     "message": "Alle Änderungen (auf Französisch)"

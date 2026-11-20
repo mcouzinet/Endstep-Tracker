@@ -395,23 +395,23 @@
   "news_title": {
     "message": "New in {v}"
   },
-  "news_18_rating": {
-    "message": "Your opponent's rating in ranked matches, in the panel and the history."
+  "news_19_theirs": {
+    "message": "New “Their cards” tab: the opposing cards that cost you the most games."
   },
-  "news_18_cards": {
-    "message": "My cards only shows your current list."
+  "news_19_lands": {
+    "message": "Your record by lands in the opening hand, and after two losses in a row."
   },
-  "news_18_used": {
-    "message": "New “Least used” sort in My cards."
+  "news_19_days": {
+    "message": "The history by day, or as a list like before."
   },
-  "news_18_versions": {
-    "message": "Compare any two versions of your list."
+  "news_19_look": {
+    "message": "A clearer dashboard, with your deck as the page title."
   },
-  "news_18_fast": {
-    "message": "Faster, and decks in alphabetical order."
+  "news_19_panel": {
+    "message": "Folded, the panel on endstep.cc only shows “REC”."
   },
-  "news_18_fixes": {
-    "message": "Fixed: a match stuck “in progress” after an update, and matches sometimes recorded twice."
+  "news_19_fixes": {
+    "message": "Fixed: the end of a match missed after a page reload, the sideboard lost with several tabs open, and notes that could be erased."
   },
   "news_all": {
     "message": "Full changelog (in French)"

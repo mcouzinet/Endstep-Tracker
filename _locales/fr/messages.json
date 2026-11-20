@@ -395,23 +395,23 @@
   "news_title": {
     "message": "Nouveautés de la {v}"
   },
-  "news_18_rating": {
-    "message": "La cote de ton adversaire en partie classée, dans le panneau et l'historique."
+  "news_19_theirs": {
+    "message": "Nouvel onglet « Leurs cartes » : les cartes adverses qui te coûtent le plus de games."
   },
-  "news_18_cards": {
-    "message": "Mes cartes n'affiche que ta liste actuelle."
+  "news_19_lands": {
+    "message": "Ton bilan selon les terrains en main de départ, et après deux défaites d'affilée."
   },
-  "news_18_used": {
-    "message": "Nouveau tri « Peu jouées » dans Mes cartes."
+  "news_19_days": {
+    "message": "L'historique par jour, ou en liste comme avant."
   },
-  "news_18_versions": {
-    "message": "Compare deux versions de ta liste, n'importe lesquelles."
+  "news_19_look": {
+    "message": "Un tableau de bord plus clair, avec ton deck en titre."
   },
-  "news_18_fast": {
-    "message": "Plus rapide, et les decks par ordre alphabétique."
+  "news_19_panel": {
+    "message": "Replié, le panneau sur endstep.cc n'affiche plus que « REC »."
   },
-  "news_18_fixes": {
-    "message": "Corrigé : un match bloqué « en cours » après une mise à jour, et des matchs parfois enregistrés deux fois."
+  "news_19_fixes": {
+    "message": "Corrigé : la fin d'un match ratée après un rechargement de la page, le side perdu avec plusieurs onglets, et des notes qui pouvaient s'effacer."
   },
   "news_all": {
     "message": "Toutes les modifications"

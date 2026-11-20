@@ -170,6 +170,42 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 
 What changed for the user, to paste where a store asks for it: AMO ("Release notes" of the version), App Store ("What's New in This Version", on the Mac and iPhone versions). The Chrome Web Store has no such field; Edge gets the changelog link in its certification notes (`publish.sh`). Taken from `CHANGELOG.md`, newest first. The App Store gets its own notes, which never name another platform (Android, Chrome, Firefox, Edge): Apple refused the Mac 1.5 for "Firefox for Android" in What's New (guideline 2.3.10, accurate metadata).
 
+### 1.9 (EN)
+
+- New "Their cards" tab: the opposing cards that cost you the most games, with a search.
+- Your record by lands in the opening hand, on the play and on the draw.
+- Your record right after two losses in a row.
+- The history by day, or as a list like before.
+- A clearer dashboard: your deck as the page title, easier to read history, matchups and cards.
+- Folded, the panel on endstep.cc only shows "REC".
+- Fixed: the end of a match missed after a page reload, the sideboard lost with several tabs open, notes that could be erased, and duplicate matches.
+
+### 1.9 (FR)
+
+- Nouvel onglet « Leurs cartes » : les cartes adverses qui te coûtent le plus de games, avec une recherche.
+- Ton bilan selon le nombre de terrains en main de départ, sur le play et sur la draw.
+- Ton bilan juste après deux défaites d'affilée.
+- L'historique par jour, ou en liste comme avant.
+- Un tableau de bord plus clair : ton deck en titre, un historique, des matchups et des cartes plus lisibles.
+- Replié, le panneau sur endstep.cc n'affiche plus que « REC ».
+- Corrigé : la fin d'un match ratée après un rechargement de la page, le side perdu avec plusieurs onglets, des notes qui pouvaient s'effacer, et des matchs en double.
+
+### 1.9 (App Store EN)
+
+- New "Their cards" tab: the opposing cards that cost you the most games.
+- Your record by lands in the opening hand, and after two losses in a row.
+- The history by day, or as a list like before.
+- A clearer dashboard, with your deck as the page title.
+- Fixed: the end of a match missed after a page reload, and notes that could be erased.
+
+### 1.9 (App Store FR)
+
+- Nouvel onglet « Leurs cartes » : les cartes adverses qui te coûtent le plus de games.
+- Ton bilan selon les terrains en main de départ, et après deux défaites d'affilée.
+- L'historique par jour, ou en liste comme avant.
+- Un tableau de bord plus clair, avec ton deck en titre.
+- Corrigé : la fin d'un match ratée après un rechargement de la page, et des notes qui pouvaient s'effacer.
+
 ### 1.8 (EN)
 
 - Your opponent's rating in ranked matches, beside their name: in the panel on endstep.cc and in the history.

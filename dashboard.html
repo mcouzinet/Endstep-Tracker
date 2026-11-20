@@ -424,6 +424,7 @@
     .promo-wz .promo-foot a:hover { color: #8dffb8; }
     .promo { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 44px 14px 16px; }
     .promo > img { align-self: start; width: 40px; height: 40px; }
+    .promo > .mark { align-self: start; width: 26px; height: 32px; margin: 4px 7px 0; } /* the news: our flat logo, in the box of a promo's icon */
     .promo-body { display: grid; gap: 4px; }
     .promo-title { margin: 0; font-size: 15px; font-weight: 650; }
     .promo-title b { font-weight: inherit; color: #e39456; }
@@ -495,6 +496,7 @@
       .scope-title { font-size: 24px; }
       .promo-lead { display: none; }
       .promo > img { width: 28px; height: 28px; }
+      .promo > .mark { width: 20px; height: 25px; margin: 2px 4px 0; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -562,7 +564,7 @@
     <div id="access" class="panel access" role="alert" hidden><p><b data-i18n="access_title"></b> <span data-i18n="access_text"></span></p><button class="btn primary" data-action="access" data-i18n="access_btn"></button></div>
 
     <aside id="news" class="panel promo news" aria-labelledby="news-title" hidden>
-      <img src="icons/icon-128.png" alt="">
+      <svg class="mark" viewBox="0 0 64 80" aria-hidden="true"><g transform="rotate(-7 32 40)"><rect x="6" y="4" width="52" height="72" rx="8"/><polyline points="16,58 27,44 36,50 49,30"/></g></svg>
       <div class="promo-body">
         <h2 id="news-title" class="promo-title"></h2>
         <ul id="news-list" class="news-list"></ul>

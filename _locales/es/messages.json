@@ -395,23 +395,23 @@
   "news_title": {
     "message": "Novedades de la {v}"
   },
-  "news_18_rating": {
-    "message": "El rating de tu rival en los matches clasificatorios, en el panel y en el historial."
+  "news_19_theirs": {
+    "message": "Nueva pestaña «Sus cartas»: las cartas rivales que más games te cuestan."
   },
-  "news_18_cards": {
-    "message": "Mis cartas solo muestra tu lista actual."
+  "news_19_lands": {
+    "message": "Tu balance según las tierras en la mano inicial, y tras dos derrotas seguidas."
   },
-  "news_18_used": {
-    "message": "Nuevo orden «Poco usadas» en Mis cartas."
+  "news_19_days": {
+    "message": "El historial por día, o en lista como antes."
   },
-  "news_18_versions": {
-    "message": "Compara dos versiones cualesquiera de tu lista."
+  "news_19_look": {
+    "message": "Un panel más claro, con tu deck como título."
   },
-  "news_18_fast": {
-    "message": "Más rápido, y los decks por orden alfabético."
+  "news_19_panel": {
+    "message": "Plegado, el panel en endstep.cc solo muestra «REC»."
   },
-  "news_18_fixes": {
-    "message": "Corregido: un match atascado «en curso» tras una actualización, y matches que a veces se registraban dos veces."
+  "news_19_fixes": {
+    "message": "Corregido: el final de un match perdido al recargar la página, el side perdido con varias pestañas, y notas que podían borrarse."
   },
   "news_all": {
     "message": "Registro de cambios completo (en francés)"

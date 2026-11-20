@@ -395,23 +395,23 @@
   "news_title": {
     "message": "Novidades da {v}"
   },
-  "news_18_rating": {
-    "message": "O rating do seu oponente nas partidas ranqueadas, no painel e no histórico."
+  "news_19_theirs": {
+    "message": "Nova aba “Cartas deles”: as cartas adversárias que mais te custam games."
   },
-  "news_18_cards": {
-    "message": "Minhas cartas mostra só a sua lista atual."
+  "news_19_lands": {
+    "message": "Seu saldo conforme os terrenos na mão inicial, e após duas derrotas seguidas."
   },
-  "news_18_used": {
-    "message": "Nova ordenação “Pouco usadas” em Minhas cartas."
+  "news_19_days": {
+    "message": "O histórico por dia, ou em lista como antes."
   },
-  "news_18_versions": {
-    "message": "Compare duas versões quaisquer da sua lista."
+  "news_19_look": {
+    "message": "Um painel mais claro, com seu deck como título."
   },
-  "news_18_fast": {
-    "message": "Mais rápido, e os decks em ordem alfabética."
+  "news_19_panel": {
+    "message": "Recolhido, o painel no endstep.cc mostra só “REC”."
   },
-  "news_18_fixes": {
-    "message": "Corrigido: uma partida presa “em andamento” após uma atualização, e partidas às vezes registradas duas vezes."
+  "news_19_fixes": {
+    "message": "Corrigido: o fim de uma partida perdido ao recarregar a página, o side perdido com várias abas, e notas que podiam ser apagadas."
   },
   "news_all": {
     "message": "Changelog completo (em francês)"
