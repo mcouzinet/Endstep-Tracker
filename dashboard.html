@@ -10,12 +10,18 @@
     main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 96px; }
     body.loading main { visibility: hidden; }
 
-    /* ---- header ---- */
-    .top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-    .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
-    .brand img { width: 40px; height: 40px; }
-    .brand h1 { font-size: 20px; font-weight: 650; letter-spacing: -.01em; }
-    .brand p { color: var(--ink-3); font-size: 13px; }
+    /* ---- header: the app and its settings, then the deck in view (the filters) ---- */
+    .top { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+    .brand h1 { font-size: 18px; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; }
+    .brand .mark { width: 21px; height: 26px; }
+    .actions { display: flex; align-items: center; gap: 6px; }
+    .actions .btn, .top .bmc { height: 34px; padding-block: 0; }
+    .top .bmc { padding-inline: 12px; font-size: 13px; }
+    .top .bmc svg { width: 16px; height: 16px; }
+    #data-btn { padding-inline: 9px; }
+    .lang-pick { padding-inline: 10px 8px; gap: 6px; font-size: 13px; }
+    .lang-pick .i:last-of-type { width: 14px; height: 14px; color: var(--ink-3); }
     .live {
       display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px;
       border: 1px solid oklch(.8 .135 80 / .45); border-radius: 999px; background: oklch(.8 .135 80 / .08);
@@ -40,7 +46,6 @@
       min-width: 260px; padding: 6px; border: 1px solid var(--line-strong); border-radius: var(--radius);
       background: var(--surface-2); color: var(--ink); box-shadow: var(--shadow-pop);
     }
-    #lang { padding-block: 6px; }
     .menu button {
       display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--radius-sm);
       background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
@@ -55,8 +60,18 @@
     .menu-version { margin: 4px 10px 2px; font-size: 11px; } /* which build is loaded, at a glance */
 
     /* ---- filters ---- */
-    .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
-    #f-scope { min-width: 0; max-width: 100%; font-weight: 600; }
+    .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-bottom: 20px; }
+    /* the deck in view is the page's title; a menu shown short (the deck, the language) has the real select lying over it,
+       invisible, so the list that opens is the native one */
+    .pick { position: relative; cursor: pointer; }
+    .pick > select { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; opacity: 0; cursor: pointer; }
+    .pick:has(select:focus-visible) { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+    .scope { flex: 1 1 320px; min-width: 0; margin-right: 8px; }
+    .scope-kicker { display: block; font-size: 13px; color: var(--ink-3); }
+    .scope-pick { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; border-radius: var(--radius-sm); }
+    .scope-title { min-width: 0; font-size: 28px; font-weight: 650; line-height: 1.15; letter-spacing: -.015em; color: var(--ink); overflow-wrap: anywhere; }
+    .scope-pick .chev { width: 22px; height: 22px; color: var(--ink-3); transition: color .15s; }
+    .scope-pick:hover .chev { color: var(--gold-hi); }
     .search { position: relative; flex: 0 1 300px; display: flex; } /* fixed width: the bar must not reflow when the count appears */
     .search svg { position: absolute; left: 10px; top: 50%; translate: 0 -50%; color: var(--ink-3); pointer-events: none; }
     .search input { width: 100%; padding-left: 34px; }
@@ -472,15 +487,12 @@
       .rec.head { display: none; }
       .count { margin-left: 0; width: 100%; }
       .tabs button { flex: 1; padding: 10px 4px; font-size: 14px; }
-      .top { gap: 10px; }
-      .brand { flex: 1 1 100%; margin-right: 0; } /* then the live pill, language and data menu share one row */
-      #data-btn span, .top .bmc span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-      .top .bmc { align-self: stretch; padding: 0 10px; border-radius: var(--radius-sm); }
-      .top .bmc svg { width: 16px; height: 16px; }
-      #data-btn { padding: 7px 9px; }
-      .live { flex: 1; min-width: 0; }
+      .live { order: 1; flex: 1 1 100%; min-width: 0; } /* the live pill takes a row of its own under the bar */
+      .top .bmc { padding-inline: 9px; } /* the coffee as its icon only */
+      .top .bmc span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
       #live-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .panel-title { font-size: 16px; }
+      .scope-title { font-size: 24px; }
       .promo-lead { display: none; }
       .promo > img { width: 28px; height: 28px; }
     }
@@ -491,6 +503,7 @@
 </head>
 <body class="loading">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5Z"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-more" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
@@ -513,24 +526,20 @@
 
   <main>
     <header class="top">
-      <div class="brand">
-        <img src="icons/icon-128.png" alt="">
-        <div>
-          <h1>Endstep Tracker</h1>
-          <p id="summary"></p>
-        </div>
-      </div>
+      <div class="brand"><svg class="mark" viewBox="0 0 64 80" aria-hidden="true"><g transform="rotate(-7 32 40)"><rect x="6" y="4" width="52" height="72" rx="8"/><polyline points="16,58 27,44 36,50 49,30"/></g></svg><h1>Endstep Tracker</h1></div>
       <button id="live" class="live" hidden><span class="dot"></span><span id="live-text"></span></button>
+      <div class="actions">
       <a class="bmc" href="https://buymeacoffee.com/mcouzinet" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 3v2M10.5 3v2M14 3v2"/></svg><span data-i18n="buy_coffee"></span></a>
-      <select id="lang" data-i18n-attr="aria-label:language,title:language">
+      <span class="btn pick lang-pick"><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg><span id="lang-code"></span><svg class="i" aria-hidden="true"><use href="#i-chevron"/></svg><select id="lang" data-i18n-attr="aria-label:language,title:language">
         <option value="en">English</option>
         <option value="fr">Français</option>
         <option value="es">Español</option>
         <option value="de">Deutsch</option>
         <option value="it">Italiano</option>
         <option value="pt">Português (Brasil)</option>
-      </select>
-      <button id="data-btn" class="btn" popovertarget="data-menu"><svg class="i"><use href="#i-more"/></svg><span data-i18n="data_menu"></span></button>
+      </select></span>
+      <button id="data-btn" class="btn" popovertarget="data-menu" data-i18n-attr="title:data_menu"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg><span class="vh" data-i18n="data_menu"></span></button>
+      </div>
       <div id="data-menu" class="menu" popover>
         <button data-action="export-json"><svg class="i"><use href="#i-download"/></svg><span data-i18n="export_json"></span></button>
         <button data-action="export-csv"><svg class="i"><use href="#i-table"/></svg><span data-i18n="export_csv"></span></button>
@@ -544,6 +553,7 @@
         <button data-action="telemetry" id="telemetry-btn" aria-pressed="true"><svg class="i"><use href="#i-table"/></svg><span></span></button>
         <hr>
         <button data-action="clear" class="danger"><svg class="i"><use href="#i-trash"/></svg><span data-i18n="clear_all"></span></button>
+        <p id="summary" class="menu-version muted"></p>
         <p id="version" class="menu-version muted"></p>
       </div>
       <input id="import" type="file" accept="application/json,.json" hidden>
@@ -586,7 +596,10 @@
     </div>
 
     <div id="filters" class="filters">
-      <select id="f-scope" data-i18n-attr="aria-label:scope_label,title:scope_label"></select>
+      <div class="scope">
+        <span id="scope-kicker" class="scope-kicker"></span>
+        <span class="pick scope-pick"><span id="scope-title" class="scope-title" aria-hidden="true"></span><svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg><select id="f-scope" data-i18n-attr="aria-label:scope_label,title:scope_label"></select></span>
+      </div>
       <select id="f-version" hidden data-i18n-attr="aria-label:version_label,title:version_label"></select>
       <div class="seg" role="group" data-i18n-attr="aria-label:period" data-filter="period">
         <button data-value="all" data-i18n="period_all"></button><button data-value="30" data-i18n="period_30"></button><button data-value="7" data-i18n="period_7"></button>

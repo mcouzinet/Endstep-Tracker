@@ -584,6 +584,12 @@
   "scope_deck": {
     "message": "{deck} · {format}"
   },
+  "scope_title_all": {
+    "message": "All my decks"
+  },
+  "scope_any_format": {
+    "message": "Every format"
+  },
   "matchups": {
     "message": "Matchups"
   },

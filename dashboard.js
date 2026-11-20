@@ -17,6 +17,7 @@ async function initI18n() {
   locale = I18N.locale;
   document.documentElement.lang = locale;
   $('#lang').value = locale;
+  $('#lang-code').textContent = $('#lang').value.toUpperCase();
   S.dropTipLinks();
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const el of document.querySelectorAll('[data-i18n-attr]')) {
@@ -812,6 +813,8 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.
 
 function renderFilters(s, shown, list, vs, v) {
   $('#f-scope').value = JSON.stringify([s.format, s.deck]);
+  $('#scope-title').textContent = s.deck !== null ? s.deck : t('scope_title_all');
+  $('#scope-kicker').textContent = s.format !== null ? s.format : t('scope_any_format');
   const sel = $('#f-version'); // options carry version numbers; the state keeps the list itself, which survives renumbering
   sel.hidden = vs.list.length < 2;
   if (!sel.hidden) {

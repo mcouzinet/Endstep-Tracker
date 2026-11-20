@@ -22,6 +22,8 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Bilans** : le bilan en grand, le pourcentage en petit dessous, affiché à partir de 10 matchs au lieu de 5 (1.8.6).
 - **Gros historiques** : l'import de l'historique lit tes matchs une fois au lieu d'une fois par page ; Mes cartes, les doublons et les mises à jour en direct du tableau de bord vont plus vite (1.8.12).
 - **Fiches allégées** : plus de clé vide par match pour le journal de décisions (outil de développement), ni de champs jamais lus (1.8.13).
+- **Haut du tableau de bord** : une barre plus sobre (logo, café, langue, menu), puis ton deck en grand comme titre de la page ; le nombre de matchs passe dans le menu Données (1.8.17).
+- **Popup** : le même logo, sans le bouton café (1.8.17).
 
 ### Corrigé
 

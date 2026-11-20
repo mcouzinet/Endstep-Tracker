@@ -166,7 +166,7 @@ const FIELD = '.match[data-id="m1"] textarea[data-note="notes"]';
     assert.equal(await p.evaluate(() => window.__DATA['note:m1'].notes), `${NOTE} avant`);
     await openMatch(p);
     await typeInNote(p);
-    await press('#summary'); // nothing there to take the focus or redraw the page: only the release applies it
+    await press('.brand'); // nothing there to take the focus or redraw the page: only the release applies it
     assert.equal(await p.evaluate(() => window.__DATA['note:m1'].notes), `${NOTE} avant avant`);
     await p.close();
   }

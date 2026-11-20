@@ -54,7 +54,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const stored = (d) => p.evaluate(async (d) => { await chrome.storage.local.clear(); await chrome.storage.local.set(d); localStorage.clear(); }, d);
     await stored(seed);
     await p.reload();
-    await p.waitForSelector('#tab-history');
+    await p.waitForSelector('#tab-history', { visible: true }); // shown once the matches are drawn
     await p.click('#tab-history');
     const guess = (m) => p.evaluate((m) => !!document.querySelector(`.match[data-id="${m}"] .tag.guess`), m);
     const toastError = () => p.evaluate(() => { const t = document.getElementById('toast'); return t.classList.contains('show') && t.classList.contains('error'); });
@@ -86,7 +86,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.evaluate(async () => { const { meta } = await chrome.storage.local.get('meta'); meta.byFormat.Pauper.at = 1; await chrome.storage.local.set({ meta }); });
     asked.Pauper = 0;
     await p.goto(`chrome-extension://${id}/dashboard.html`);
-    await p.waitForSelector('#tab-history');
+    await p.waitForSelector('#tab-history', { visible: true }); // shown once the matches are drawn
     await p.click('#tab-history');
     for (let i = 0; i < 20 && asked.Pauper < 3; i++) await sleep(100);
     await sleep(300);

@@ -12,7 +12,7 @@
     @media (max-device-width: 600px) { body { width: auto; } }
     body.loading main { visibility: hidden; }
     header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-    header img { width: 24px; height: 24px; }
+    header .mark { width: 17px; height: 21px; }
     header b { font-weight: 650; }
     main { display: grid; gap: 14px; padding: 14px; }
     h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 650; }
@@ -44,9 +44,8 @@
 </head>
 <body class="loading">
   <header>
-    <img src="icons/icon-32.png" alt="">
+    <svg class="mark" viewBox="0 0 64 80" aria-hidden="true"><g transform="rotate(-7 32 40)"><rect x="6" y="4" width="52" height="72" rx="8"/><polyline points="16,58 27,44 36,50 49,30"/></g></svg>
     <b>Endstep Tracker</b>
-    <a class="bmc" style="margin-left:auto" href="https://buymeacoffee.com/mcouzinet" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 3v2M10.5 3v2M14 3v2"/></svg><span data-i18n="buy_coffee"></span></a>
   </header>
   <div id="access" class="access" role="alert" hidden><p><b data-i18n="access_title"></b> <span data-i18n="access_text"></span></p><button id="access-btn" class="btn primary" data-i18n="access_btn"></button></div>
   <main id="main" aria-live="polite"></main>
