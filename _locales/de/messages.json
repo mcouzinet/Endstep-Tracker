@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "Nach gegnerischem Archetyp"
   },
+  "cards_theirs": {
+    "message": "Ihre Karten"
+  },
+  "their_title": {
+    "message": "Die Karten deiner Gegner"
+  },
+  "their_intro": {
+    "message": "In Games gezählt: deine Bilanz, wenn der Gegner die Karte spielt und wenn nicht, gegen dieselben Decks. Länder werden nicht gezählt."
+  },
+  "their_needs_deck": {
+    "message": "Wähle eines deiner Decks, um die gegnerischen Karten zu sehen, die ihm schaden."
+  },
+  "their_search": {
+    "message": "Ihre Karten durchsuchen"
+  },
+  "their_search_none": {
+    "message": "Keine ihrer Karten passt."
+  },
+  "col_their_played": {
+    "message": "Er spielt sie"
+  },
+  "col_their_not_played": {
+    "message": "Er spielt sie nicht"
+  },
+  "cell_their_played": {
+    "message": "Er spielt sie: {wl} in den {n} Games, in denen der Gegner diese Karte gewirkt oder genutzt hat; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "Er spielt sie nicht: {wl} in {n} anderen Games gegen dieselben Decks; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} Punkte Siegquote zwischen den Games, in denen er sie spielt, und denen ohne sie"
+  },
+  "their_gap_sort_title": {
+    "message": "Die Karten, die dich die meisten Games gekostet haben, zuerst"
+  },
+  "their_rate_sort_title": {
+    "message": "Deine Siegquote, wenn er sie spielt, die niedrigste zuerst"
+  },
+  "their_cards_none": {
+    "message": "Keine gegnerische Karte in diesen Games aufgezeichnet."
+  },
+  "their_once_one": {
+    "message": "In nur einem Game gespielt · {n} Karte"
+  },
+  "their_once_other": {
+    "message": "In nur einem Game gespielt · {n} Karten"
+  },
+  "info_their_cards": {
+    "message": "Für jede Karte, die deine Gegner gegen dieses Deck gewirkt oder genutzt haben, in Games gezählt (ein Game, kein Match: ein Bo3 zählt zwei oder drei).\nEr spielt sie: deine Bilanz in den Games, in denen der Gegner sie gespielt hat. Er spielt sie nicht: deine Bilanz in den anderen Games gegen dieselben Decks, um Vergleichbares zu vergleichen.\nDie Differenz neben dem Namen = die erste minus die zweite, in Punkten. Ein Zusammenhang, kein Beweis: Eine Karte, die gespielt wird, wenn der Gegner schon gewinnt, wirkt schädlich, ohne die Ursache zu sein.\nStandardmäßig ist die Liste nach deiner Siegquote sortiert, wenn er sie spielt, die niedrigste zuerst, jede Karte gezählt, als hätte sie bei 1–1 begonnen (ein 0–1 kommt nicht vor ein 2–12). Die Sortierung „Diff.“ zeigt zuerst die Karten, die dich die meisten Games gekostet haben: die Differenz mal die Zahl der Games, in denen sie gespielt wurde. Länder werden nicht gezählt. Klicke auf eine Zeile, um ihre Matches im Verlauf zu sehen."
+  },
   "by_card": {
     "message": "Karte für Karte"
   },

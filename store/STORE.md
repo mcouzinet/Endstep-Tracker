@@ -27,6 +27,8 @@ The dashboard opens on the deck of your last match:
 
 • My cards: for each card of your current list (the cards you cut wait below), the win rate of the games where you drew it, next to the games where it stayed in your library, where it was in your opening hand, where you drew it later, cast it, or where it reached the battlefield (a reanimated creature counts). Every number explains itself on hover, and a sort brings up the cards you draw but rarely play.
 
+• Their cards: the opposing cards that cost you the most games, with your record in the games where they play each one and in the others against the same decks.
+
 • Your sideboarding: what you bring in and take out between games is recorded, shown for each matchup and recalled between two games against the same kind of deck.
 
 • List versions: when your main deck changes, compare any two versions of your list, matchup by matchup.
@@ -64,6 +66,8 @@ Le tableau de bord s'ouvre sur le deck de ton dernier match :
 • Matchups : bilan en matchs, sur le play et sur la draw, classés ou non ; dans un matchup, la game 1 face aux games après side.
 
 • Mes cartes : pour chaque carte de ta liste actuelle (les cartes retirées attendent en bas), le taux de victoire des games où tu l'as piochée, à côté des games où elle est restée dans ta bibliothèque, où elle était dans ta main de départ, où tu l'as piochée plus tard, lancée, ou où elle est arrivée en jeu (une créature réanimée compte). Chaque chiffre s'explique au survol, et un tri fait remonter les cartes que tu pioches mais joues rarement.
+
+• Leurs cartes : les cartes adverses qui te coûtent le plus de games, avec ton bilan dans les games où l’adversaire les joue et dans les autres contre les mêmes decks.
 
 • Ton side : ce que tu fais entrer et sortir entre les games est enregistré, montré pour chaque matchup et rappelé entre deux games contre le même type de deck.
 

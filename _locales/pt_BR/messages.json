@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "Por arquétipo do oponente"
   },
+  "cards_theirs": {
+    "message": "Cartas deles"
+  },
+  "their_title": {
+    "message": "As cartas dos seus adversários"
+  },
+  "their_intro": {
+    "message": "Contado em games: seu saldo quando o adversário joga a carta e quando não joga, contra os mesmos decks. Terrenos não são contados."
+  },
+  "their_needs_deck": {
+    "message": "Escolha um dos seus decks para ver as cartas adversárias que o prejudicam."
+  },
+  "their_search": {
+    "message": "Buscar uma carta deles"
+  },
+  "their_search_none": {
+    "message": "Nenhuma carta deles corresponde."
+  },
+  "col_their_played": {
+    "message": "Ele joga"
+  },
+  "col_their_not_played": {
+    "message": "Ele não joga"
+  },
+  "cell_their_played": {
+    "message": "Ele joga: {wl} nos {n} games em que o adversário conjurou ou usou esta carta; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "Ele não joga: {wl} em {n} outros games contra os mesmos decks; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} pontos de taxa de vitória entre os games em que ele a joga e os em que não joga"
+  },
+  "their_gap_sort_title": {
+    "message": "Primeiro as cartas que mais games te custaram"
+  },
+  "their_rate_sort_title": {
+    "message": "Sua taxa de vitória quando ele a joga, a mais baixa primeiro"
+  },
+  "their_cards_none": {
+    "message": "Nenhuma carta adversária registrada nesses games."
+  },
+  "their_once_one": {
+    "message": "Jogada em um só game · {n} carta"
+  },
+  "their_once_other": {
+    "message": "Jogadas em um só game · {n} cartas"
+  },
+  "info_their_cards": {
+    "message": "Para cada carta que seus adversários conjuraram ou usaram contra este deck, contado em games (um game, não uma partida: um Bo3 conta dois ou três).\nEle joga: seu saldo nos games em que o adversário a jogou. Ele não joga: seu saldo nos outros games contra os mesmos decks, para comparar o que é comparável.\nA diferença ao lado do nome = a primeira menos a segunda, em pontos. É uma relação, não uma prova: uma carta jogada quando eles já estão ganhando parece prejudicial sem ser a causa.\nPor padrão a lista é ordenada pela sua taxa de vitória quando ele a joga, a mais baixa primeiro, cada carta contada como se começasse em 1–1 (um 0–1 não passa na frente de um 2–12). A ordem «Diferença» mostra primeiro as cartas que mais games te custaram: a diferença, multiplicada pelo número de games em que ela foi jogada. Terrenos não são contados. Clique em uma linha para ver as partidas dela no histórico."
+  },
   "by_card": {
     "message": "Carta por carta"
   },

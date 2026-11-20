@@ -39,8 +39,8 @@ const PREFS = 'endstep-tracker.filters';
 // a null deck every deck of that format. Stats cover scope + period + opponent; result and search only narrow the history.
 // version: null = the current list of the deck in view, 'all', '?' (matches without a recorded list) or a list key.
 // tab: the view shown, one of TABS; kept across visits, never reset with the filters.
-const TABS = ['matchups', 'cards', 'history'];
-const state = { q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false, view: 'list' };
+const TABS = ['matchups', 'cards', 'theirs', 'history'];
+const state = { q: '', scope: null, version: null, compare: false, period: 'all', ranked: 'all', result: 'all', opp: null, sort: 'n', tab: 'matchups', cardSort: 'gap', cardRev: false, view: 'list', theirSort: 'rate', theirRev: false };
 let matches = [];
 let notes = {}; // matchId -> { archetype, notes, deckId } (kept apart so the live tracker never overwrites them)
 let decks = {}; // deckId -> { name, format, formatId, cards, sideboard }: my decks as seen on the site
@@ -267,7 +267,7 @@ function listed(list) {
 
 function haystack(m) {
   const n = notes[m.id] || {};
-  const seen = oppCards(m);
+  const seen = [...oppCards(m), ...m.games.flatMap((g) => [...S.theirPlays(m, g)])];
   return [oppLabel(m), n.archetype, (guessFor(m) || {}).name, n.notes, deckName(m), fmt(m), ...seen].join('\n').toLowerCase();
 }
 
@@ -593,6 +593,7 @@ function renderView() {
   }
   $('#split').hidden = !has || state.tab !== 'matchups';
   $('#cards-panel').hidden = !has || state.tab !== 'cards';
+  $('#theirs-panel').hidden = !has || state.tab !== 'theirs';
   $('#history').hidden = has && state.tab !== 'history'; // with no match yet, it holds the onboarding
   renderHeader();
   if (!has) { $('#matches').innerHTML = onboarding(); return; }
@@ -614,6 +615,7 @@ function renderView() {
   renderOverview(stats);
   if (state.tab === 'matchups') renderLands(stats); // every log of every match: only when it shows
   if (state.tab === 'cards') renderCards(s, stats, listInView(s, vs, v, base)); // a hidden tab waits for its turn
+  if (state.tab === 'theirs') renderTheirCards(s, stats);
   renderBreakdown('#by-opp', stats, oppKey, 'opp', cmp);
   $('#decks-panel').hidden = s.deck !== null; // one deck in view: nothing to break down
   if (s.deck === null) {
@@ -963,6 +965,67 @@ function renderCards(s, list, deck) {
   const body = !rows.length ? `<p class="muted cards-note">${esc(t('cards_none'))}</p>` : head + kept.map(row).join('') + folded;
   el.innerHTML = `<h2 class="panel-title">${esc(t('by_card'))}${infoBtn('info_cards')}</h2>`
     + (recorded ? '' : `<p class="muted cards-note">${esc(t('cards_since'))}</p>`) + body;
+}
+
+// --- their cards: the opponents' cards that hurt me most, in games (S.theirCardStats) ---
+// Each card they played (cast, land, ability, trigger) against this deck: my results in those games, beside the other
+// games against the same archetypes. Sorted by default by my win rate when they play it, the lowest first, as if each card
+// had started at 1–1 (the matchups' rate) so that a card seen once does not lead; or by what each card cost me (the gap
+// between the two, each side so counted, times the games it was played in); the gap beside the name shows once both
+// sides have MIN_SAMPLE games. Cards played in a single game fold at the bottom. A click on a row shows its matches in the history.
+function theirGap(x) {
+  return count(x.played) >= MIN_SAMPLE && count(x.notPlayed) >= MIN_SAMPLE && winRate(x.played) !== null && winRate(x.notPlayed) !== null
+    ? Math.round(100 * winRate(x.played)) - Math.round(100 * winRate(x.notPlayed)) : null;
+}
+// The title, the explanation and the search stay in place across redraws (typing goes on): only the list is redrawn.
+let theirQ = '';
+function renderTheirCards(s, list) {
+  const panel = $('#theirs-panel');
+  if (!panel.querySelector('#their-list')) {
+    panel.innerHTML = `<h2 class="panel-title"></h2><p class="muted cards-note" id="their-intro"></p><div class="their-search"><label class="search"><svg class="i"><use href="#i-search"/></svg>`
+      + `<input id="their-q" type="search"></label></div><div id="their-list"></div>`;
+    panel.querySelector('#their-q').addEventListener('input', (e) => { theirQ = e.target.value; render(); });
+  }
+  panel.querySelector('.panel-title').innerHTML = `${esc(t('their_title'))}${infoBtn('info_their_cards')}`;
+  const q = panel.querySelector('#their-q');
+  q.placeholder = t('their_search');
+  q.setAttribute('aria-label', t('their_search'));
+  panel.querySelector('#their-intro').textContent = t(s.deck === null ? 'their_needs_deck' : 'their_intro');
+  panel.querySelector('.their-search').hidden = s.deck === null;
+  const el = panel.querySelector('#their-list');
+  if (s.deck === null) { el.innerHTML = ''; return; }
+  const all = S.theirCardStats(list, C, (m) => oppKey(m)[0]).map((x) => Object.assign(x, { gap: theirGap(x), hurt: count(x.played) * (rate(x.played) - rate(x.notPlayed)) }));
+  const fold = (x) => x.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+  const rows = all.filter((x) => fold(x.name).includes(fold(theirQ.trim())));
+  const by = state.theirSort;
+  const dir = state.theirRev ? -1 : 1;
+  rows.sort((a, b) => dir * (by === 'name' ? a.name.localeCompare(b.name, locale) : by === 'hurt' ? a.hurt - b.hurt : rate(a.played) - rate(b.played))
+    || count(b.played) - count(a.played) || a.name.localeCompare(b.name, locale));
+  const tip = (k, r) => (count(r) ? t(k, { wl: wl(r), n: count(r), rate: count(r) >= MIN_SAMPLE ? t('win_rate_text', { pct: pct(r) }) : t('glance_early') }) : t('cell_none'));
+  const sortBtn = (col, label, title = '') => {
+    const on = by === col;
+    const down = on && (col === 'name' ? state.theirRev : !state.theirRev);
+    const aria = t('sort_by', { col: label }) + (on ? ` (${t(down ? 'sort_desc' : 'sort_asc')})` : '');
+    return `<button type="button" class="sort" data-their-sort="${col}" aria-pressed="${on}" aria-label="${esc(aria)}"${title ? ` title="${esc(title)}"` : ''}>`
+      + `${esc(label)}${on ? `<span class="arrow" aria-hidden="true">${down ? '↓' : '↑'}</span>` : ''}</button>`;
+  };
+  const head = `<div class="rec cells head" style="--cells:1"><span>${sortBtn('name', t('col_card'))} · ${sortBtn('hurt', t('col_gap'), t('their_gap_sort_title'))}</span>`
+    + `<span class="main">${sortBtn('rate', t('col_their_played'), t('their_rate_sort_title'))}</span><span>${esc(t('col_their_not_played'))}</span></div>`;
+  const by2 = (x) => [...x.keys].sort((a, b) => count(b[1]) - count(a[1])).map(([key]) => facetLabel(key));
+  const row = (x) => {
+    const g = x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('their_gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
+    const who = by2(x);
+    const note = `${tn('n_games', count(x.played))} · ${who.slice(0, 2).join(', ')}${who.length > 2 ? ` +${who.length - 2}` : ''}`;
+    return rec(cardLink(x.name) + g, x.played, { attrs: `data-their-card="${esc(x.name)}" title="${esc(tip('cell_their_played', x.played))}"`, note,
+      cells: [{ key: t('col_their_not_played'), title: tip('cell_their_not_played', x.notPlayed), r: x.notPlayed }] });
+  };
+  // A search shows every card it finds, those played once included.
+  const searching = theirQ.trim() !== '';
+  const kept = searching ? rows : rows.filter((x) => count(x.played) > 1);
+  const once = searching ? [] : rows.filter((x) => count(x.played) === 1);
+  const folded = once.length ? `<details class="cut-cards"${el.querySelector('.cut-cards[open]') ? ' open' : ''}><summary>${esc(tn('their_once', once.length))}</summary>${once.map(row).join('')}</details>` : '';
+  el.innerHTML = !all.length ? `<p class="muted cards-note">${esc(t('their_cards_none'))}</p>`
+    : !rows.length ? `<p class="muted cards-note">${esc(t('their_search_none'))}</p>` : head + kept.map(row).join('') + folded;
 }
 
 // --- at a glance: the win rate in matches and the latest FORM matches, each one detailed on hover ---
@@ -1890,6 +1953,25 @@ $('#matches').addEventListener('click', (e) => {
   else { render(); focusRow(); }
 });
 
+$('#theirs-panel').addEventListener('click', (e) => {
+  const ts = e.target.closest('[data-their-sort]');
+  if (ts) {
+    const col = ts.dataset.theirSort;
+    state.theirRev = state.theirSort === col ? !state.theirRev : false;
+    state.theirSort = col;
+    savePrefs();
+    render();
+    const again = $(`#theirs-panel [data-their-sort="${col}"]`);
+    if (again) again.focus();
+    return;
+  }
+  // A card of theirs: its matches in the history (the search finds the cards they played).
+  const card = e.target.closest('[data-their-card]');
+  if (card && !e.target.closest('a')) {
+    $('#q').value = card.dataset.theirCard;
+    setFilter({ tab: 'history', q: card.dataset.theirCard, result: 'all' });
+  }
+});
 $('#cards-panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-card-sort]');
   if (!b) return;

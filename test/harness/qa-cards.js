@@ -76,6 +76,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const det = await p.$('.match[data-id="c0"] .games');
   await det.evaluate((el) => el.scrollIntoView());
   await det.screenshot({ path: `${__dirname}/qa-side-game.png` });
+  // Their cards, a tab of its own (kept as a preference): the search narrows the list without losing the field; a row
+  // opens its matches in the history.
+  await p.click('#tab-theirs');
+  await sleep(200);
+  const theirs = () => p.evaluate(() => [...document.querySelectorAll('#theirs-panel [data-their-card]')].map((x) => x.dataset.theirCard));
+  const every = await theirs();
+  assert.ok(every.length > 0, 'their cards listed');
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('endstep-tracker.filters')).tab), 'theirs');
+  const part = every[0].slice(1, 5).toUpperCase();
+  await p.click('#their-q');
+  await p.keyboard.type(part);
+  await sleep(200);
+  const found = await theirs();
+  assert.ok(found.length >= 1 && found.every((x) => x.toUpperCase().includes(part)), 'the search: ' + found.join(', '));
+  assert.equal(await p.evaluate(() => document.activeElement.id), 'their-q', 'typing goes on');
+  await p.evaluate(() => { const q = document.getElementById('their-q'); q.value = ''; q.dispatchEvent(new Event('input')); });
+  await sleep(200);
+  await p.evaluate(() => document.querySelector('#theirs-panel [data-their-card]').click());
+  await sleep(300);
+  assert.deepEqual(await p.evaluate(() => [state.tab, state.q]), ['history', every[0]]);
+  assert.ok(await p.evaluate(() => document.querySelectorAll('#matches .match').length > 0), 'its matches in the history');
+  await p.evaluate(() => { document.getElementById('q').value = ''; setFilter({ q: '', tab: 'cards' }); });
+  await sleep(200);
   // Narrow window, English.
   p = await open(430, 900, 'en');
   await p.click('#tab-cards');

@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "Per archetipo avversario"
   },
+  "cards_theirs": {
+    "message": "Le loro carte"
+  },
+  "their_title": {
+    "message": "Le carte dei tuoi avversari"
+  },
+  "their_intro": {
+    "message": "Contato in game: il tuo bilancio quando l’avversario gioca la carta e quando no, contro gli stessi mazzi. Le terre non sono contate."
+  },
+  "their_needs_deck": {
+    "message": "Scegli uno dei tuoi mazzi per vedere le carte avversarie che gli fanno male."
+  },
+  "their_search": {
+    "message": "Cerca una delle loro carte"
+  },
+  "their_search_none": {
+    "message": "Nessuna delle loro carte corrisponde."
+  },
+  "col_their_played": {
+    "message": "La gioca"
+  },
+  "col_their_not_played": {
+    "message": "Non la gioca"
+  },
+  "cell_their_played": {
+    "message": "La gioca: {wl} nei {n} game in cui l’avversario ha lanciato o usato questa carta; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "Non la gioca: {wl} in {n} altri game contro gli stessi mazzi; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} punti di percentuale di vittorie tra i game in cui la gioca e quelli in cui no"
+  },
+  "their_gap_sort_title": {
+    "message": "Prima le carte che ti sono costate più game"
+  },
+  "their_rate_sort_title": {
+    "message": "Il tuo tasso di vittorie quando la gioca, il più basso prima"
+  },
+  "their_cards_none": {
+    "message": "Nessuna carta avversaria registrata in questi game."
+  },
+  "their_once_one": {
+    "message": "Giocata in un solo game · {n} carta"
+  },
+  "their_once_other": {
+    "message": "Giocate in un solo game · {n} carte"
+  },
+  "info_their_cards": {
+    "message": "Per ogni carta che i tuoi avversari hanno lanciato o usato contro questo mazzo, contato in game (un game, non una partita: un Bo3 ne conta due o tre).\nLa gioca: il tuo bilancio nei game in cui l’avversario l’ha giocata. Non la gioca: il tuo bilancio negli altri game contro gli stessi mazzi, per confrontare ciò che è confrontabile.\nLo scarto accanto al nome = il primo meno il secondo, in punti. È un legame, non una prova: una carta giocata quando stanno già vincendo sembra dannosa senza esserne la causa.\nDi default la lista è ordinata per il tuo tasso di vittorie quando la gioca, il più basso prima, ogni carta contata come se partisse da 1–1 (uno 0–1 non passa davanti a un 2–12). L’ordine «Scarto» mette prima le carte che ti sono costate più game: lo scarto, moltiplicato per il numero di game in cui è stata giocata. Le terre non sono contate. Fai clic su una riga per vedere le sue partite nella cronologia."
+  },
   "by_card": {
     "message": "Carta per carta"
   },

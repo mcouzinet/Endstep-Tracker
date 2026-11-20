@@ -10,6 +10,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Terrains en main de départ** : ton bilan selon le nombre de terrains gardés, sur le play et sur la draw (1.8.7).
 - **Après deux défaites d'affilée** : ton bilan dans « Selon le contexte » (1.8.7).
 - **Historique par jour** : au choix, la liste comme avant ou les matchs groupés par journée, avec le bilan de chacune ; une soirée qui passe minuit reste sur sa journée (1.8.14).
+- **Leurs cartes** : un onglet avec les cartes adverses qui te coûtent le plus de games, ton bilan quand l’adversaire les joue et quand il ne les joue pas, une recherche, et un clic pour voir leurs matchs (1.8.16).
 
 ### Modifié
 

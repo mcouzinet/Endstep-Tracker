@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "Par archétype adverse"
   },
+  "cards_theirs": {
+    "message": "Leurs cartes"
+  },
+  "their_title": {
+    "message": "Les cartes de tes adversaires"
+  },
+  "their_intro": {
+    "message": "Compté en games : ton bilan quand l’adversaire joue la carte, et quand il ne la joue pas, contre les mêmes decks. Les terrains ne sont pas comptés."
+  },
+  "their_needs_deck": {
+    "message": "Choisis un de tes decks pour voir les cartes adverses qui lui font mal."
+  },
+  "their_search": {
+    "message": "Chercher une de leurs cartes"
+  },
+  "their_search_none": {
+    "message": "Aucune de leurs cartes ne correspond."
+  },
+  "col_their_played": {
+    "message": "Il la joue"
+  },
+  "col_their_not_played": {
+    "message": "Il ne la joue pas"
+  },
+  "cell_their_played": {
+    "message": "Il la joue : {wl} sur les {n} games où l’adversaire a lancé ou utilisé cette carte ; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "Il ne la joue pas : {wl} sur {n} autres games contre les mêmes decks ; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} points de taux de victoire entre les games où il la joue et celles où il ne la joue pas"
+  },
+  "their_gap_sort_title": {
+    "message": "Les cartes qui t’ont coûté le plus de games d’abord"
+  },
+  "their_rate_sort_title": {
+    "message": "Ton taux de victoire quand il la joue, le plus bas d’abord"
+  },
+  "their_cards_none": {
+    "message": "Aucune carte adverse enregistrée dans ces games."
+  },
+  "their_once_one": {
+    "message": "Jouée dans une seule game · {n} carte"
+  },
+  "their_once_other": {
+    "message": "Jouées dans une seule game · {n} cartes"
+  },
+  "info_their_cards": {
+    "message": "Pour chaque carte que tes adversaires ont lancée ou utilisée contre ce deck, compté en games (une game, pas un match : un Bo3 en compte deux ou trois).\nIl la joue : ton bilan dans les games où l’adversaire l’a jouée. Il ne la joue pas : ton bilan dans les autres games contre les mêmes decks, pour comparer ce qui est comparable.\nL’écart à côté du nom = la première moins la seconde, en points. C’est un lien, pas une preuve : une carte qu’on joue quand on gagne déjà a l’air de faire mal sans en être la cause.\nPar défaut, la liste est triée par ton taux de victoire quand il la joue, le plus bas d’abord, chaque carte comptée comme si elle commençait à 1–1 (un 0–1 ne passe pas devant un 2–12). Le tri « Écart » met d’abord les cartes qui t’ont coûté le plus de games : l’écart, multiplié par le nombre de games où elle a été jouée. Les terrains ne sont pas comptés. Clique sur une ligne pour voir ses matchs dans l’historique."
+  },
   "by_card": {
     "message": "Carte par carte"
   },

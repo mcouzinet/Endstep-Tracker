@@ -660,6 +660,42 @@
     return [...by.values()].filter((x) => !BASIC.test(x.name));
   }
 
+  // The opponents' cards against me, counted in games: each card they cast, played as a land, activated or triggered in a
+  // game (one name per card, c.canon), my results in those games against my results in the other games of the same
+  // archetypes (keyOf(m): the match's archetype key), so that a card played by one deck is weighed against that deck.
+  // Live matches, matches against the AI and lands left out (a card played as a land in one of these games, by anyone, and
+  // the basics). [{ name, played, notPlayed, keys: Map(key -> games) }]
+  const THEIR_PLAYS = new Set(['SPELL_CAST', 'LAND_PLAYED', 'ABILITY_ACTIVATED', 'TRIGGER_FIRED']);
+  // The names of the cards the opponents played in game g, as the site gave them.
+  const theirPlays = (m, g) => new Set(g.log.filter(([, seat, type, name]) => seat !== m.mySeat && name && THEIR_PLAYS.has(type)).map((e) => e[3]));
+  function theirCardStats(list, c, keyOf, now = Date.now()) {
+    const canon = canonOf(c);
+    const all = new Map(); // archetype key -> my results in its games
+    const by = new Map(); // card -> { name, played, keys }
+    const lands = new Set();
+    for (const m of list) for (const g of m.games) for (const [, , type, name] of g.log) if (type === 'LAND_PLAYED' && name) lands.add(canon(name));
+    for (const m of list) {
+      if (isLive(m, now) || vsAI(m) || m.mySeat === null) continue;
+      const key = keyOf(m);
+      for (const g of m.games) {
+        const r = gRes(m, g);
+        if (!r) continue;
+        (all.get(key) || all.set(key, tally()).get(key))[r]++;
+        for (const name of new Set([...theirPlays(m, g)].map(canon))) {
+          if (BASIC.test(name) || lands.has(name)) continue;
+          const e = by.get(name) || by.set(name, { name, played: tally(), keys: new Map() }).get(name);
+          e.played[r]++;
+          (e.keys.get(key) || e.keys.set(key, tally()).get(key))[r]++;
+        }
+      }
+    }
+    return [...by.values()].map((e) => {
+      const notPlayed = tally();
+      for (const [key, p] of e.keys) for (const x of ['W', 'L', 'D']) notPlayed[x] += all.get(key)[x] - p[x];
+      return { ...e, notPlayed };
+    });
+  }
+
   // My lands, by their one name: the cards I ever played as a land (a basic counts even before that).
   const landsOf = new WeakMap(); // match -> the names I played as a land in it
   function landNames(list, c) {
@@ -703,7 +739,7 @@
     esc, obj, normalizeMatch, normalizeNote, normalizeDecks, normalizeMerges, normalizeMoves, scoreText, pips, ago,
     HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, count, MIN_SAMPLE, percent, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, DAY_START_MS, dayOf, days, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
-    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, cardAliases, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
+    deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, cardAliases, gameCards, sideChanges, sidePlan, sideLine, cardStats, theirPlays, theirCardStats, landNames, landRecords,
     loadI18n, browserI18n, translator, applyStored, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,
   };
   if (typeof module === 'object' && module.exports) module.exports = Shared;

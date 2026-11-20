@@ -182,4 +182,23 @@ assert.ok(S.cardStats([junk], C, LATER).every((x) => typeof x.name === 'string')
 assert.equal(m.status, 'active');
 assert.equal(S.cardStats([m], C, m.updatedAt + 60e3).length, 0, 'the match in play does not count yet');
 
+// Their cards: the games where an opponent cast, played or used a card, against the other games of the same archetypes.
+{
+  const lg = (seat, type, name) => [1, seat, type, name, ''];
+  const mk = (id, arch, games) => ({ id, arch, startedAt: 1, updatedAt: 1, status: 'complete', result: 'W', mySeat: 0, players: [{ seat: 0, name: 'me' }, { seat: 1, name: 'opp' }], participants: [],
+    games: games.map(([win, log], i) => ({ n: i + 1, winnerSeat: win, mulligans: {}, log })) });
+  const list = [
+    mk('t1', 'Burn', [[1, [lg(1, 'SPELL_CAST', 'Skullcrack'), lg(1, 'SPELL_CAST', 'Skullcrack'), lg(1, 'LAND_PLAYED', 'Mountain')]], [0, [lg(1, 'SPELL_CAST', 'Lava Spike')]], [1, [lg(0, 'SPELL_CAST', 'Skullcrack'), lg(1, 'TRIGGER_FIRED', 'Skullcrack')]]]),
+    mk('t2', 'Burn', [[0, [lg(1, 'CARD_ZONE_CHANGE', 'Skullcrack')]]]),
+    mk('t3', 'Tron', [[0, [lg(1, 'SPELL_CAST', 'Karn Liberated')]]]),
+  ];
+  const rows = S.theirCardStats(list, { notes: {}, decks: {}, t: (k) => k }, (m) => m.arch, LATER);
+  const of = (n) => rows.find((x) => x.name === n);
+  assert.deepEqual([of('Skullcrack').played, of('Skullcrack').notPlayed], [{ W: 0, L: 2, D: 0 }, { W: 2, L: 0, D: 0 }], 'once a game, against the other Burn games; a zone change is not a play');
+  assert.deepEqual(of('Karn Liberated').notPlayed, { W: 0, L: 0, D: 0 }, 'not weighed against Burn');
+  assert.equal(of('Mountain'), undefined, 'basic lands left out');
+  const bog = S.theirCardStats([mk('t4', 'Rakdos', [[1, [lg(1, 'LAND_PLAYED', 'Bojuka Bog'), lg(1, 'TRIGGER_FIRED', 'Bojuka Bog')]]])], { notes: {}, decks: {}, t: (k) => k }, (m) => m.arch, LATER);
+  assert.deepEqual(bog, [], 'a land, basic or not, is never one of their cards');
+}
+
 console.log('cards: ok');

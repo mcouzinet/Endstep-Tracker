@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "By opponent archetype"
   },
+  "cards_theirs": {
+    "message": "Their cards"
+  },
+  "their_title": {
+    "message": "Your opponents’ cards"
+  },
+  "their_intro": {
+    "message": "Counted in games: your record when the opponent plays the card, and when they don’t, against the same decks. Lands are left out."
+  },
+  "their_needs_deck": {
+    "message": "Pick one of your decks to see the opposing cards that hurt it."
+  },
+  "their_search": {
+    "message": "Search their cards"
+  },
+  "their_search_none": {
+    "message": "None of their cards matches."
+  },
+  "col_their_played": {
+    "message": "They play it"
+  },
+  "col_their_not_played": {
+    "message": "They don’t"
+  },
+  "cell_their_played": {
+    "message": "They play it: {wl} over the {n} games where the opponent cast or used this card; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "They don’t: {wl} over {n} other games against the same decks; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} points of win rate between the games where they play it and the ones where they don’t"
+  },
+  "their_gap_sort_title": {
+    "message": "The cards that cost you the most games first"
+  },
+  "their_rate_sort_title": {
+    "message": "Your win rate when they play it, the lowest first"
+  },
+  "their_cards_none": {
+    "message": "No opposing card recorded in these games."
+  },
+  "their_once_one": {
+    "message": "Played in a single game · {n} card"
+  },
+  "their_once_other": {
+    "message": "Played in a single game · {n} cards"
+  },
+  "info_their_cards": {
+    "message": "For each card your opponents cast or used against this deck, counted in games (a game, not a match: a Bo3 counts two or three).\nThey play it: your record in the games where the opponent played it. They don’t: your record in the other games against the same decks, to compare like with like.\nThe gap beside the name = the first minus the second, in points. A link, not proof: a card played when they are already winning looks harmful without being the cause.\nBy default the list is sorted by your win rate when they play it, the lowest first, each card counted as if it started at 1–1 (a 0–1 does not come before a 2–12). The Gap sort puts first the cards that cost you the most games: the gap, times the number of games it was played. Lands are left out. Click a row to see its matches in the history."
+  },
   "by_card": {
     "message": "Card by card"
   },

@@ -1055,6 +1055,57 @@
   "by_archetype": {
     "message": "Por arquetipo del rival"
   },
+  "cards_theirs": {
+    "message": "Sus cartas"
+  },
+  "their_title": {
+    "message": "Las cartas de tus rivales"
+  },
+  "their_intro": {
+    "message": "Contado en games: tu balance cuando el rival juega la carta y cuando no, contra los mismos mazos. Las tierras no se cuentan."
+  },
+  "their_needs_deck": {
+    "message": "Elige uno de tus mazos para ver las cartas rivales que le hacen daño."
+  },
+  "their_search": {
+    "message": "Buscar una de sus cartas"
+  },
+  "their_search_none": {
+    "message": "Ninguna de sus cartas coincide."
+  },
+  "col_their_played": {
+    "message": "La juega"
+  },
+  "col_their_not_played": {
+    "message": "No la juega"
+  },
+  "cell_their_played": {
+    "message": "La juega: {wl} en los {n} games en que el rival lanzó o usó esta carta; {rate}."
+  },
+  "cell_their_not_played": {
+    "message": "No la juega: {wl} en {n} games más contra los mismos mazos; {rate}."
+  },
+  "their_gap_title": {
+    "message": "{d} puntos de porcentaje de victorias entre los games en que la juega y los que no"
+  },
+  "their_gap_sort_title": {
+    "message": "Primero las cartas que más games te costaron"
+  },
+  "their_rate_sort_title": {
+    "message": "Tu porcentaje de victorias cuando la juega, el más bajo primero"
+  },
+  "their_cards_none": {
+    "message": "Ninguna carta rival registrada en estos games."
+  },
+  "their_once_one": {
+    "message": "Jugada en un solo game · {n} carta"
+  },
+  "their_once_other": {
+    "message": "Jugadas en un solo game · {n} cartas"
+  },
+  "info_their_cards": {
+    "message": "Para cada carta que tus rivales lanzaron o usaron contra este mazo, contado en games (un game, no una partida: un Bo3 cuenta dos o tres).\nLa juega: tu balance en los games en que el rival la jugó. No la juega: tu balance en los demás games contra los mismos mazos, para comparar lo comparable.\nLa diferencia junto al nombre = la primera menos la segunda, en puntos. Es un vínculo, no una prueba: una carta que se juega cuando ya van ganando parece dañina sin ser la causa.\nPor defecto la lista se ordena por tu porcentaje de victorias cuando la juega, el más bajo primero, cada carta contada como si empezara 1–1 (un 0–1 no pasa delante de un 2–12). El orden «Dif.» pone primero las cartas que más games te costaron: la diferencia, multiplicada por el número de games en que se jugó. Las tierras no se cuentan. Haz clic en una fila para ver sus partidas en el historial."
+  },
   "by_card": {
     "message": "Carta por carta"
   },
