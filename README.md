@@ -6,7 +6,7 @@ A browser extension that records the Magic: The Gathering matches you play on [e
 
 ## Install
 
-[Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (also Brave, Opera) · [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/) · [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp) · [Safari on Mac](https://apps.apple.com/us/app/endstep-tracker/id6816954721?mt=12) (iPhone coming)
+[Chrome Web Store](https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho) (also Brave, Opera) · [Firefox](https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/) · [Edge](https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp) · [Safari on Mac, iPhone and iPad](https://apps.apple.com/us/app/endstep-tracker/id6816954721)
 
 On Android, Firefox runs it; Chrome and Brave on Android have no extensions.
 

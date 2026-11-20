@@ -12,7 +12,8 @@
   const HOST = 'endstep-tracker-panel';
   const AFTER_MS = 10 * 60e3; // how long the end-of-match card stays up
   const orphaned = () => !(chrome.runtime && chrome.runtime.id);
-  const { esc, wl, pct, MIN_SAMPLE } = S;
+  const { esc, wl, count, MIN_SAMPLE } = S;
+  const pct = (r) => S.pct(r, I.locale);
   const I = S.browserI18n(); // content scripts cannot read the dashboard's language choice: the browser's language
   const t = I.t;
 
@@ -20,8 +21,8 @@
   if (prev) prev.remove(); // a copy left behind by an extension reload
 
   const data = { matches: new Map(), notes: {}, decks: {}, meta: null, settings: {}, historyImport: null };
-  let shown = null; // { id, phase, open } as last rendered
-  let choice = null; // { phase key, open }: the user's toggle, kept until the phase changes
+  let shown = null; // { id, phaseKey, open, current } as last rendered (current: the archetype shown)
+  let choice = null; // { key: phaseKey, open }: the user's toggle, kept until the phase changes
   let dismissed = null; // id of the match whose end card the user closed
   let edit = null; // { id, value }: the archetype being typed for that match
   const typing = () => document.activeElement === host; // then the updates wait: a redraw would drop the field
@@ -45,7 +46,7 @@
       --ink: var(--es-text, oklch(.95 .012 85)); --ink-2: var(--es-muted, oklch(.76 .022 80)); --ink-3: oklch(.62 .02 80);
       --gold: var(--es-gold, oklch(.8 .135 80)); --gold-hi: var(--es-gold-hi, oklch(.85 .13 83)); --gold-ink: var(--es-gold-ink, oklch(.2 .035 70));
       --gold-wash: var(--es-gold-wash, oklch(.8 .135 80 / .15));
-      --line: var(--es-line, oklch(.29 .012 75)); --line-strong: var(--es-line-strong, oklch(.5 .018 78));
+      --line: var(--es-line, oklch(.29 .012 75));
       --surface: var(--es-bg, oklch(.16 .006 75)); --surface-2: var(--es-raise, oklch(.205 .008 75)); --surface-3: var(--es-raise-hi, oklch(.25 .01 75));
       --win: var(--es-up, oklch(.8 .14 145)); --loss: var(--es-down, oklch(.72 .16 32)); --live: var(--es-live, oklch(.69 .17 32));
       --ui: var(--es-font-ui, "Archivo", "Arial Narrow", system-ui, sans-serif); --voice: var(--es-font-voice, "EB Garamond", "Iowan Old Style", Georgia, serif);
@@ -187,14 +188,13 @@
         : `<h2>${esc(t('ov_against', { opp }))}${rating}</h2>`;
       const vs = list.filter((x) => x !== m && !S.vsAI(x) && S.formatOf(x, C) === format && S.deckName(x, C) === deck && keyOf(x) === key);
       const r = S.records(vs, now);
-      const n = (x) => x.W + x.L + x.D;
-      const stat = (label, x) => `<p class="stats"><span>${esc(label)}${esc(t('colon'))}<b>${wl(x)}</b>${n(x) >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</span></p>`;
+      const stat = (label, x) => `<p class="stats"><span>${esc(label)}${esc(t('colon'))}<b>${wl(x)}</b>${count(x) >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</span></p>`;
       // Two blocks, so that no record reads as the other's. The player: my record against them, whatever they
       // played, and their deck last time.
       const met = S.vsAI(m) ? [] : S.metBefore(m, list);
       const metRec = S.records(met, now).m;
       const lastArch = met.length ? S.archetype(met[0], C) || (guess(met[0]) || {}).name : null;
-      const player = met.length ? `<div class="player">${n(metRec) ? stat(t('ov_vs_player', { opp }), metRec) : ''}`
+      const player = met.length ? `<div class="player">${count(metRec) ? stat(t('ov_vs_player', { opp }), metRec) : ''}`
         + `<p class="muted">${esc(t(lastArch ? 'ov_last_arch' : 'ov_last', { arch: lastArch, when: S.ago(met[0].startedAt, I) }))}</p></div>` : '';
       // Their deck: its name heads my record against it with my deck, then my usual side against it.
       const record = key === '?' ? '' : vs.some((x) => x.result)

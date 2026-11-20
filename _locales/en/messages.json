@@ -495,13 +495,13 @@
     "message": "Automatic: {deck}"
   },
   "guess_tag_title": {
-    "message": "Deck recognized from the cards seen ({p} %): {cards}"
+    "message": "Deck recognized from the cards seen ({p}%): {cards}"
   },
   "guess_suggestion": {
     "message": "Recognized deck"
   },
   "guess_confidence": {
-    "message": "{p} % sure"
+    "message": "{p}% sure"
   },
   "guess_from": {
     "message": "from {cards}"
@@ -765,7 +765,7 @@
     "message": "Panel on endstep.cc during matches"
   },
   "recognized_pct": {
-    "message": "recognized, {p} %"
+    "message": "recognized, {p}%"
   },
   "ov_session": {
     "message": "session {wl}"
@@ -885,7 +885,7 @@
     "message": " (new tab)"
   },
   "promo_shot_alt": {
-    "message": "Deck Compare preview: two lists compared, 82 % similar"
+    "message": "Deck Compare preview: two lists compared, 82% similar"
   },
   "promo_same_author": {
     "message": "By the same author"

@@ -1,8 +1,7 @@
 // One-off E2E check: real extension in Chrome for Testing, guest quick-play vs Forge AI, then inspect storage + dashboard.
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
+const { puppeteer, CHROME } = require('./browser.js');
 const EXT = '/Users/mickaelcouzinet/Developer/Endstep-tracker';
 const OUT = __dirname;
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const HEADLESS = process.env.HEADFUL ? false : true;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

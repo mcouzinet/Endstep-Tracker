@@ -1,8 +1,7 @@
 // Store promo images: small tile 440x280, marquee 1400x560, store icon 128 (full size, like Deck Compare's: the store's
 // advice of 96 px art in 16 px of padding made it look smaller than its neighbours in the store lists).
 const fs = require('fs');
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('../test/harness/browser.js');
 const icon = 'data:image/svg+xml;base64,' + fs.readFileSync(`${__dirname}/../icons/icon.svg`).toString('base64');
 const shot = 'data:image/png;base64,' + fs.readFileSync(`${__dirname}/1-dashboard-en.png`).toString('base64');
 const css = `

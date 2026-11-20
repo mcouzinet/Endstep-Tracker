@@ -176,10 +176,11 @@
     setLive(entry.rec.status === 'active');
   }
 
-  // Decisions live under their own key so the dashboard list never has to load them.
+  // Decisions (dev builds) live under their own key so the dashboard list never has to load them; none, no key.
   const write = (entry) => {
     if (orphaned() || !entry) return; // a pending debounced write after a reload: the new copy owns the record now
-    chrome.storage.local.set({ ['match:' + entry.rec.id]: entry.rec, ['dec:' + entry.rec.id]: entry.dec || {} });
+    const dec = entry.dec && Object.keys(entry.dec).length ? { ['dec:' + entry.rec.id]: entry.dec } : {};
+    chrome.storage.local.set({ ['match:' + entry.rec.id]: entry.rec, ...dec });
   };
 
   function save(entry, immediately) {

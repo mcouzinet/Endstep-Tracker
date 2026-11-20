@@ -2,7 +2,7 @@
 
 *Last updated: 2026-11-16. Version française ci-dessous.*
 
-Endstep Tracker is a Chrome extension that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no account, and your matches never leave your browser. The only thing sent to the author's server is anonymous usage statistics, which you can switch off (see below).
+Endstep Tracker is a browser extension (Chrome, Edge, Firefox, Safari) that records the Magic: The Gathering matches you play on [endstep.cc](https://endstep.cc) and shows them in a local dashboard. It has no account, and your matches never leave your browser. The only thing sent to the author's server is anonymous usage statistics, which you can switch off (see below).
 
 ## What is recorded
 
@@ -62,7 +62,7 @@ Questions or requests: open an issue at <https://github.com/mcouzinet/Endstep-Tr
 
 # Politique de confidentialité — Endstep Tracker
 
-Endstep Tracker est une extension Chrome qui enregistre les parties de Magic: The Gathering que tu joues sur [endstep.cc](https://endstep.cc) et les affiche dans un tableau de bord local. Elle n'a pas de compte, et tes matchs ne quittent jamais ton navigateur. La seule chose envoyée au serveur de l'auteur, ce sont des statistiques d'usage anonymes, que tu peux couper (voir plus bas).
+Endstep Tracker est une extension de navigateur (Chrome, Edge, Firefox, Safari) qui enregistre les parties de Magic: The Gathering que tu joues sur [endstep.cc](https://endstep.cc) et les affiche dans un tableau de bord local. Elle n'a pas de compte, et tes matchs ne quittent jamais ton navigateur. La seule chose envoyée au serveur de l'auteur, ce sont des statistiques d'usage anonymes, que tu peux couper (voir plus bas).
 
 ## Ce qui est enregistré
 
@@ -95,6 +95,11 @@ Pour savoir combien de personnes l'utilisent, l'extension envoie quelques signau
 Rien d'autre n'est jamais envoyé : ni match, ni deck, ni nom de joueur, ni note, ni page visitée, ni ce que tu tapes. Le serveur n'enregistre pas les adresses IP. Les chiffres ne servent qu'à l'auteur, en totaux, pour suivre l'usage de l'extension.
 
 Tu peux couper ces statistiques à tout moment dans le menu « Données » du tableau de bord (« Statistiques d'usage anonymes ») : plus rien n'est envoyé et aucune page ne s'ouvre à la désinstallation. Sur Firefox, elles ne partent que si tu as accepté les « données techniques et d'interaction » à l'installation (modifiable dans les permissions du module).
+
+## Permissions
+
+- `storage`, `unlimitedStorage` : garder ton historique de matchs dans ton navigateur, sans limite de taille.
+- `scripting` et l'accès à `https://endstep.cc/*` : attacher le tracker aux onglets endstep.cc, y compris ceux déjà ouverts quand l'extension est installée ou mise à jour.
 
 ## Contact
 

@@ -1,6 +1,7 @@
 // What the dashboard, the toolbar popup and the in-page panel must compute the same way: deck and format names,
 // the opponent's archetype key, sessions, records, the metagame guess, and the strings.
-// Pure functions; the match notes, my decks and the translator come in a context: { notes, decks, t }.
+// Pure functions; the match notes, my decks, their merges and moves, the translator and the cards' one names come in a
+// context: { notes, decks, merges, formatMoves, t, canon }.
 (function (root) {
   'use strict';
 
@@ -103,8 +104,8 @@
     const place = Number.isFinite(l.rank) && Number.isFinite(l.of) ? i18n.t('rating_place', { rank: n(l.rank), of: n(l.of), top: Number.isFinite(l.top) ? l.top : '?' }) : '';
     return i18n.t('rating_title', { name, score: n(ladderScore(l)) }) + [place, l.provisional ? i18n.t('rating_provisional') : ''].filter(Boolean).map((x) => ` · ${x}`).join('');
   }
-  function ladderChip(name, l, i18n, cls = 'rating') {
-    return ladderScore(l) === null ? '' : `<span class="${cls}" title="${esc(ladderTitle(name, l, i18n))}">${esc(i18n.t('rating_short', { score: num(ladderScore(l), i18n.locale) }))}</span>`;
+  function ladderChip(name, l, i18n) {
+    return ladderScore(l) === null ? '' : `<span class="rating" title="${esc(ladderTitle(name, l, i18n))}">${esc(i18n.t('rating_short', { score: num(ladderScore(l), i18n.locale) }))}</span>`;
   }
   // A match against the site's AI (Forge AI, Auto-Pilot…): kept in the history, left out of every record. The site flags
   // bots in the match's participants; a record without them is judged by the opponent's name.
@@ -112,13 +113,14 @@
   const vsAI = (m) => (Array.isArray(m.participants) && m.participants.length
     ? m.participants.some((p) => p && p.isBot)
     : opps(m).some((p) => AI_NAME.test(p.name)));
+  // The history import is on (historyImport: { until, read, added, completed, done, failed }).
+  const importing = (h, now = Date.now()) => !!h && Number.isFinite(h.until) && now < h.until;
   // Matches imported from the site's history that the tracker recorded too: the history gives them other ids. The
   // twin of an imported match is a recorded one against the same opponents, with the same result, started within
   // TWIN_MS; each pairs once, the nearest in time first (two matches an hour apart against one player stay two).
   // The history names players by their account, which the game can show otherwise ("Malpelo96 LPO" played as
   // "Malpelo96"): a recorded match answers to its in-game names and to its participants' accounts.
-  // Returns the ids of the imported duplicates.
-  const importing = (h, now = Date.now()) => !!h && Number.isFinite(h.until) && now < h.until;
+  // Returns the pairs [{ h: imported id, m: recorded id }].
   const TWIN_MS = 2 * 3600e3;
   function historyPairs(list) {
     const low = (n) => String(n).toLowerCase();
@@ -143,7 +145,6 @@
     const used = new Set();
     return pairs.sort((a, b) => a.dt - b.dt || a.o[0] - b.o[0] || a.o[1] - b.o[1]).filter((p) => !used.has(p.h) && !used.has(p.m) && used.add(p.h).add(p.m)).map(({ h, m }) => ({ h, m }));
   }
-  const historyDuplicates = (list) => historyPairs(list).map((p) => p.h);
   // A recorded match the tracker caught only in part (it woke up mid-match: no format, no deck, no result), completed
   // from its twin in the site's history. Fills only what is missing; returns the fields it filled.
   function fillFromHistory(m, h, mark = true) {
@@ -210,8 +211,12 @@
   const gRes = (m, g) => (g.winnerSeat === undefined || m.mySeat === null ? '' : g.winnerSeat === null ? 'D' : g.winnerSeat === m.mySeat ? 'W' : 'L');
   const onPlay = (m, g) => (g.firstSeat === undefined || g.firstSeat === null ? null : g.firstSeat === m.mySeat);
   const tally = () => ({ W: 0, L: 0, D: 0 });
+  const count = (r) => r.W + r.L + r.D; // the results a tally holds
   const MIN_SAMPLE = 10; // below this many results a win rate is noise: the W–L alone
-  const pct = (r) => (r.W + r.L ? `${Math.round((100 * r.W) / (r.W + r.L))} %` : '—');
+  // A rate in the language's format: 54 % in French, 54% in English.
+  const percents = new Map();
+  const percent = (x, locale = 'en') => (percents.get(locale) || percents.set(locale, new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 })).get(locale)).format(x);
+  const pct = (r, locale) => (r.W + r.L ? percent(r.W / (r.W + r.L), locale) : '—');
   const wl = (r) => `${r.W}–${r.L}${r.D ? `–${r.D}` : ''}`;
   const isLive = (m, now = Date.now()) => m.status === 'active' && now - m.updatedAt < STALE_MS;
   function scoreText(m) {
@@ -681,9 +686,9 @@
   const sideLine = (xs, dir, max = 5) => xs.slice(0, max).map((x) => `${dir > 0 ? '+' : '−'}${x.qty} ${x.name}`).join(', ') + (xs.length > max ? ', …' : '');
 
   const Shared = {
-    STALE_MS, SESSION_GAP, LANG_PREF, NO_RECOGNITION, BASIC,
+    STALE_MS, LANG_PREF, NO_RECOGNITION, BASIC,
     esc, obj, normalizeMatch, normalizeNote, normalizeDecks, normalizeMerges, normalizeMoves, scoreText, pips, ago,
-    HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, historyDuplicates, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, MIN_SAMPLE, pct, wl, isLive,
+    HISTORY_IMPORT_MS, importing, opps, ladders, ladderScore, ladderTitle, ladderChip, num, vsAI, historyPairs, fillFromHistory, mergeMatch, myAccount, metBefore, colorsOf, gRes, onPlay, firstGame, matchOnPlay, tally, count, MIN_SAMPLE, percent, pct, wl, isLive,
     myDeck, mergedInto, sitePool, deckName, deckIds, siteFormat, formatKey, formatLabel, formatOf, commanderOf, archetype, oppKey, metaFormat, recognize, sessions, lastSession, afterTwoLosses, lastPlayed, sessionOpen, records, sideRecords,
     deckCounts, mainOf, deckNames, CARD_NAMES, savedCardNames, canonCounts, cardAliases, gameCards, sideChanges, sidePlan, sideLine, cardStats, landNames, landRecords,
     loadI18n, browserI18n, translator, applyStored, loadStore, dropTipLinks, newsDue, hasSiteAccess, askSiteAccess, browserName, feedbackUrl, feedbackLink,

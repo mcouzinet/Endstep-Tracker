@@ -1,4 +1,4 @@
-# Chrome Web Store — listing and submission
+# Store listings and submission
 
 Everything to paste into the developer dashboards. The store builds have no Coach: it lives in the Endstep-coach repository and is only ever copied next to the extension by its install script (git ignores those files here); `release.sh` still refuses a zip that would contain one. Build with `./release.sh` (Chrome Web Store and Edge Add-ons), `./release.sh firefox` (AMO) or `./release.sh safari` (App Store, Mac and iPhone). Versions and the release steps: see "Versions" and "Submission checklist" below; the stores refuse a version they already have.
 
@@ -7,7 +7,7 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 - **Name**: Endstep Tracker
 - **Summary** (≤ 132 chars, same as the manifest): Records your endstep.cc matches: opponent cards, play/draw, mulligans, results and cards played.
 - **Category**: Productivity (Tools)
-- **Languages**: English, French, Spanish, German, Italian, Brazilian Portuguese (the extension follows the browser's language; all are in `_locales`, Portuguese as `pt_BR`)
+- **Languages**: English, French, Spanish, German, Italian, Brazilian Portuguese (the extension follows the browser's language; all are in `_locales`, Portuguese as `pt_BR`, copied as `pt_PT` for Portugal)
 - **Homepage / support**: https://github.com/mcouzinet/Endstep-Tracker
 - **Privacy policy URL**: https://github.com/mcouzinet/Endstep-Tracker/blob/main/PRIVACY.md
 
@@ -15,11 +15,13 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 
 Endstep Tracker automatically records the Magic: The Gathering matches you play on endstep.cc and turns them into a personal match history, all stored locally in your browser.
 
-While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype, your record against it and your usual sideboarding. The toolbar popup shows the same during a match, and your session otherwise.
+While you play, the extension icon shows a REC badge, and a small panel on the game page shows, between two games, the opponent's archetype, your record against the player and against their deck, and your usual sideboarding. The toolbar popup shows the same during a match, and your session otherwise.
 
 The dashboard opens on the deck of your last match:
 
 • At a glance: your win rate, your records on the play and on the draw, and your latest results.
+
+• Context: your record by the lands in your opening hand, on the play and on the draw, and after two losses in a row.
 
 • Matchups: record in matches, on the play and on the draw, ranked or not; in a matchup, game 1 against the games after sideboarding.
 
@@ -29,13 +31,13 @@ The dashboard opens on the deck of your last match:
 
 • List versions: when your main deck changes, compare any two versions of your list, matchup by matchup.
 
-• Match history: date, format, opponent and their rating in ranked matches, your deck, score, result.
+• Match history, grouped by session with each session's record: date, format, opponent and their rating in ranked matches, your deck, score, result.
 
 • Per game: play/draw, mulligans, your opening hand, turns, final life totals, duration, and the full game log.
 
 • Opponent cards seen, with card preview on hover, and automatic archetype recognition from endstep.cc's public metagame.
 
-• Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 5 results.
+• Honest numbers: every rate shows its sample size, and nothing reads as a percentage before 10 results.
 
 • Search the history: opponent, archetype, card seen, note.
 
@@ -51,11 +53,13 @@ Not affiliated with endstep.cc or Wizards of the Coast.
 
 Endstep Tracker enregistre automatiquement les parties de Magic: The Gathering que tu joues sur endstep.cc et en fait un historique personnel, stocké uniquement dans ton navigateur.
 
-Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse, ton bilan contre lui et ton side habituel. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
+Pendant une partie, l'icône affiche un badge REC, et un petit panneau sur la page de jeu montre, entre deux games, l'archétype adverse, ton bilan contre le joueur et contre son deck, et ton side habituel. La popup de l'icône montre la même chose pendant un match, et ta session sinon.
 
 Le tableau de bord s'ouvre sur le deck de ton dernier match :
 
 • En un coup d'œil : ton taux de victoire, tes bilans sur le play et sur la draw, et tes derniers résultats.
+
+• Selon le contexte : ton bilan selon les terrains de ta main de départ, sur le play et sur la draw, et après deux défaites d'affilée.
 
 • Matchups : bilan en matchs, sur le play et sur la draw, classés ou non ; dans un matchup, la game 1 face aux games après side.
 
@@ -65,13 +69,13 @@ Le tableau de bord s'ouvre sur le deck de ton dernier match :
 
 • Versions de liste : quand ton main deck change, compare n'importe quelles versions de ta liste, matchup par matchup.
 
-• Historique des matchs : date, format, adversaire et sa cote dans les matchs classés, ton deck, score, résultat.
+• Historique des matchs, groupé par session avec le bilan de chacune : date, format, adversaire et sa cote dans les matchs classés, ton deck, score, résultat.
 
 • Par game : play/draw, mulligans, ta main de départ, tours, PV finaux, durée et journal complet.
 
 • Cartes adverses vues, aperçu au survol, et reconnaissance automatique de l'archétype grâce au métagame public d'endstep.cc.
 
-• Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 5 résultats.
+• Des chiffres honnêtes : chaque taux montre son échantillon, et rien ne s’affiche en pourcentage avant 10 résultats.
 
 • Recherche dans l’historique : adversaire, archétype, carte vue, note.
 
@@ -399,7 +403,7 @@ security add-generic-password -U -s endstep-publish -a <name> -w
 
 The App Store Connect key file itself goes to `~/.appstoreconnect/private_keys/AuthKey_<asc-key-id>.p8` (it can be downloaded only once).
 
-What each store gets: Chrome, through API v2 (v1.1 stops on 2026-10-15), the zip then a publish that goes live after review; Edge, the zip then a submission with certification notes (their format is not settled in Microsoft's docs: check the first run); Firefox, `web-ext sign` on the listed channel, published after AMO's review; Safari, the app archived and uploaded to App Store Connect. What stays in the dashboards: listing texts and screenshots, the first submission of a store, and for Safari the last step (once the build is processed, select it on the version, fill in "What's new" after the first version, Submit for Review).
+What each store gets: Chrome, through API v2, the zip then a publish that goes live after review; Edge, the zip then a submission with certification notes (their format is not settled in Microsoft's docs: check the first run); Firefox, `web-ext sign` on the listed channel, published after AMO's review; Safari, the app archived and uploaded to App Store Connect. What stays in the dashboards: listing texts and screenshots, the first submission of a store, and for Safari the last step (once the build is processed, select it on the version, fill in "What's new" after the first version, Submit for Review).
 
 ## App Store Connect API
 
@@ -411,12 +415,12 @@ The `publish.sh` key (Admin role, `asc-key-id`, `asc-issuer-id` and the `.p8` fi
 - Sales reports for `stats.sh`, with the vendor number.
 - Submitting stays in the dashboard (Add for Review, then Submit). The Resolution Center's messages are not in the API: paste them.
 
-Chrome and AMO keys are not in the Keychain: those two stores get their zip by hand; Edge and Safari go through `publish.sh`.
+Today the Keychain holds the Edge and App Store keys only: Chrome and AMO get their zip by hand, Edge and Safari go through `publish.sh`.
 
 ## Submission checklist
 
-1. `node test/replay.test.js && node test/meta.test.js && node test/hook.test.js && node test/commander.test.js && node test/ai.test.js && node test/records.test.js && node test/format.test.js && node test/cards.test.js && node test/history.test.js && node test/met.test.js && node test/feedback.test.js`
-2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in both `_locales` (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
+1. `for f in test/*.test.js; do node "$f" || break; done` (each file prints its "ok"), then the QA in `test/harness` (see its README).
+2. `version` in `manifest.json` → `X.Y`; in `CHANGELOG.md`, "Non publié" becomes `[X.Y] (date)`; rewrite `promo_news` in every `_locales` language (the Deck Compare news shown when the closed banner comes back with this release). Commit `Release X.Y`, lightweight tag `vX.Y`, then push `main` and the tag (`git push origin vX.Y`: a lightweight tag does not travel with `--follow-tags`).
 3. `./publish.sh --dry-run` then `./publish.sh` (see Automated publishing), or by hand: `./release.sh` → upload `dist/endstep-tracker-<version>.zip` (Chrome, Edge); `./release.sh firefox` → `dist/endstep-tracker-<version>-firefox.zip` (AMO); `./release.sh safari`, then archive both Xcode projects, `safari/` (Mac) and `safari-ios/` (iPhone).
 4. Fill the listing, privacy tab, test instructions and assets from this file; set visibility (public or unlisted), then submit. Review usually takes 1 to 3 days; a `world: MAIN` content script and a host permission may trigger a question from the reviewer, the justifications above answer it.
 5. Updates: same steps; users get them automatically, and open endstep.cc tabs are re-attached by `background.js`.

@@ -1,8 +1,7 @@
 // QA of the redraws nobody asked for on the page (card names from Scryfall, the metagame, a live match): they take
 // neither what I am typing nor the keyboard's place, and they do not swallow a click (run `node gen-demo.js` first).
 const assert = require('node:assert/strict');
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('./browser.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const NOTE = 'Garder Skullcrack pour le G3.';
 const FIELD = '.match[data-id="m1"] textarea[data-note="notes"]';

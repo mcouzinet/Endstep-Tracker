@@ -164,7 +164,7 @@
               ranked: json.ranked,
               gamesPerMatch: json.gamesPerMatch,
               participants: (json.participants || []).map((p) => ({
-                userId: p.userId, username: p.username, isBot: !!p.isBot, aiProfile: p.aiProfile || null,
+                username: p.username, isBot: !!p.isBot,
               })),
             };
             post('match', match);

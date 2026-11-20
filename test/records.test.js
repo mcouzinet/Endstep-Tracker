@@ -49,4 +49,9 @@ assert.equal(S.deckName(old, C({})), '[DC] - Yoshi Esper', 'a deck the site no l
   assert.equal(S.deckName(cur, picked), 'Asmo', 'a deck picked by hand that was merged counts as the other one');
 }
 
+// A rate in each language's format, rounded as before; no result, a dash. The results a tally holds.
+assert.deepEqual(['en', 'fr', 'de', 'it'].map((l) => S.pct({ W: 5, L: 4, D: 1 }, l).replace(/\s/g, ' ')), ['56%', '56 %', '56 %', '56%']);
+assert.equal(S.pct({ W: 0, L: 0, D: 2 }, 'en'), '—');
+assert.equal(S.count({ W: 5, L: 4, D: 1 }), 10);
+
 console.log('records: ok');

@@ -91,7 +91,6 @@
     .versions { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 8px 10px; font-size: 13px; color: var(--ink-2); }
     .versions b { color: var(--ink); font-weight: 600; }
     .versions .chg { white-space: nowrap; }
-    .versions .add { color: var(--win); } .versions .cut { color: var(--loss); }
     .versions .chg .card { color: var(--ink); }
     .versions select { padding-block: 2px; font-size: 13px; }
     .context .rec { padding-left: 8px; padding-right: 8px; } /* aligned with the clickable rows of the other panels */
@@ -540,7 +539,7 @@
         <button data-action="import-history"><svg class="i"><use href="#i-history"/></svg><span data-i18n="import_history"></span></button>
         <hr>
         <button data-action="feedback"><svg class="i"><use href="#i-message"/></svg><span data-i18n="feedback"></span></button>
-        <button data-action="telemetry" id="telemetry-btn" role="menuitemcheckbox" aria-checked="true"><svg class="i"><use href="#i-table"/></svg><span></span></button>
+        <button data-action="telemetry" id="telemetry-btn" aria-pressed="true"><svg class="i"><use href="#i-table"/></svg><span></span></button>
         <hr>
         <button data-action="clear" class="danger"><svg class="i"><use href="#i-trash"/></svg><span data-i18n="clear_all"></span></button>
         <p id="version" class="menu-version muted"></p>

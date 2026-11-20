@@ -33,7 +33,6 @@ const END_REASON = {
   milled: 'end_decked', decked: 'end_decked', poison: 'end_poison', timeout: 'end_timeout', draw: 'end_draw',
 };
 const PLAYS = new Set(['LAND_PLAYED', 'SPELL_CAST']);
-const STALE_MS = S.STALE_MS;
 const PREFS = 'endstep-tracker.filters';
 
 // scope: null = the default (the deck of my last match), else { format, deck }; a null format means every format,
@@ -108,7 +107,9 @@ const rawCardNames = (list) => list.flatMap((m) => {
   rawNames.set(m, { cards: d && d.cards, names });
   return names;
 });
-const { opps, colorsOf, gRes, onPlay, tally, pct, MIN_SAMPLE } = S;
+const { opps, colorsOf, gRes, onPlay, tally, count, MIN_SAMPLE } = S;
+const pct = (r) => S.pct(r, locale);
+const percent = (x) => S.percent(x, locale);
 const oppLabel = (m) => opps(m).map((p) => p.name).join(', ') || '?';
 const archetype = (m) => S.archetype(m, C);
 const myDeck = (m) => S.myDeck(m, C);
@@ -135,12 +136,15 @@ const formatter = (use, opts, Kind = Intl.DateTimeFormat) => formats.get(locale 
 const fullDate = (ts) => formatter('full', { dateStyle: 'full', timeStyle: 'short' }).format(ts);
 const clock = () => formatter('time', { timeStyle: 'short' });
 
+// [key (S.oppKey, as in the popup and the panel), label as HTML, label as text]; facetLabel: that text from the key.
+const facetLabel = (key) => (key.startsWith('a:') ? key.slice(2) : key.startsWith('c:') ? t('colors_label', { c: key.slice(2) }) : t('unknown_deck'));
 function oppKey(m) {
   const a = archetype(m) || (guessFor(m) || {}).name; // a recognized deck files with the same-named manual tags
-  if (a) return ['a:' + a, esc(a), a];
+  const key = S.oppKey(m, C, a);
+  if (a) return [key, esc(a), a];
   const c = colorsOf(m);
-  return c ? ['c:' + c, `${pips(c)} <span class="muted">${esc(t('untagged'))}</span>`, t('colors_label', { c })]
-    : ['?', `<span class="muted">${esc(t('unknown'))}</span>`, t('unknown_deck')];
+  return c ? [key, `${pips(c)} <span class="muted">${esc(t('untagged'))}</span>`, t('colors_label', { c })]
+    : [key, `<span class="muted">${esc(t('unknown'))}</span>`, t('unknown_deck')];
 }
 
 // --- filters ---
@@ -388,7 +392,7 @@ const REVIEW = { Chrome: CWS_REVIEWS, Brave: CWS_REVIEWS, Opera: CWS_REVIEWS,
   Firefox: 'https://addons.mozilla.org/firefox/addon/endstep-tracker/', // rated on the add-on page; AMO adds the browser's language
 }[S.browserName(chrome.runtime.getManifest(), navigator)] || null;
 let reviewOn = false;
-const recorded = () => { const r = S.records(matches.filter((m) => m.source !== 'history')).m; return r.W + r.L + r.D; };
+const recorded = () => { const r = S.records(matches.filter((m) => m.source !== 'history')).m; return count(r); };
 function showNews(seen, reviewClosed) {
   newsAt = S.newsDue(Object.keys(NEWS), seen, RELEASE);
   if (newsAt) {
@@ -818,7 +822,7 @@ function renderFilters(s, shown, list, vs, v) {
   $('#reset').classList.toggle('off', !scopeActive());
   $('#f-ranked').hidden = state.ranked === 'all' && !matches.some((m) => m.ranked); // only once a ranked match exists
   $('#facet').hidden = !state.opp;
-  if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: state.opp.label });
+  if (state.opp) $('#facet-label').textContent = t('opponent_facet', { label: facetLabel(state.opp.key) });
   for (const seg of document.querySelectorAll('.seg[data-filter]')) {
     for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(state[seg.dataset.filter] === b.dataset.value));
   }
@@ -835,7 +839,7 @@ const sideCells = (r) => [{ key: t('col_play'), title: t('on_play'), r: r.play }
 const cmpCell = (label, r) => ({ key: label, title: t('cmp_title', { v: label }), r, cls: ' cmp' });
 // Stacked like the main cell: the W–L, the rate below it once the sample allows one.
 function subCell({ key, title, r, cls = '' }) {
-  const n = r.W + r.L + r.D;
+  const n = count(r);
   return `<span class="rec-sub${n < MIN_SAMPLE ? ' early' : ''}${n ? '' : ' none'}${cls}" title="${esc(title)}"><span class="k">${esc(key)}</span>`
     + `<span class="wl">${n ? wl(r) : '—'}</span><b>${n >= MIN_SAMPLE ? pct(r) : ''}</b></span>`;
 }
@@ -845,7 +849,7 @@ const recHead = (first, main, cells, opens = false) => `<div class="rec${cells.l
 // The name in bold with an optional note below (a deck's format, a matchup's size); the W–L large with the rate below:
 // over a few dozen matches the record is the fact, the rate an estimate.
 function rec(labelHtml, r, { tag = 'div', attrs = '', cells = [], opens = false, note = '' } = {}) {
-  const n = r.W + r.L + r.D;
+  const n = count(r);
   const aria = n ? [tn('wins', r.W), tn('losses', r.L), r.D ? tn('draws', r.D) : ''].filter(Boolean).join(', ') : t('no_data');
   const early = n < MIN_SAMPLE;
   const marks = early
@@ -884,9 +888,8 @@ function renderOverview(list) {
 function renderLands(list) {
   const r = S.landRecords(list, S.landNames(matches, C), C);
   const label = [t('lands_0_1'), t('lands_n', { n: 2 }), t('lands_n', { n: 3 }), t('lands_4')];
-  const n = (x) => x.W + x.L + x.D;
   $('#lands').innerHTML = `<h2 class="panel-title">${esc(t('by_lands'))}${infoBtn('info_lands')}</h2>${recHead(t('col_lands'), t('col_games'), sideCells(S.records([])))}${
-    r.map((x, i) => rec(esc(label[i]), x.all, { note: n(x.all) ? tn('n_games', n(x.all)) : '', cells: sideCells(x) })).join('')}`;
+    r.map((x, i) => rec(esc(label[i]), x.all, { note: count(x.all) ? tn('n_games', count(x.all)) : '', cells: sideCells(x) })).join('')}`;
 }
 
 // --- my cards: the results of the games where I drew each card, beside those where it stayed in my library ---
@@ -898,13 +901,12 @@ function renderLands(list) {
 // games where it was in my deck, whatever the version.
 const winRate = (r) => (r.W + r.L ? r.W / (r.W + r.L) : null);
 function cardGap(x) { // in points, null until both sides have MIN_SAMPLE games (also on the stats image)
-  const n = (r) => r.W + r.L + r.D;
-  return n(x.drawn) >= MIN_SAMPLE && n(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
+  return count(x.drawn) >= MIN_SAMPLE && count(x.notDrawn) >= MIN_SAMPLE && winRate(x.drawn) !== null && winRate(x.notDrawn) !== null
     ? Math.round(100 * winRate(x.drawn)) - Math.round(100 * winRate(x.notDrawn)) : null;
 }
 // How often I cast a drawn card or got it onto my battlefield, null under MIN_SAMPLE drawn games that record it.
-const useRate = (x) => (x.drawnTracked.W + x.drawnTracked.L + x.drawnTracked.D >= MIN_SAMPLE
-  ? (x.used.W + x.used.L + x.used.D) / (x.drawnTracked.W + x.drawnTracked.L + x.drawnTracked.D) : null);
+const useRate = (x) => (count(x.drawnTracked) >= MIN_SAMPLE
+  ? count(x.used) / count(x.drawnTracked) : null);
 function renderCards(s, list, deck) {
   const el = $('#cards-panel');
   if (s.deck === null) { // a card's results only mean something within one deck
@@ -912,26 +914,25 @@ function renderCards(s, list, deck) {
     return;
   }
   if (state.tab === 'cards') resolveNames(rawCardNames(list));
-  const n = (r) => r.W + r.L + r.D;
   // Played and In play appear once a game records them (since 1.5.6). Each cell says on hover what its numbers count,
   // since the column names are far up a long list.
   const tracked = list.some((m) => m.games.some((g) => g.played));
   const by = state.cardSort === 'used' && !tracked ? 'gap' : state.cardSort;
   const dir = state.cardRev ? -1 : 1;
   const up = by === 'name' || by === 'used'; // A to Z, the least used first: the rest sorts the best first
-  const key = (x) => (by === 'gap' ? x.gap : by === 'used' ? x.use : n(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
+  const key = (x) => (by === 'gap' ? x.gap : by === 'used' ? x.use : count(x[by]) >= MIN_SAMPLE ? winRate(x[by]) : null);
   const rows = S.cardStats(list, C).map((x) => Object.assign(x, { gap: cardGap(x), use: useRate(x) }))
-    .filter((x) => n(x.drawn) || n(x.opening) || n(x.board))
+    .filter((x) => count(x.drawn) || count(x.opening) || count(x.board))
     .sort((a, b) => (by === 'name' ? dir * a.name.localeCompare(b.name, locale)
       : (key(a) === null) - (key(b) === null) || dir * (up ? (key(a) || 0) - (key(b) || 0) : (key(b) || 0) - (key(a) || 0)))
-      || n(b.drawn) - n(a.drawn) || n(b.opening) - n(a.opening) || a.name.localeCompare(b.name, locale));
-  const tip = (k, r, vars) => (n(r) ? t(k, { wl: wl(r), n: n(r), rate: n(r) >= MIN_SAMPLE ? t('win_rate_text', { pct: pct(r) }) : t('glance_early'), ...vars }) : t('cell_none'));
+      || count(b.drawn) - count(a.drawn) || count(b.opening) - count(a.opening) || a.name.localeCompare(b.name, locale));
+  const tip = (k, r, vars) => (count(r) ? t(k, { wl: wl(r), n: count(r), rate: count(r) >= MIN_SAMPLE ? t('win_rate_text', { pct: pct(r) }) : t('glance_early'), ...vars }) : t('cell_none'));
   const cells = (x) => [
     { key: t('col_not_drawn'), title: tip('cell_not_drawn', x.notDrawn), r: x.notDrawn },
     { key: t('col_opening'), title: tip('cell_opening', x.opening), r: x.opening },
     { key: t('col_later'), title: tip('cell_later', x.later), r: x.later },
-    ...(tracked ? [{ key: t('col_played'), title: tip('cell_played', x.played, { p: n(x.played), d: n(x.drawnTracked) }), r: x.played },
-      { key: t('col_board'), title: tip('cell_board', x.board, { o: n(x.boardOnly) }), r: x.board }] : []),
+    ...(tracked ? [{ key: t('col_played'), title: tip('cell_played', x.played, { p: count(x.played), d: count(x.drawnTracked) }), r: x.played },
+      { key: t('col_board'), title: tip('cell_board', x.board, { o: count(x.boardOnly) }), r: x.board }] : []),
   ];
   // The head: each column sorts the list; the arrow says which and which way (down: best first, Z to A, or the most used
   // first).
@@ -949,7 +950,7 @@ function renderCards(s, list, deck) {
   // Beside the name: the gap, or how often the card is used when sorting by it; "new" on a card the list just got.
   const row = (x) => {
     const g = by === 'used'
-      ? (x.use === null ? '' : ` <span class="gap" title="${esc(t('used_title', { u: n(x.used), d: n(x.drawnTracked) }))}">${Math.round(100 * x.use)} %</span>`)
+      ? (x.use === null ? '' : ` <span class="gap" title="${esc(t('used_title', { u: count(x.used), d: count(x.drawnTracked) }))}">${percent(x.use)}</span>`)
       : x.gap === null ? '' : ` <span class="gap ${x.gap > 0 ? 'up' : x.gap < 0 ? 'down' : ''}" title="${esc(t('gap_title', { d: x.gap }))}">${x.gap > 0 ? '+' : x.gap < 0 ? '−' : '±'}${Math.abs(x.gap)}</span>`;
     const fresh = deck && deck.added.has(x.name) ? ` <span class="new" title="${esc(t('card_new_title', { n: deck.ref.n }))}">${esc(t('card_new'))}</span>` : '';
     return rec(cardLink(x.name) + fresh + g, x.drawn, { cells: cells(x), attrs: `title="${esc(tip('cell_drawn', x.drawn))}"` });
@@ -979,18 +980,17 @@ function renderGlance(list, cmp) {
     for (const gm of known) mulls += gm.mulligans[x.mySeat];
     if (x.endedAt) { time += x.endedAt - x.startedAt; timed++; }
   }
-  const enough = (x) => x.W + x.L + x.D >= MIN_SAMPLE;
+  const enough = (x) => count(x) >= MIN_SAMPLE;
   const record = (x) => `${wl(x)}${enough(x) ? ` <span class="muted">· ${pct(x)}</span>` : ''}`;
   const fact = (label, value, cls = '') => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
   // How often I start on the play, whatever the result: matches whose first game is known, as in the records above.
-  const count = (x) => x.W + x.L + x.D;
   const onPlayN = count(r.play), knownN = onPlayN + count(r.draw);
   const facts = [
     fact(t('matches'), record(r.m)),
     cmp ? fact(`${cmp.label} · ${t('matches')}`, record(S.records(cmp.list).m), 'cmp') : '',
     fact(`${t('on_play')} (${onPlayN})`, record(r.play)), // the number of matches in the label: 4–3 reads as 7 at once
     fact(`${t('on_draw')} (${knownN - onPlayN})`, record(r.draw)),
-    knownN ? fact(t('fact_play_share'), `<span title="${esc(t('play_share_hint', { play: onPlayN, n: knownN }))}">${Math.round((100 * onPlayN) / knownN)} % <span class="muted">${esc(t('of_matches'))}</span></span>`) : '',
+    knownN ? fact(t('fact_play_share'), `<span title="${esc(t('play_share_hint', { play: onPlayN, n: knownN }))}">${percent(onPlayN / knownN)} <span class="muted">${esc(t('of_matches'))}</span></span>`) : '',
     played ? fact(t('fact_mulligans'), `${(mulls / played).toLocaleString(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <span class="muted">${esc(t('per_match'))}</span>`) : '',
     timed ? fact(t('fact_duration'), `${Math.max(1, Math.round(time / timed / 60000))} ${esc(t('min'))} <span class="muted">${esc(t('per_match'))}</span>`) : '',
   ].join('');
@@ -1022,15 +1022,15 @@ function formCard(e) {
 }
 
 // A rate needs enough matches to rank: under MIN_SAMPLE a matchup sorts after the ones that have them.
-const rate = (r) => { const n = r.W + r.L + r.D; return n ? (r.W + r.D / 2) / n : 0; };
+const rate = (r) => { const n = count(r); return n ? (r.W + r.D / 2) / n : 0; };
 function sortRows(rows, how) {
-  const few = (e) => (e.r.m.W + e.r.m.L + e.r.m.D >= MIN_SAMPLE ? 0 : 1);
+  const few = (e) => (count(e.r.m) >= MIN_SAMPLE ? 0 : 1);
   const by = {
     worst: (a, b) => few(a) - few(b) || rate(a.r.m) - rate(b.r.m) || b.n - a.n,
     best: (a, b) => few(a) - few(b) || rate(b.r.m) - rate(a.r.m) || b.n - a.n,
     n: (a, b) => b.n - a.n,
   };
-  return rows.sort((a, b) => (by[how] || by.n)(a, b) || (b.c.W + b.c.L + b.c.D) - (a.c.W + a.c.L + a.c.D));
+  return rows.sort((a, b) => (by[how] || by.n)(a, b) || count(b.c) - count(a.c));
 }
 
 // kind 'opp': the matchup guide, whose rows open the matchup panel; kind 'deck': my decks, whose rows scope the page.
@@ -1044,17 +1044,16 @@ function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
   };
   for (const m of list) group(m).list.push(m);
   if (cmp) for (const m of cmp.list) group(m).cmp.push(m);
-  const finished = (r) => r.W + r.L + r.D;
   // Only groups with a finished match (in either version): an in-progress match has no record yet.
   const rows = sortRows([...groups.values()].map((e) => Object.assign(e, { r: S.records(e.list), c: S.records(e.cmp).m, n: e.list.length }))
-    .filter((e) => finished(e.r.m) || finished(e.c)), kind === 'opp' ? state.sort : 'n');
+    .filter((e) => count(e.r.m) || count(e.c)), kind === 'opp' ? state.sort : 'n');
   const opp = kind === 'opp';
   const cellsOf = (r, c) => [...(opp ? sideCells(r) : []), ...(cmp ? [cmpCell(cmp.label, c)] : [])];
   const button = (e) => {
     const title = opp ? t('open_matchup', { label: e.text }) : t('only_show', { label: e.text });
-    const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" data-label="${esc(e.text)}" title="${esc(title)}"`
+    const attrs = `type="button" data-kind="${kind}" data-key="${esc(e.key)}" title="${esc(title)}"`
       + (opp ? ` aria-controls="drawer" aria-expanded="${!!drawer && drawer.key === e.key}"` : '');
-    const note = opp ? (finished(e.r.m) ? tn('n_matches', finished(e.r.m)) : '') : e.note;
+    const note = opp ? (count(e.r.m) ? tn('n_matches', count(e.r.m)) : '') : e.note;
     return rec(e.label, e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp, note });
   };
   // Up to MAX_ROWS archetypes in the sort order; the ones after fold into one "Others" row (never a fold of one).
@@ -1082,12 +1081,12 @@ function renderDrawer(s, stats, vs) {
   if (!drawer) return;
   if (s.deck !== null) resolveNames(rawCardNames(list)); // the side plan's names: one deck's cards, as My cards asks for them
   const r = S.records(list);
-  const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${x.W + x.L + x.D >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
+  const stat = (label, x) => `<div><dt>${esc(label)}</dt><dd><b>${wl(x)}</b>${count(x) >= MIN_SAMPLE ? ` · ${pct(x)}` : ''}</dd></div>`;
   const byKey = new Map(); // version key -> these matches played with it
   if (vs.list.length > 1) for (const m of scoped('all')) if (oppKey(m)[0] === drawer.key) { const k = versionKey(m); byKey.set(k, [...(byKey.get(k) || []), m]); }
   const byVersion = vs.list.length > 1 ? [...vs.list].reverse().map((x) => {
     const rr = S.records(byKey.get(x.key) || []).m;
-    return rr.W + rr.L + rr.D ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
+    return count(rr) ? `<li>${esc(t('version_n', { n: x.n }))} <b>${wl(rr)}</b></li>` : '';
   }).join('') : '';
   const seen = new Map(); // card -> number of these matches where it showed up
   for (const m of list) for (const name of new Set(oppCards(m))) seen.set(name, (seen.get(name) || 0) + 1);
@@ -1100,7 +1099,7 @@ function renderDrawer(s, stats, vs) {
   // Whether that sideboarding works: game 1 against the games after it, in games. Shown once a game after side exists
   // (a Bo1 has none).
   const sr = S.sideRecords(list);
-  const sided = sr.post.W + sr.post.L + sr.post.D ? `<section><h3>${esc(t('side_games'))}${infoBtn('info_side_games')}</h3>`
+  const sided = count(sr.post) ? `<section><h3>${esc(t('side_games'))}${infoBtn('info_side_games')}</h3>`
     + `${rec(esc(t('side_g1')), sr.g1)}${rec(esc(t('side_post')), sr.post)}</section>` : '';
   // An archetype (not a colour group) can be renamed on every match filed under it: tagged by hand, recognized, or a
   // commander. A name already used merges the two.
@@ -1192,7 +1191,7 @@ function sessionHead(s, fold) {
     : formatter(thisYear ? 'day' : 'dayY', { weekday: 'long', day: 'numeric', month: 'long', ...(thisYear ? {} : { year: 'numeric' }) }).format(from);
   const r = S.records(s).m; // against the AI or live: no record; a lone match's is its own row's
   const body = `<span class="s-what"><span class="s-day">${esc(day.charAt(0).toLocaleUpperCase(locale) + day.slice(1))}</span>`
-    + `<span class="s-meta">${esc(hours(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && r.W + r.L + r.D ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
+    + `<span class="s-meta">${esc(hours(from, to))}${s.length > 1 ? ` · ${esc(tn('n_matches', s.length))}` : ''}</span></span>${s.length > 1 && count(r) ? `<b class="s-rec">${esc(wl(r))}</b>` : ''}`;
   const key = esc(sessionKey(s));
   return `<li class="session" data-key="session:${key}">${fold === null ? `<div class="s-head">${body}</div>`
     : `<button type="button" class="s-head" data-session="${key}" aria-expanded="${!fold}">${body}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>`}</li>`;
@@ -1246,7 +1245,7 @@ function resultBadge(m) {
     const r = RESULT[m.result] ? m.result : '';
     return `<span class="result ${r}"><i></i>${r ? esc(resultLabel(r)) : '?'}</span>`;
   }
-  const stale = m.status === 'abandoned' || Date.now() - m.updatedAt > STALE_MS;
+  const stale = !isLive(m);
   return stale ? `<span class="result open"><i></i>${esc(t('unfinished'))}</span>` : `<span class="result ongoing"><i></i>${esc(t('ongoing'))}</span>`;
 }
 
@@ -1416,6 +1415,7 @@ function gameBlock(m, g) {
   return `<article class="game"><header class="game-head"><h4>${esc(t('game_n', { n: g.n }))}</h4>${res}<span class="facts-inline">${facts}</span></header>${kv}${side}${hand}${timeline}${addon ? addon.gameBlock(m, g) : ''}${decisionsBlock(m, g)}${log}</article>`;
 }
 
+// dev-only { the decision journal (decisionsBlock, and the Coach)
 const ACTION_KEY = { PLAY_CARD: 'act_play', PASS_PRIORITY: 'act_pass', KEEP_HAND: 'act_keep', MULLIGAN: 'act_mulligan', DECLARE_ATTACKERS: 'act_attack',
   DECLARE_BLOCKERS: 'act_block', CHOOSE_TARGETS: 'act_target', CHOOSE_CARDS: 'act_choose', CHOOSE_MODE: 'act_mode', CHOOSE_ABILITY: 'act_ability',
   CHOOSE_NUMBER: 'act_number', YES: 'act_yes', NO: 'act_no', DECLINE: 'act_decline', CANCEL: 'act_cancel' };
@@ -1426,6 +1426,7 @@ function describeAction(a) {
   const args = Object.entries(a).filter(([k, v]) => k !== 'type' && typeof v !== 'boolean' && v !== undefined && v !== null && k !== 'abilityIndex').map(([, v]) => fmtVal(v));
   return [ACTION_KEY[a.type] ? t(ACTION_KEY[a.type]) : a.type, ...args].join(' ');
 }
+// } dev-only
 
 function decisionsBlock(m, g) {
   // dev-only { the decision journal: left out of the store builds by release.sh, which then shows nothing here
@@ -1535,7 +1536,7 @@ async function showTelemetry() {
   const { telemetry } = await chrome.storage.local.get('telemetry');
   telemetryOn = telemetry !== false && (!FIREFOX_DATA || await browser.permissions.contains(FIREFOX_DATA).catch(() => false));
   const btn = $('#telemetry-btn');
-  btn.setAttribute('aria-checked', String(telemetryOn));
+  btn.setAttribute('aria-pressed', String(telemetryOn));
   btn.querySelector('span').textContent = t(telemetryOn ? 'telemetry_on' : 'telemetry_off');
 }
 
@@ -1573,9 +1574,8 @@ async function statsImage(s, list) {
   const col = (k) => css.getPropertyValue('--' + k).trim();
   const family = getComputedStyle(document.body).fontFamily;
   const RES = { W: col('win'), L: col('loss'), D: col('draw') };
-  const n = (r) => r.W + r.L + r.D;
   const rec = (r) => [r.W, r.L, ...(r.D ? [r.D] : [])].join('-'); // a plain hyphen: 4-3
-  const rate = (r) => (n(r) >= MIN_SAMPLE && r.W + r.L ? pct(r) : null);
+  const rate = (r) => (count(r) >= MIN_SAMPLE && r.W + r.L ? pct(r) : null);
   const width = (str, size = 20, weight = 400) => { g.font = `${weight} ${size}px ${family}`; return g.measureText(str).width; };
   // Text cut with an ellipsis to fit max; returns its width.
   const text = (str, x, y, { size = 20, weight = 400, color = col('ink'), align = 'left', max = Infinity } = {}) => {
@@ -1590,7 +1590,7 @@ async function statsImage(s, list) {
   const line = (y) => { g.fillStyle = col('line'); g.fillRect(56, y, IMG_W - 112, 1); };
   // A record as the dashboard draws it: a bar split by result with its 50 % tick, or one dot per result under MIN_SAMPLE.
   const marks = (r, x, y, w, h = 10) => {
-    if (n(r) < MIN_SAMPLE) {
+    if (count(r) < MIN_SAMPLE) {
       [...'W'.repeat(r.W), ...'D'.repeat(r.D), ...'L'.repeat(r.L)].forEach((k, i) => {
         g.fillStyle = RES[k];
         g.beginPath();
@@ -1606,7 +1606,7 @@ async function statsImage(s, list) {
     g.fillStyle = col('surface-3');
     g.fillRect(x, y - h / 2, w, h);
     const parts = [['W', r.W], ['D', r.D], ['L', r.L]].filter(([, v]) => v);
-    const unit = (w - 2 * (parts.length - 1)) / n(r);
+    const unit = (w - 2 * (parts.length - 1)) / count(r);
     let at = x;
     for (const [k, v] of parts) { g.fillStyle = RES[k]; g.fillRect(at, y - h / 2, unit * v, h); at += unit * v + 2; }
     g.restore();
@@ -1620,15 +1620,15 @@ async function statsImage(s, list) {
     const base = y + 7;
     text(label, x, base, { max: w - 296 });
     marks(r, x + w - 280, y, 120);
-    if (n(r)) text(rate(r) || t('too_early'), x + w - 72, base, rate(r) ? { weight: 700, align: 'right' } : { size: 16, color: col('ink-3'), align: 'right' });
+    if (count(r)) text(rate(r) || t('too_early'), x + w - 72, base, rate(r) ? { weight: 700, align: 'right' } : { size: 16, color: col('ink-3'), align: 'right' });
     text(rec(r), x + w, base, { size: 18, color: col('ink-3'), align: 'right' });
   };
 
   const r = S.records(list);
   const groups = new Map();
   for (const m of list) { const [key, , label] = oppKey(m); const e = groups.get(key) || { label, list: [] }; e.list.push(m); groups.set(key, e); }
-  const matchups = [...groups.values()].map((e) => ({ label: e.label, r: S.records(e.list).m })).filter((e) => n(e.r))
-    .sort((a, b) => n(b.r) - n(a.r) || a.label.localeCompare(b.label, locale)).slice(0, 5);
+  const matchups = [...groups.values()].map((e) => ({ label: e.label, r: S.records(e.list).m })).filter((e) => count(e.r))
+    .sort((a, b) => count(b.r) - count(a.r) || a.label.localeCompare(b.label, locale)).slice(0, 5);
   const vs = versionsOf(s);
   const v = activeVersion(vs);
   const deck = listInView(s, vs, v); // the cards of the list in view, as in My cards
@@ -1637,7 +1637,7 @@ async function statsImage(s, list) {
   const down = gaps.filter((x) => x.gap < 0).sort((a, b) => a.gap - b.gap).slice(0, 3);
   const ver = v === '?' ? t('version_unknown') : v === 'all' ? '' : t('version_n', { n: vs.list.find((x) => x.key === v).n });
   const sub = [s.format, state.period === 'all' ? '' : t('period_' + state.period), { ranked: t('ranked_only'), unranked: t('ranked_not') }[state.ranked],
-    ver, state.opp ? t('opponent_facet', { label: state.opp.label }) : ''].filter(Boolean).join(' · ');
+    ver, state.opp ? t('opponent_facet', { label: facetLabel(state.opp.key) }) : ''].filter(Boolean).join(' · ');
 
   g.fillStyle = col('bg');
   g.fillRect(0, 0, IMG_W, IMG_H);
@@ -1650,10 +1650,10 @@ async function statsImage(s, list) {
   const hero = rate(r.m) || rec(r.m);
   const heroW = text(hero, 56, 300 + top, { size: 96, weight: 700 });
   text(t(rate(r.m) ? 'glance_rate' : 'glance_early'), 56 + heroW + 22, 254 + top, { size: 22, color: col('ink-2') });
-  text(tn('glance_over', n(r.m)) + (rate(r.m) ? ` · ${rec(r.m)}` : ''), 56 + heroW + 22, 290 + top, { color: col('ink-3') });
+  text(tn('glance_over', count(r.m)) + (rate(r.m) ? ` · ${rec(r.m)}` : ''), 56 + heroW + 22, 290 + top, { color: col('ink-3') });
   marks(r.m, 56, 338 + top, 488, 14);
-  row(`${t('on_play')} (${n(r.play)})`, r.play, 56, 400 + top, 488);
-  row(`${t('on_draw')} (${n(r.draw)})`, r.draw, 56, 452 + top, 488);
+  row(`${t('on_play')} (${count(r.play)})`, r.play, 56, 400 + top, 488);
+  row(`${t('on_draw')} (${count(r.draw)})`, r.draw, 56, 452 + top, 488);
   // Right: the most played matchups.
   text(t('share_matchups'), 600, 222 + top, { size: 17, weight: 600, color: col('ink-3') });
   matchups.forEach((e, i) => row(e.label, e.r, 600, 262 + top + i * 52, IMG_W - 56 - 600));
@@ -1688,7 +1688,7 @@ const ACTIONS = {
     if (s.deck === null) { toast(t('share_needs_deck')); return; }
     const list = scoped();
     const r = S.records(list).m;
-    if (!(r.W + r.L + r.D)) { toast(t('no_finished_selection')); return; }
+    if (!count(r)) { toast(t('no_finished_selection')); return; }
     const png = statsImage(s, list);
     const save = () => png.then((blob) => { download(`endstep-stats-${stamp()}.png`, blob, 'image/png'); toast(t('share_saved')); })
       .catch((e) => console.warn('[endstep-tracker] stats image', e));
@@ -1733,7 +1733,7 @@ const ACTIONS = {
   'export-json': async () => {
     const all = await chrome.storage.local.get(null);
     const decs = Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('dec:')).map(([k, v]) => [k.slice(4), v]));
-    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), deckMerges: merges, formatMoves, plans: Object.fromEntries(Object.entries(all).filter(([k]) => k.startsWith('plan:'))), ...(addon ? addon.exportExtra(all) : {}) }), 'application/json');
+    download(`endstep-tracker-${stamp()}.json`, JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), matches, notes, decisions: decs, decks: obj(all.decks), deckMerges: merges, formatMoves, ...(addon ? addon.exportExtra(all) : {}) }), 'application/json');
     toast(tn('exported', matches.length));
   },
   'export-csv': () => {
@@ -1771,7 +1771,7 @@ const ACTIONS = {
   clear: async () => {
     if (!confirm(t('confirm_clear'))) return;
     const all = await chrome.storage.local.get(null);
-    const prefixes = ['match:', 'note:', 'dec:', 'plan:', ...(addon ? addon.prefixes : [])];
+    const prefixes = ['match:', 'note:', 'dec:', 'plan:' /* the side plans typed by hand before 1.0 */, ...(addon ? addon.prefixes : [])];
     await chrome.storage.local.remove(Object.keys(all).filter((k) => k === 'deletedMatches' || k === 'deckMerges' || k === 'formatMoves' || prefixes.some((p) => k.startsWith(p)))); // all gone: an import brings everything back
     openId = null;
     toast(t('all_deleted'));
@@ -1845,7 +1845,6 @@ $('#import').addEventListener('change', async (e) => {
     for (const [id, n] of Object.entries(obj(data && data.notes))) if (items['match:' + id]) items['note:' + id] = { ...S.normalizeNote(n), ...obj(notes[id]) };
     for (const [id, d] of Object.entries(obj(data && data.decisions))) if (items['match:' + id] && !here.has(id)) items['dec:' + id] = obj(d);
     if (addon) addon.importItems(data, items);
-    for (const [k, v] of Object.entries(obj(data && data.plans))) if (k.startsWith('plan:') && typeof v === 'string') items[k] = v;
     const theirs = { merges: S.normalizeMerges(data && data.deckMerges), moves: S.normalizeMoves(data && data.formatMoves), decks: S.normalizeDecks(data && data.decks) };
     if (Object.keys(theirs.merges).length) items.deckMerges = { ...theirs.merges, ...merges }; // the merges made here win
     if (Object.keys(theirs.moves).length) items.formatMoves = { ...theirs.moves, ...formatMoves }; // so do these moves
@@ -1981,9 +1980,8 @@ $('#drawer').addEventListener('click', (e) => {
   if (show) { const m = matches.find((x) => x.id === show.dataset.show); drawer = null; if (m) showMatch(m); return; }
   if (e.target.closest('[data-filter-matchup]')) {
     const { key } = drawer;
-    const row = [...document.querySelectorAll('#by-opp button.rec')].find((x) => x.dataset.key === key);
     drawer = null;
-    setFilter({ opp: { key, label: row ? row.dataset.label : key.slice(2) } });
+    setFilter({ opp: { key } });
   }
 });
 
@@ -2004,7 +2002,7 @@ $('#drawer').addEventListener('submit', async (e) => {
   if (!confirm(tn('confirm_rename', targets.length, { from, to }))) return;
   for (const m of targets) notes[m.id] = Object.assign({}, notes[m.id], { archetype: to });
   // The panel and the filter follow the name before the write: its own update may redraw the page meanwhile.
-  if (state.opp && state.opp.key === key) state.opp = { key: 'a:' + to, label: to };
+  if (state.opp && state.opp.key === key) state.opp = { key: 'a:' + to };
   drawer = { key: 'a:' + to };
   await chrome.storage.local.set(Object.fromEntries(targets.map((m) => ['note:' + m.id, notes[m.id]])));
   setFilter({});

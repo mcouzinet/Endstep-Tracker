@@ -51,7 +51,7 @@ assert.deepEqual(S.records([ai], Date.now()).m, { W: 0, L: 0, D: 0 });
 const H = Date.parse('2026-09-01T10:00:00Z');
 const rec = (id, at, opp, result) => S.normalizeMatch({ id, startedAt: at, status: 'complete', result, mySeat: 0, players: [{ seat: 0, name: 'me' }, { seat: 1, name: opp }], games: [] });
 const imp = (id, at, opp, result) => S.normalizeMatch(T.fromHistory(row({ id, createdAt: new Date(at).toISOString(), result, opponents: [{ username: opp }] }), decks));
-const dups = (list) => S.historyDuplicates(list).sort();
+const dups = (list) => S.historyPairs(list).map((p) => p.h).sort();
 assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), imp('h1', H + 3 * 60e3, 'bartok', 'won')]), ['h1'], 'same opponent (any case), result, minutes apart');
 assert.deepEqual(dups([rec('r1', H, 'Bartok', 'W'), imp('h1', H, 'Wren', 'won')]), [], 'another opponent');
 const shown = Object.assign(rec('r1', H, 'Malpelo96', 'L'), { participants: [{ username: 'me' }, { username: 'Malpelo96 LPO' }] });

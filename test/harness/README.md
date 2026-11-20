@@ -1,7 +1,8 @@
 # Harnais de QA (hors tests unitaires)
 
-Scripts Puppeteer utilisés pendant le développement. Ils supposent Chrome for Testing et puppeteer-core
-aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écrivent leurs captures dans ce dossier.
+Scripts Puppeteer utilisés pendant le développement. Chrome for Testing et puppeteer-core sont pris aux chemins de
+`browser.js` (ceux de ce Mac ; `CHROME` et `PUPPETEER_CORE` dans l'environnement pour d'autres), qui sert aussi aux
+scripts de `store/` et `safari/`. Ils écrivent leurs captures dans ce dossier.
 
 - `gen-demo.js` : génère des données de démo + les pages `harness-*.html` (dashboard réel avec `chrome.storage` simulé et le métagame Modern servi depuis `meta-Modern.json`). La racine du dépôt est prise depuis le dossier du script : une copie de travail (worktree) teste son propre code. Les pages exposent les globales du tableau de bord (`matches`, `render`, `S`, `state`, `cardNames`) à `page.evaluate`.
 - `shots.js` : captures du tableau de bord (large, étroit, détail, menu, vide, filtres, anglais).
@@ -9,7 +10,7 @@ aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écriv
 - `qa-redraw.js` : les rafraîchissements que l'utilisateur n'a pas demandés (noms de cartes de Scryfall, métagame, match en direct) : la saisie et la place du clavier ne bougent pas, ils attendent qu'on quitte le champ, et le clic qui quitte le champ n'est pas perdu ; réponses Scryfall servies localement, au moment choisi ; assertions.
 - `qa-popup.js` : la popup dans la vraie extension (profil jetable, données de démo), en français et en anglais, interrupteur du panneau, ouverture du tableau de bord.
 - `qa-overlay.js` : le panneau dans la vraie extension, sur une page endstep.cc factice (toute requête vers endstep.cc est servie localement, aucune n'atteint le site) : cote de l'adversaire dans la barre, entre deux games, replié sans prendre le focus, nouvelle game, déplacement gardé, fin de match, coupure depuis la popup.
-- `qa-guide.js` : résumé (ni bandeau de session ni courbe, pas de taux sous 5 matchs, derniers résultats et leur survol), ouverture d'un match depuis un carré, onglets au clavier, panneau de matchup (bilans, aucun plan saisi à la main), Échap, `j`, tri, renommage d'un archétype ; assertions.
+- `qa-guide.js` : résumé (ni bandeau de session ni courbe, pas de taux sous 10 matchs, derniers résultats et leur survol), ouverture d'un match depuis un carré, onglets au clavier, panneau de matchup (bilans, aucun plan saisi à la main), Échap, `j`, tri, renommage d'un archétype ; assertions.
 - `qa-versions.js` : versions de liste (deux listes pour Burn en Modern), comparaison avec la version précédente ou une autre, « Mes cartes » limité à la liste en vue (cartes retirées repliées, « nouvelle », tri « Peu jouées »), decks par ordre alphabétique ; assertions, sort en erreur si l'une échoue.
 - `qa-ladder.js` : le classement d'un match classé : celui de l'adversaire à côté de son nom dans l'historique (sa place au survol), les deux dans le détail du match, rien sans classement ; assertions.
 - `qa-import.js` : l'import d'une sauvegarde : le double d'historique d'un match enregistré ici disparaît tout de suite, les decks suivent, une fiche bizarre ne bloque pas la page ; assertions.
@@ -25,6 +26,7 @@ aux chemins indiqués en tête de chaque fichier (adapter si besoin). Ils écriv
 - `e2e-reload.js` : onglet endstep.cc ouvert avant l'installation de l'extension (même chemin que ↻ / mise à jour) : le traqueur doit être injecté dans l'onglet et enregistrer une trame ; ne joue aucune partie.
   Crée une session invitée, un deck et un match sur endstep.cc : à lancer avec parcimonie (une fois par phase, pas en boucle).
 - `fetch-meta.js <Format>` : instantané du métagame d'un format (`meta-<Format>.json`).
+- `demo-export.js` : l'export JSON du menu Données, construit sans navigateur depuis les données de démo, pour `bot/coach-replay.js` d'Endstep-coach.
 
 Lancer depuis ce dossier : `node gen-demo.js && node shots.js`.
 

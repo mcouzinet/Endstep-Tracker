@@ -2,6 +2,7 @@
 # Publishes the latest release (the highest vX.Y tag, pushed) to the stores, from this Mac.
 #   ./publish.sh --dry-run            checks everything and builds the packages; contacts no store
 #   ./publish.sh [chrome] [edge] [firefox] [safari]   publishes (all four when none is named), after a confirmation
+#   ./publish.sh --yes [store…]      the same without the confirmation (a run in the background cannot answer it)
 #   ./publish.sh --keys [store…]     asks for the missing keys of those stores and stores them in the Keychain
 #   ./publish.sh --keys --replace [store…]   asks again for all of them, the ones already set included
 # The packages are built from the tag itself, in a temporary worktree, so later commits never leak into a store.
@@ -72,10 +73,11 @@ json() { jq -r "$1" 2>/dev/null; }
 wait_for() { # wait_for <label> <command printing a state> <state that means "still running">
   local s
   for _ in $(seq 1 60); do s=$($2); [ "$s" != "$3" ] && { echo "$s"; return; }; sleep 5; done
+  echo "$1: still running after 5 minutes" >&2
   echo "timeout"
 }
 
-# --- Chrome Web Store: API v2 (v1.1 stops on 2026-10-15), OAuth refresh token ---
+# --- Chrome Web Store: API v2, OAuth refresh token ---
 chrome_token() {
   printf 'client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token' \
     "$(secret chrome-client-id)" "$(secret chrome-client-secret)" "$(secret chrome-refresh-token)" |

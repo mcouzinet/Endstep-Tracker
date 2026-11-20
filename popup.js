@@ -4,7 +4,8 @@ const S = self.EndstepShared;
 const T = self.EndstepTracker;
 const Meta = self.EndstepMeta;
 const $ = (s) => document.querySelector(s);
-const { esc, wl, pct, MIN_SAMPLE } = S;
+const { esc, wl, count, MIN_SAMPLE } = S;
+const pct = (r) => S.pct(r, I18N.locale);
 let I18N;
 const t = (k, v) => I18N.t(k, v);
 
@@ -31,7 +32,7 @@ function render(d) {
     return guesses.get(m);
   };
   const keyOf = (m) => S.oppKey(m, C, (guess(m) || {}).name);
-  const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${r.W + r.L + r.D >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</dd></div>`;
+  const stat = (label, r) => `<div><dt>${esc(label)}</dt><dd><b>${wl(r)}</b>${count(r) >= MIN_SAMPLE ? ` · ${pct(r)}` : ''}</dd></div>`;
   const live = matches.find((m) => S.isLive(m));
   let html;
   if (live) {

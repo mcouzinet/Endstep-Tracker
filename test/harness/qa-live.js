@@ -1,6 +1,5 @@
 // Live-update behaviour: open journal survives a write, edits/selection defer the write, delete/clear apply, import validation.
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('./browser.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] });

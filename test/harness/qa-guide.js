@@ -1,7 +1,6 @@
 // QA of the summary block and the matchup panel on the demo dashboard (run `node gen-demo.js` first).
 const assert = require('node:assert/strict');
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('./browser.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] }); // never the real Scryfall (see the README)
@@ -19,7 +18,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // Summary, all decks in view: 4 finished matches outside the AI (m1, m3, m5, m6), too few for a rate.
   assert.equal(await p.evaluate(() => document.getElementById('session')), null, 'no session band');
   assert.equal(await p.evaluate(() => !document.getElementById('glance').hidden), true);
-  assert.match(await $text('#glance .hero'), /^3–1 ?trop tôt pour un taux ?sur 4 matchs$/); // no percentage under 5 matches
+  assert.match(await $text('#glance .hero'), /^3–1 ?trop tôt pour un taux ?sur 4 matchs$/); // no percentage under 10 matches (MIN_SAMPLE)
   assert.equal(await p.evaluate(() => !!document.querySelector('#glance svg:not(.i), #glance .trend')), false, 'no curve'); // svg.i: the icons, like the info button
   assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#glance .form-strip button')].map((b) => b.className + ':' + b.dataset.show)),
     ['W:m6', 'L:m5', 'W:m3', 'W:m1'], 'oldest first, the latest on the right');

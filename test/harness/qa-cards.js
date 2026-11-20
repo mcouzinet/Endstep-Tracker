@@ -1,6 +1,5 @@
 // "My cards" panel and side plans in the harness (harness-cards.html: made-up Burn Bo3s with draws and sideboarding).
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('./browser.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files', '--host-resolver-rules=MAP * ~NOTFOUND'] });
@@ -25,7 +24,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   let panel = await p.$('#cards-panel');
   out.cardsShown = await panel.evaluate((el) => !el.hidden);
   out.cardRows = await p.evaluate(() => [...document.querySelectorAll('#cards-panel > .rec:not(.head)')].map((r) => r.innerText.replace(/\s+/g, ' ').trim()).slice(0, 6));
-  // Sorting by a column's head: by name (A to Z, then Z to A), by a rate (best first, a rate under 5 games never
+  // Sorting by a column's head: by name (A to Z, then Z to A), by a rate (best first, a rate under 10 games never
   // first), kept for the next visit, the keyboard left on the head.
   const assert = require('node:assert/strict');
   const names = () => p.evaluate(() => [...document.querySelectorAll('#cards-panel .rec:not(.head) .rec-label a')].map((a) => a.textContent));
@@ -42,7 +41,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.deepEqual(await pressed(), ['opening↓']);
   const opening = await p.evaluate(() => [...document.querySelectorAll('#cards-panel .rec:not(.head)')].map((r) => {
     const c = r.querySelectorAll('.rec-sub')[1];
-    const m = c && c.querySelector('b').textContent.match(/(\d+) %/); // the rate, under the W–L
+    const m = c && c.querySelector('b').textContent.match(/(\d+)\s?%/); // the rate, under the W–L
     return m ? Number(m[1]) : null;
   }));
   const ranked = opening.filter((x) => x !== null);

@@ -6,7 +6,7 @@
 
 web
 
-A Manifest V3 browser extension (Chrome, Edge, Firefox) for the endstep.cc Magic: The Gathering client.
+A Manifest V3 browser extension (Chrome, Edge, Firefox, Safari on Mac, iPhone and iPad) for the endstep.cc Magic: The Gathering client.
 
 ## Users
 
@@ -26,7 +26,7 @@ The record comes from the game's own message stream, not from manual entry or sc
 
 ## Operating Context
 
-- endstep.cc open in a tab; the toolbar icon shows a REC badge while a match is tracked; a click opens the dashboard in its own tab (reused if already open).
+- endstep.cc open in a tab; the toolbar icon shows a REC badge while a match is tracked; a click opens the toolbar popup (the match in progress, else the session), and from there the dashboard in its own tab (reused if already open). A small panel on the game page shows the opponent and my records against them.
 - The dashboard is also used in a narrow window beside the game (about 430 px wide).
 - Matches are Bo1 or Bo3, ranked or casual queue, against humans or the Forge AI bot, in a format or with no banlist.
 - Sessions are bursts of several matches in a row, then review.
@@ -35,17 +35,17 @@ The record comes from the game's own message stream, not from manual entry or sc
 
 Existing, to preserve:
 - Automatic match record: format, ranked, Bo1/Bo3, opponent, my deck (name and list), score, result; per game: play/draw, toss, mulligans, kept hand, winner, end reason, turns, final life, duration, opponent cards seen with max copies, colours of cast spells, cards played per turn, full log.
-- Dashboard: overview and context win rates (play/draw, kept 7/after mulligan), breakdown by my deck and by opponent archetype (click to filter), filters (search, format chips, period, result), match list with expandable detail, notes and archetype per match, "My deck" override, card preview on hover (Scryfall), live-match pill, export JSON/CSV, import, delete all, EN/FR.
+- Dashboard: overview and context win rates (play/draw, kept 7/after mulligan), breakdown by my deck and by opponent archetype (click to filter), filters (search, deck and format scope, period, ranked, result), My cards (per card results), list versions, side plans, opening-hand lands, match history grouped by session with expandable detail, notes and archetype per match, "My deck" override, card preview on hover (Scryfall), live-match pill, export JSON/CSV, import, delete all, six languages.
 - Opponent archetype recognition from the endstep.cc metagame API (naive Bayes, confidence threshold, "Use" to confirm; manual archetype wins).
 
 Constraints:
 - Plain HTML/CSS/JS, no dependency, no build step, no remote code.
-- Data in `chrome.storage.local` only. Outbound requests: endstep.cc public metagame API and Scryfall card images on hover. Nothing is sent on the user's behalf; nothing recorded while spectating.
+- Data in `chrome.storage.local` only. Outbound requests: endstep.cc public metagame API, the players' ladder ratings when a ranked match starts and the user's own history when they import it (both asked as the site's pages ask them), Scryfall card names and images, and anonymous usage statistics (install, update, one signal a day; can be switched off). Nothing is sent on the user's behalf; nothing recorded while spectating.
 - Host permission limited to `https://endstep.cc/*`.
 - Store builds ship without the Coach (`coach.js` and model files are left out); every surface must work without it. The Coach is a separate workstream and out of scope for redesigns.
-- Strings live in `_locales/en` and `_locales/fr`.
+- Strings live in `_locales/<lang>/messages.json` (en, fr, es, de, it, pt_BR; pt_PT is a copy of pt_BR).
 
-In scope for redesign, not yet built: a toolbar popup (quick summary instead of opening a tab directly) and an in-page panel on endstep.cc during a match.
+Built since the first redesign: the toolbar popup (`popup.js`) and the in-page panel on endstep.cc (`overlay.js`, in a closed shadow root).
 
 Terminology: match, game, play/draw, mulligan (M1, M2…), archetype, ranked (classé), no banlist (sans banlist), Bo1/Bo3, my deck, opponents' decks.
 
@@ -57,7 +57,7 @@ Name "Endstep Tracker". Icon: a gold card carrying a rising trend line (`icons/i
 
 - Demo data for screenshots: `test/harness/gen-demo.js` (synthetic matches built from a real replayed Bo3, no real player data).
 - Store screenshots and promo images: `store/`.
-- No user counts, ratings, testimonials or reviews exist yet; do not fabricate them.
+- Store counts and ratings: `stats.sh` reads them; quote them only from there, and never fabricate testimonials or reviews.
 
 ## Product Principles
 

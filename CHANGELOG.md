@@ -1,6 +1,6 @@
 # Journal des modifications
 
-Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans les fichiers `COACH-GOAL*.md`.
+Les modifications visibles d'**Endstep Tracker** dans les versions des stores. Le Coach n'est pas dans les stores : son avancement est dans le dépôt Endstep-coach (`plans/COACH-GOAL*.md`).
 Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux releases, les builds de dev se lisent **`X.Y.Z`**, `Z` monté à chaque lot testé. Les quatre stores (Chrome, Edge, Firefox, Safari) publient la même release en même temps (voir `store/STORE.md`).
 
 ## Non publié
@@ -13,13 +13,14 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ### Modifié
 
-- **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes, la colonne Format seulement quand elle change (1.8.1).
+- **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes (1.8.1).
 - **Panneau en jeu** : le bilan contre le joueur et le bilan contre son deck séparés, pour ne plus les confondre (1.8.2).
 - **Panneau en jeu** : replié, il n'affiche plus que « REC » ; le bilan de la session apparaît quand on le déplie (1.8.3).
 - **Historique** : un cercle par game, P ou D et mulligans en badges, détail au survol ; ton deck en gras, le format en petit dessous (1.8.4).
 - **Matchups et Mes cartes** : le nom en gras, des colonnes alignées ; sur téléphone, une ligne de détail sous chaque carte (1.8.5).
 - **Bilans** : le bilan en grand, le pourcentage en petit dessous, affiché à partir de 10 matchs au lieu de 5 (1.8.6).
 - **Gros historiques** : l'import de l'historique lit tes matchs une fois au lieu d'une fois par page ; Mes cartes, les doublons et les mises à jour en direct du tableau de bord vont plus vite (1.8.12).
+- **Fiches allégées** : plus de clé vide par match pour le journal de décisions (outil de développement), ni de champs jamais lus (1.8.13).
 
 ### Corrigé
 
@@ -37,6 +38,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Mes cartes** : le match en cours n'est plus compté avant sa fin (1.8.11).
 - **Portugais du Portugal** : le nom et le panneau en jeu en portugais (1.8.11).
 - **Popup** : elle ne relit plus tout à chaque écriture du match en cours, et suit les fusions, les changements de format et le métagame faits dans le tableau de bord (1.8.12).
+- **Pourcentages** : écrits comme dans ta langue (54% en anglais, 54 % en français) ; le filtre d'un adversaire change de langue avec le reste (1.8.13).
 
 ## [1.8] (2026-11-16)
 

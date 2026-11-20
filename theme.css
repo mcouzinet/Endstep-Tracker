@@ -24,7 +24,6 @@
   --danger: #f08a73;
   /* A ladder rating: a cool blue beside the gold of the archetypes. */
   --rating: oklch(.82 .09 240);
-  --rating-wash: oklch(.7 .12 240 / .18);
   --radius: 10px;
   --radius-sm: 8px;
   --shadow-pop: 0 14px 34px -10px rgb(0 0 0 / .7), 0 2px 8px rgb(0 0 0 / .45);

@@ -11,12 +11,13 @@
   const UNSEQUENCED = 1e12; // CARD_REVEALED carries hash-like sequence numbers
   const NO_DECK = /draft|sealed|momir|fish/i; // formats where no saved deck of mine is played
   const RECENT_DECK_MS = 6 * 3600e3; // a deck picked longer ago than this is not assumed to be this match's
-  // Outgoing actions that are settings or mana bookkeeping, not decisions worth reviewing.
+  // dev-only { the decision journal: outgoing actions that are settings or mana bookkeeping, not decisions worth reviewing.
   // Sideboarding is recorded apart (onSideboard: its orderedCards are option positions, not card ids).
   const NOT_DECISIONS = new Set(['SET_PHASE_STOPS', 'SET_AUTO_YIELDS', 'TAP_MANA', 'AUTO_PAY', 'USE_FLOATING_MANA', 'UNDO', 'CHEAT', 'CONCEDE_MATCH',
     'SIDEBOARD_SUBMIT', 'SIDEBOARD_WITHDRAW']);
   const ID_FIELDS = new Set(['cardId', 'targets', 'orderedCards', 'attackers', 'blockers']);
   const ACTION_META = new Set(['type', 'matchId', 'actionId', 'promptVersion', 'autoPassAfter']);
+  // } dev-only
 
   const seatOf = (v) => (v === undefined || v === null || v === '' ? null : Number(v));
   const current = (rec) => rec.games[rec.games.length - 1];
@@ -33,14 +34,14 @@
     return typeof id === 'string' && id ? id : null;
   }
 
-  // store: Map matchId -> { rec, rt }. rec is persisted, rt is per-page runtime state.
+  // store: Map matchId -> { rec, rt, dec }. rec and dec (the decision journal of dev builds) are persisted, rt is per-page runtime state.
   // ctx: { meta: {matchId: {...}}, lobby, lastDeck: {id, at}, decks }. Returns the touched entry or null.
   function handle(store, f, ctx, now) {
     const id = matchIdOf(f);
     if (!id) return null;
     if (f.type === 'MATCH_STATUS') {
       const p = f.payload || {};
-      ctx.meta[id] = Object.assign(ctx.meta[id] || {}, { format: p.format, serverStatus: p.status });
+      ctx.meta[id] = Object.assign(ctx.meta[id] || {}, { format: p.format });
     }
     let entry = store.get(id);
     if (!entry) {
@@ -90,7 +91,7 @@
 
   function applyMeta(rec, m, ctx) {
     if (!m) return;
-    for (const k of ['format', 'formatId', 'ranked', 'gamesPerMatch', 'lobbyId', 'serverStatus', 'participants', 'limitedDeck']) {
+    for (const k of ['format', 'formatId', 'ranked', 'gamesPerMatch', 'lobbyId', 'participants', 'limitedDeck']) {
       if (m[k] !== undefined && m[k] !== null) rec[k] = m[k];
     }
     // Each player's ladder as the match started: a later answer (a page reloaded after the match) never replaces it.
@@ -122,7 +123,7 @@
   }
 
   function newGame(rec, n, now) {
-    const g = { n, startedAt: now, mulligans: {}, kept: {}, life: {}, seen: {}, log: [], lastSeq: 0, played: {}, board: {} };
+    const g = { n, startedAt: now, mulligans: {}, life: {}, seen: {}, log: [], lastSeq: 0, played: {}, board: {} };
     rec.games.push(g);
     return g;
   }
@@ -306,7 +307,6 @@
         break;
       case 'HAND_SETTLED':
         g.mulligans[seat] = ev.mulligans;
-        g.kept[seat] = ev.amount;
         break;
       case 'PLAYER_LIFE_CHANGED':
         g.life[seat] = ev.newValue;
@@ -358,7 +358,6 @@
     }
     rec.status = 'complete';
     rec.endedAt = now;
-    rec.winnerSeat = w;
     rec.result = w === null ? 'D' : w === rec.mySeat ? 'W' : 'L';
     if (g && !g.endedAt) g.endedAt = now;
   }
@@ -381,8 +380,9 @@
     return entry;
   }
 
-  // One of my actions (hook.js mirrors outgoing GAME_ACTION frames), recorded with the prompt it answered
-  // and the board at that moment: the decision journal. Stored per game in entry.dec[gameNumber].
+  // dev-only { the decision journal, left out of the store builds by release.sh
+  // One of my actions (hook.js mirrors outgoing GAME_ACTION frames, dev builds only), recorded with the prompt it
+  // answered and the board at that moment. Stored per game in entry.dec[gameNumber].
   function onAction(store, a, now) {
     const entry = a && store.get(a.matchId);
     if (!entry || NOT_DECISIONS.has(a.type)) return null;
@@ -459,6 +459,7 @@
       stack: (st.stack || []).map((s) => (s && s.sourceCard && s.sourceCard.name) || null),
     };
   }
+  // } dev-only
 
   // name -> most copies seen in a single game (a lower bound of the real decklist).
   function seenCards(rec, seat) {
@@ -492,7 +493,10 @@
     };
   }
 
-  const Tracker = { frames, matchIdOf, handle, onSideboard, onAction, applyMeta, applyDelta, seenCards, fromHistory };
+  const Tracker = { frames, matchIdOf, handle, onSideboard, applyMeta, seenCards, fromHistory };
+  // dev-only {
+  Tracker.onAction = onAction;
+  // } dev-only
   if (typeof module === 'object' && module.exports) module.exports = Tracker;
   else root.EndstepTracker = Tracker;
 })(typeof self !== 'undefined' ? self : this);

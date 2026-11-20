@@ -10,8 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawn, execFileSync } = require('child_process');
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('../../test/harness/browser.js');
 const OUT = path.join(__dirname, 'out');
 fs.mkdirSync(OUT, { recursive: true });
 

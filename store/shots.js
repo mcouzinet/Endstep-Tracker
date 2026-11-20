@@ -1,6 +1,5 @@
 // Store screenshots, 1280x800 viewport, from the dashboard QA harness demo data (node test/harness/gen-demo.js first).
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const { puppeteer, CHROME } = require('../test/harness/browser.js');
 const H = `${__dirname}/../test/harness`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // The QA demo holds a handful of matches, too few for the summary to show a rate. For the screenshots only, 24 more

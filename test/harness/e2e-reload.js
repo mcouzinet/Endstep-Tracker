@@ -2,9 +2,8 @@
 // tracker.js and content.js into that tab. Chrome for Testing starts with no extension, opens endstep.cc, then
 // installs the extension; a fake GAME_STATE frame posted from the page (as hook.js would) must land in chrome.storage.
 // hook.js's replay to a re-injected content.js is covered by test/hook.test.js. Run: node test/harness/e2e-reload.js
-const puppeteer = require('/Users/mickaelcouzinet/.npm/_npx/2eca716f256486a9/node_modules/puppeteer-core');
+const { puppeteer, CHROME } = require('./browser.js');
 const EXT = '/Users/mickaelcouzinet/Developer/Endstep-tracker';
-const CHROME = '/Users/mickaelcouzinet/.cache/puppeteer/chrome/mac_arm-152.0.7977.42/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const TAG = 'endstep-tracker';
 
