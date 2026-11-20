@@ -37,6 +37,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Mes cartes** : le match en cours n'est plus compté avant sa fin (1.8.11).
 - **Portugais du Portugal** : le nom et le panneau en jeu en portugais (1.8.11).
 - **Popup** : elle ne relit plus tout à chaque écriture du match en cours, et suit les fusions, les changements de format et le métagame faits dans le tableau de bord (1.8.12).
+- **Matchups** : « Meilleurs » et « Pires » ne mettent plus un 1–0 devant un 8–1 ; au-delà de 20 archétypes, seuls ceux croisés une seule fois sont regroupés (1.8.15).
 - **Pourcentages** : écrits comme dans ta langue (54% en anglais, 54 % en français) ; le filtre d'un adversaire change de langue avec le reste (1.8.13).
 
 ## [1.8] (2026-11-16)

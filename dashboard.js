@@ -1023,12 +1023,13 @@ function formCard(e) {
 }
 
 // A rate needs enough matches to rank: under MIN_SAMPLE a matchup sorts after the ones that have them.
-const rate = (r) => { const n = count(r); return n ? (r.W + r.D / 2) / n : 0; };
+// Best or worst: the rate as if each matchup had started at 1–1 (a draw half a win), so that a few matches weigh less
+// than many: 8–1 ranks before 3–0, which ranks before 1–0. The rate shown stays the real one.
+const rate = (r) => (r.W + r.D / 2 + 1) / (count(r) + 2);
 function sortRows(rows, how) {
-  const few = (e) => (count(e.r.m) >= MIN_SAMPLE ? 0 : 1);
   const by = {
-    worst: (a, b) => few(a) - few(b) || rate(a.r.m) - rate(b.r.m) || b.n - a.n,
-    best: (a, b) => few(a) - few(b) || rate(b.r.m) - rate(a.r.m) || b.n - a.n,
+    worst: (a, b) => rate(a.r.m) - rate(b.r.m) || b.n - a.n,
+    best: (a, b) => rate(b.r.m) - rate(a.r.m) || b.n - a.n,
     n: (a, b) => b.n - a.n,
   };
   return rows.sort((a, b) => (by[how] || by.n)(a, b) || count(b.c) - count(a.c));
@@ -1057,11 +1058,12 @@ function renderBreakdown(sel, list, keyOf, kind, cmp = null) {
     const note = opp ? (count(e.r.m) ? tn('n_matches', count(e.r.m)) : '') : e.note;
     return rec(e.label, e.r.m, { tag: 'button', attrs, cells: cellsOf(e.r, e.c), opens: opp, note });
   };
-  // Up to MAX_ROWS archetypes in the sort order; the ones after fold into one "Others" row (never a fold of one).
+  // Past MAX_ROWS archetypes, the ones met in a single match fold into one row, whatever the sort (never a fold of one).
   const MAX_ROWS = 20;
-  const fold = opp && rows.length > MAX_ROWS + 1;
-  const rare = fold ? rows.slice(MAX_ROWS) : [];
-  let html = (fold ? rows.slice(0, MAX_ROWS) : rows).map(button).join('');
+  const once = opp && rows.length > MAX_ROWS ? rows.filter((e) => e.n === 1) : [];
+  const fold = once.length > 1;
+  const rare = fold ? once : [];
+  let html = (fold ? rows.filter((e) => e.n > 1) : rows).map(button).join('');
   if (fold) {
     const sum = S.records(rare.flatMap((e) => e.list));
     const c = S.records(rare.flatMap((e) => e.cmp)).m;

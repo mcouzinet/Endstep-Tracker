@@ -597,10 +597,10 @@
     "message": "Weniger als {n} Ergebnisse: zu früh für eine Aussage"
   },
   "others_one": {
-    "message": "Andere · {n} Archetyp"
+    "message": "Nur einmal getroffen · {n} Archetyp"
   },
   "others_other": {
-    "message": "Andere · {n} Archetypen"
+    "message": "Nur einmal getroffen · {n} Archetypen"
   },
   "col_archetype": {
     "message": "Archetyp"

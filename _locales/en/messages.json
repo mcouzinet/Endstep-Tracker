@@ -597,10 +597,10 @@
     "message": "Fewer than {n} results: too early to tell"
   },
   "others_one": {
-    "message": "Others · {n} archetype"
+    "message": "Met once · {n} archetype"
   },
   "others_other": {
-    "message": "Others · {n} archetypes"
+    "message": "Met once · {n} archetypes"
   },
   "col_archetype": {
     "message": "Archetype"

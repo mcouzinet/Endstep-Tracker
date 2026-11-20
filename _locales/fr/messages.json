@@ -597,10 +597,10 @@
     "message": "Moins de {n} résultats : trop tôt pour conclure"
   },
   "others_one": {
-    "message": "Autres · {n} archétype"
+    "message": "Croisés une seule fois · {n} archétype"
   },
   "others_other": {
-    "message": "Autres · {n} archétypes"
+    "message": "Croisés une seule fois · {n} archétypes"
   },
   "col_archetype": {
     "message": "Archétype"

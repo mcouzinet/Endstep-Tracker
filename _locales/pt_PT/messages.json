@@ -597,10 +597,10 @@
     "message": "Menos de {n} resultados: cedo demais para dizer"
   },
   "others_one": {
-    "message": "Outros · {n} arquétipo"
+    "message": "Enfrentados uma só vez · {n} arquétipo"
   },
   "others_other": {
-    "message": "Outros · {n} arquétipos"
+    "message": "Enfrentados uma só vez · {n} arquétipos"
   },
   "col_archetype": {
     "message": "Arquétipo"

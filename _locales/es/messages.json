@@ -597,10 +597,10 @@
     "message": "Menos de {n} resultados: aún es pronto para sacar conclusiones"
   },
   "others_one": {
-    "message": "Otros · {n} arquetipo"
+    "message": "Vistos una sola vez · {n} arquetipo"
   },
   "others_other": {
-    "message": "Otros · {n} arquetipos"
+    "message": "Vistos una sola vez · {n} arquetipos"
   },
   "col_archetype": {
     "message": "Arquetipo"

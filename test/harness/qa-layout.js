@@ -118,6 +118,37 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.equal(d.over, false, `${w} px: the fields stay inside the detail`);
   }
 
+  // Matchups sorted best or worst as if each started at 1–1: 8–1 before 3–0 before 1–0. Past 20 archetypes, those met
+  // in a single match fold into one row, whatever their place in the sort.
+  await p.evaluate(async () => {
+    const s = activeScope();
+    const base = matches.find((m) => m.status === 'complete' && !S.vsAI(m) && inScope(m, s));
+    const add = {};
+    let k = 0;
+    const put = (arch, results) => results.split('').forEach((r) => {
+      const m = JSON.parse(JSON.stringify(base));
+      Object.assign(m, { id: 'qa-' + k, result: r, startedAt: base.startedAt - (++k) * 86400e3, updatedAt: base.startedAt - k * 86400e3, endedAt: base.startedAt - k * 86400e3 + 1800e3 });
+      add['match:' + m.id] = m;
+      add['note:' + m.id] = { archetype: arch };
+    });
+    put('Eight One', 'WWWWWWWWL'); put('Three Oh', 'WWW'); put('One Oh', 'W'); put('Two Seven', 'WWLLLLLLL');
+    for (let i = 0; i < 20; i++) put('Single ' + i, i % 2 ? 'W' : 'L');
+    await chrome.storage.local.set(add);
+  });
+  await p.click('#tab-matchups');
+  await sleep(300);
+  const shownKeys = () => p.evaluate(() => [...document.querySelectorAll('#by-opp > button.rec')].map((b) => b.dataset.key));
+  const folded = () => p.evaluate(() => [...document.querySelectorAll('#by-opp details.others button.rec')].map((b) => b.dataset.key));
+  await p.click('.panel-head [data-value="best"]');
+  await sleep(200);
+  let keys = await shownKeys();
+  assert.ok(keys.indexOf('a:Eight One') >= 0 && keys.indexOf('a:Eight One') < keys.indexOf('a:Three Oh'), 'best: 8–1 before 3–0: ' + keys.join(', '));
+  assert.ok((await folded()).includes('a:One Oh') && !keys.some((x) => x.startsWith('a:Single') || x === 'a:One Oh'), 'met once: folded');
+  await p.click('.panel-head [data-value="worst"]');
+  await sleep(200);
+  keys = await shownKeys();
+  assert.ok(keys.indexOf('a:Two Seven') < keys.indexOf('a:Three Oh') && keys.indexOf('a:Three Oh') < keys.indexOf('a:Eight One'), 'worst: 2–7, then 3–0, then 8–1: ' + keys.join(', '));
+
   // Escape with an explanation open over a matchup's panel: the explanation closes, the panel stays.
   await p.setViewport({ width: 1300, height: 1400 });
   await p.click('#tab-matchups');

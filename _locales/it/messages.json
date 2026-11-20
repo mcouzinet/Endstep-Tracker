@@ -597,10 +597,10 @@
     "message": "Meno di {n} risultati: troppo presto per dirlo"
   },
   "others_one": {
-    "message": "Altri · {n} archetipo"
+    "message": "Incontrati una volta sola · {n} archetipo"
   },
   "others_other": {
-    "message": "Altri · {n} archetipi"
+    "message": "Incontrati una volta sola · {n} archetipi"
   },
   "col_archetype": {
     "message": "Archetipo"
