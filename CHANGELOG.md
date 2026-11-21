@@ -42,6 +42,7 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 - **Popup** : elle ne relit plus tout à chaque écriture du match en cours, et suit les fusions, les changements de format et le métagame faits dans le tableau de bord (1.8.12).
 - **Matchups** : « Meilleurs » et « Pires » ne mettent plus un 1–0 devant un 8–1 ; au-delà de 20 archétypes, seuls ceux croisés une seule fois sont regroupés (1.8.15).
 - **Pourcentages** : écrits comme dans ta langue (54% en anglais, 54 % en français) ; le filtre d'un adversaire change de langue avec le reste (1.8.13).
+- **Tableau de bord sur téléphone** : plus de ligne vide sous les filtres (1.8.18).
 
 ## [1.8] (2026-11-16)
 

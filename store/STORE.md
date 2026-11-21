@@ -114,13 +114,16 @@ Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because o
 
 ## Assets
 
-Screenshots in this folder, 1280×800 PNG without alpha, made by `store/shots.js` from the QA demo data plus 24 synthetic Modern matches (made-up opponents, no real player; each with the cards drawn per game and a sideboarding against five archetypes):
+Screenshots in this folder, 1280×800 PNG without alpha, made by `store/shots.js` from the QA demo data plus 24 synthetic Modern matches (made-up opponents, no real player; each with the full Burn list, the cards drawn and played per game, the opponent's plays and a sideboarding against five archetypes; the banners for my other projects hidden):
 
 1. `1-dashboard-en.png`: summary and matchups, English
 2. `2-my-cards-en.png`: the "My cards" tab, card by card
 3. `3-matchup-side-en.png`: the matchup panel with my usual sideboarding and their cards seen
-4. `4-match-detail-en.png`: expanded match: opponent cards seen, archetype, notes, each game with its sideboarding
+4. `4-their-cards-en.png`: the "Their cards" tab, the opposing cards that cost me the most games
 5. `5-dashboard-fr.png`: summary and matchups, French
+6. `6-match-detail-en.png`: expanded match: opponent cards seen, archetype, notes, each game with its sideboarding
+
+Chrome takes 5 screenshots at most: 1 to 5. Edge and AMO take all 6. The landing page (`site/`) uses copies of 1, 2 and 3.
 
 Regenerate after a UI change: `node test/harness/gen-demo.js && node store/shots.js`.
 
@@ -163,7 +166,7 @@ The same `dist/safari/`, in a second wrapper app: `safari-ios/Endstep Tracker/En
 - The app shows one page (`Resources/Base.lproj/Main.html`, French on a French device through `ViewController.swift`, English otherwise): how to turn the extension on (Settings › Apps › Safari › Extensions), set endstep.cc to "Allow", and play in Safari. Extensions don't run in endstep added to the Home Screen, which endstep suggests on phones: the page says so. No tip or donation link, no link to other products (guideline 3.1.1); "Open endstep.cc" goes to Safari.
 - App icon: `node safari/ios-icon.js icons/icon.svg out.png`, the tile edge to edge on an opaque 1024 px square (iOS masks the corners and refuses transparency), as `AppIcon.appiconset/universal-icon-1024@1x.png`.
 - Differences on the phone, in the extension's code: no windows API (`background.js` checks it before bringing the dashboard back), no download from an extension page (`dashboard.js` hands backups to the share sheet: Save to Files, AirDrop…), no CSS anchor positioning before Safari 26 (the Data menu is placed by script). No REC badge in sight: Safari on iPhone shows none.
-- Screenshots: `store/iphone/`, 1320×2868 for the 6.9" iPhone (Apple scales them down for the smaller ones): 1 to 7 in English (the app's own page, the popup opened from Safari's extensions menu, the in-page panel during a match, the dashboard, a matchup, My cards, the history), 8 to 11 in French. `store/ipad/`, 2048×2732 for the 13" iPad, the same idea. Apple refused 1.5 under guideline 2.3.3 when the screenshots only showed Safari on endstep.cc: the app's page and the popup come first so the link between the app and what runs in Safari is clear. Taken in the iPhone 16 Pro Max and iPad Air 13" simulators (status bar set to 9:41 with `xcrun simctl status_bar`) with a throwaway build whose `dist/safari/shared.js` writes the store screenshots' demo data (`store/shots.js`, made-up opponents, plus a live match against Sable) to `chrome.storage`; the build that ships is archived from a clean `release.sh safari`.
+- Screenshots: `store/iphone/`, 1320×2868 for the 6.9" iPhone (Apple scales them down for the smaller ones): 1 to 8 in English (the app's own page, the popup opened from Safari's extensions menu, the in-page panel during a match, the dashboard, a matchup, My cards, Their cards, the history), 9 to 12 in French. `store/ipad/`, 2048×2732 for the 13" iPad, the same idea. endstep.cc in the simulators' Safari runs as a guest; on the iPad its lobby shows the "Yours" tab, so that no real player's name is in the screenshots. Apple refused 1.5 under guideline 2.3.3 when the screenshots only showed Safari on endstep.cc: the app's page and the popup come first so the link between the app and what runs in Safari is clear. Taken in the iPhone 16 Pro Max and iPad Air 13" simulators (status bar set to 9:41 with `xcrun simctl status_bar`) with a throwaway build whose `dist/safari/background.js` writes the store screenshots' demo data once (`store/shots.js`, made-up opponents, plus a live match against Sable), with the manifest at the release's version and `telemetry.js` pointed nowhere; the build that ships is archived from a clean `release.sh safari`.
 - App Store Connect, the first time: on the app record, add the iOS platform (+ next to the platforms), then fill its version page: the screenshots above, description and keywords as above, the same privacy answers as the Mac (App Privacy belongs to the app record: Product Interaction and Device ID, see above). The iPhone version goes through its own review. `publish.sh safari` uploads both builds; select each on its platform's version.
 
 ## Release notes

@@ -28,6 +28,12 @@ async function enrich() {
     'Jeskai Control': ['Counterspell', 'Solitude', 'Prismatic Ending', 'Island'], 'Ruby Storm': ['Ruby Medallion', 'Grapeshot', 'Manamorphose', 'Mountain'],
     'Golgari Yawgmoth': ['Yawgmoth, Thran Physician', 'Grist, the Hunger Tide', 'Forest'], 'Mono-Red Prowess': ['Soul-Scar Mage', 'Violent Urge', 'Mountain'],
     'Goryo Reanimator': ['Goryo\'s Vengeance', 'Atraxa, Grand Unifier', 'Plains'] };
+  // My list as the site gives it, on every Burn match (My cards follows the latest one's), and what my games put in play.
+  const list = (o) => Object.entries(o).map(([name, quantity]) => ({ name, quantity }));
+  const LIST = list(MAIN);
+  const SB = list({ 'Kor Firewalker': 3, 'Deflecting Palm': 2, 'Roiling Vortex': 2, 'Path to Exile': 3, 'Rest in Peace': 2, 'Smash to Smithereens': 3 });
+  const PERMANENT = /Guide|Swiftspear|Eidolon|Firewalker|Foundry|Vantage|Vortex|Rest in Peace/;
+  const LAND = /Mesa|Island|Forest|Swamp|Plains|Mountain|Tower|Saga/;
   let seed = 7;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const sided = (arch) => {
@@ -60,8 +66,12 @@ async function enrich() {
     for (const g of games) {
       g.drawn = drawnIn(m.mains[g.n], g.winnerSeat === 0);
       g.openingHand = Object.keys(g.drawn).slice(0, 6);
+      g.played = Object.fromEntries(Object.entries(g.drawn).filter(() => rnd() < 0.8));
+      g.board = Object.fromEntries(Object.entries(g.played).filter(([c]) => PERMANENT.test(c)));
       g.seen = { 1: Object.fromEntries(SEEN[archs[i]].filter(() => rnd() < 0.75).map((c) => [c, [c + '#1']])) };
-      g.log = g.log.filter(([, seat]) => seat === 0); // the replay's opponent played Burn too
+      // The replay's opponent played Burn too: their plays become the cards seen, for "Their cards".
+      g.log = g.log.filter(([, seat]) => seat === 0).concat(Object.keys(g.seen[1]).map((c) => [2, 1, LAND.test(c) ? 'LAND_PLAYED' : 'SPELL_CAST', c, '']))
+        .sort((a, b) => a[0] - b[0]);
     }
     m.players = [{ seat: 0, name: 'guest_rZ8gWdWE' }, { seat: 1, name: opp }];
     m.colors = { 1: colors[archs[i]] };
@@ -69,6 +79,8 @@ async function enrich() {
     window.__DATA['match:s' + i] = m;
     window.__DATA['note:s' + i] = { archetype: archs[i] };
   });
+  for (const m of Object.values(window.__DATA)) if (m && m.myDeck && m.myDeck.id === 'deck-Burn') Object.assign(m.myDeck, { cards: LIST, sideboard: SB });
+  Object.assign(window.__DATA.decks['deck-Burn'], { cards: LIST, sideboard: SB });
   await load();
 }
 
@@ -89,6 +101,7 @@ async function enrich() {
     await sleep(1500);
     await p.evaluate(enrich);
     await sleep(2500); // let the stubbed metagame load so no toast is up
+    await p.evaluate(() => { document.getElementById('promos').hidden = true; }); // my other projects' banners: not this listing's
     return p;
   };
   const shot = async (p, name) => {
@@ -104,6 +117,12 @@ async function enrich() {
   await p.evaluate(() => document.getElementById('tabs').scrollIntoView({ block: 'start' }));
   await sleep(300);
   await shot(p, '2-my-cards-en.png');
+  // Their cards: the opposing cards that cost me the most games.
+  await p.click('#tab-theirs');
+  await sleep(400);
+  await p.evaluate(() => document.getElementById('tabs').scrollIntoView({ block: 'start' }));
+  await sleep(300);
+  await shot(p, '4-their-cards-en.png');
   // The matchup panel: records and my usual sideboarding against Boros Energy.
   await p.evaluate(() => scrollTo(0, 0));
   await p.click('#tab-matchups');
@@ -119,7 +138,7 @@ async function enrich() {
   await sleep(400);
   await p.evaluate(() => document.querySelector('.match[data-id="s21"]').scrollIntoView({ block: 'start' }));
   await sleep(300);
-  await shot(p, '4-match-detail-en.png');
+  await shot(p, '6-match-detail-en.png');
   p = await open('fr', BURN);
   await shot(p, '5-dashboard-fr.png');
   await b.close();

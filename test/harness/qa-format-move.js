@@ -21,6 +21,7 @@ const HOSTILE = '<img src=x onerror=window.__x=1>"';
   try {
     const sw = await b.waitForTarget((x) => x.type() === 'service_worker' && x.url().startsWith('chrome-extension://'), { timeout: 10000 });
     const id = new URL(sw.url()).host;
+    await (await b.target().createCDPSession()).send('Browser.setDownloadBehavior', { behavior: 'deny' }); // the backup test exports a file: never into ~/Downloads
     const p = await b.newPage();
     await p.setViewport({ width: 1280, height: 900 });
     const errors = [];
