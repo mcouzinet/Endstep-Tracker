@@ -11,6 +11,8 @@ Everything to paste into the developer dashboards. The store builds have no Coac
 - **Homepage / support**: https://github.com/mcouzinet/Endstep-Tracker
 - **Privacy policy URL**: https://github.com/mcouzinet/Endstep-Tracker/blob/main/PRIVACY.md
 
+Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because of a list of formats in the descriptions below: never list formats, archetypes or card names in a description. Each description runs from its heading to the next one: copy nothing else.
+
 ### Description (EN)
 
 Endstep Tracker automatically records the Magic: The Gathering matches you play on endstep.cc and turns them into a personal match history, all stored locally in your browser.
@@ -90,8 +92,6 @@ Le tableau de bord s'ouvre sur le deck de ton dernier match :
 Tout reste sur ton ordinateur. L'extension ne joue jamais à ta place et n'a ni compte ni publicité ; elle ne demande à endstep.cc que ce que les pages du site demandent elles-mêmes (la cote des joueurs au début d'un match classé, ton historique quand tu l'importes). Seules des statistiques d'usage anonymes sont envoyées (installation, mise à jour, un signal par jour), et elles se coupent. Seules les informations publiques de la partie (ce que tu vois à l'écran) sont enregistrées, et rien en mode spectateur.
 
 Non affilié à endstep.cc ni à Wizards of the Coast.
-
-Chrome refused 1.1 on 2026-09-29 for keyword stuffing ("Yellow Argon") because of a list of formats in these descriptions: never list formats, archetypes or card names in a description.
 
 ## Privacy tab
 
