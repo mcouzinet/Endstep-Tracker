@@ -5,44 +5,32 @@ Les releases sont numérotées **`X.Y`** et taguées `vX.Y` ; entre deux release
 
 ## Non publié
 
+## [1.9] (2026-11-21)
+
 ### Ajouté
 
-- **Terrains en main de départ** : ton bilan selon le nombre de terrains gardés, sur le play et sur la draw (1.8.7).
-- **Après deux défaites d'affilée** : ton bilan dans « Selon le contexte » (1.8.7).
-- **Historique par jour** : au choix, la liste comme avant ou les matchs groupés par journée, avec le bilan de chacune ; une soirée qui passe minuit reste sur sa journée (1.8.14).
-- **Leurs cartes** : un onglet avec les cartes adverses qui te coûtent le plus de games, ton bilan quand l’adversaire les joue et quand il ne les joue pas, une recherche, et un clic pour voir leurs matchs (1.8.16).
+- **Leurs cartes** : les cartes adverses qui te coûtent le plus de games, avec une recherche.
+- **Terrains en main de départ** : ton bilan selon le nombre de terrains, sur le play et sur la draw.
+- **Après deux défaites d'affilée** : ton bilan dans « Selon le contexte ».
+- **Historique par jour**, ou en liste comme avant.
 
 ### Modifié
 
-- **Historique** : lignes plus lisibles, le score en avant, l'adversaire sur deux lignes (1.8.1).
-- **Panneau en jeu** : le bilan contre le joueur et le bilan contre son deck séparés, pour ne plus les confondre (1.8.2).
-- **Panneau en jeu** : replié, il n'affiche plus que « REC » ; le bilan de la session apparaît quand on le déplie (1.8.3).
-- **Historique** : un cercle par game, P ou D et mulligans en badges, détail au survol ; ton deck en gras, le format en petit dessous (1.8.4).
-- **Matchups et Mes cartes** : le nom en gras, des colonnes alignées ; sur téléphone, une ligne de détail sous chaque carte (1.8.5).
-- **Bilans** : le bilan en grand, le pourcentage en petit dessous, affiché à partir de 10 matchs au lieu de 5 (1.8.6).
-- **Gros historiques** : l'import de l'historique lit tes matchs une fois au lieu d'une fois par page ; Mes cartes, les doublons et les mises à jour en direct du tableau de bord vont plus vite (1.8.12).
-- **Fiches allégées** : plus de clé vide par match pour le journal de décisions (outil de développement), ni de champs jamais lus (1.8.13).
-- **Haut du tableau de bord** : une barre plus sobre (logo, café, langue, menu), puis ton deck en grand comme titre de la page ; le nombre de matchs passe dans le menu Données (1.8.17).
-- **Popup** : le même logo, sans le bouton café (1.8.17).
+- **Haut du tableau de bord** plus sobre, avec ton deck en titre de la page.
+- **Historique, matchups et Mes cartes** plus lisibles : le score en avant, un cercle par game, des colonnes alignées.
+- **Bilans** : le bilan en grand, le pourcentage dessous, affiché à partir de 10 matchs.
+- **Panneau en jeu** : le bilan contre le joueur et contre son deck séparés ; replié, il n'affiche que « REC ».
+- **Plus rapide** avec beaucoup de matchs.
 
 ### Corrigé
 
-- **Page rechargée en plein match** : la fin du match est enregistrée même si elle arrive avant ta prochaine action (1.8.9).
-- **Notes** : enregistrées pendant la frappe, et un archétype confirmé dans le panneau en jeu n'est plus effacé (1.8.9).
-- **Doublons** : le score ne s'inverse plus au siège 2, une revanche n'est plus prise pour le match d'avant, la note suit le match gardé (1.8.9).
-- **Plusieurs onglets** : le side de la game 2 n'est plus perdu quand tu continues le match dans un autre onglet (1.8.9).
-- **Panneau en jeu** : après une mise à jour de l'extension, les touches tapées dans le champ d'archétype ne partent plus vers la partie ; un simple clic sur sa barre ne le déplace plus (1.8.10).
-- **Tableau de bord** : le détail d'un match tient sur tablette et sur iPhone, les libellés ne disparaissent plus en fenêtre moyenne, Mes cartes se trie aussi en étroit (1.8.10).
-- **Mises à jour en direct** : la bulle ⓘ et le menu « Comparer à… » ne se referment plus pendant une partie, Échap ne ferme qu'une couche à la fois (1.8.10).
-- **Sauvegardes retouchées** : un deck, une fusion ou un match mal formé ne bloque plus le tableau de bord, la popup ni le panneau en jeu (1.8.11).
-- **Export CSV** : un pseudo qui commence par « = » reste du texte dans Excel (1.8.11).
-- **Reconnaissance** : plus de deck « reconnu à 100 % » dans un format qui n'a qu'un archétype publié, et une carte sans taux ne bloque plus le format (1.8.11).
-- **Mes cartes** : le match en cours n'est plus compté avant sa fin (1.8.11).
-- **Portugais du Portugal** : le nom et le panneau en jeu en portugais (1.8.11).
-- **Popup** : elle ne relit plus tout à chaque écriture du match en cours, et suit les fusions, les changements de format et le métagame faits dans le tableau de bord (1.8.12).
-- **Matchups** : « Meilleurs » et « Pires » ne mettent plus un 1–0 devant un 8–1 ; au-delà de 20 archétypes, seuls ceux croisés une seule fois sont regroupés (1.8.15).
-- **Pourcentages** : écrits comme dans ta langue (54% en anglais, 54 % en français) ; le filtre d'un adversaire change de langue avec le reste (1.8.13).
-- **Tableau de bord sur téléphone** : plus de ligne vide sous les filtres (1.8.18).
+- La fin d'un match pouvait être ratée après un rechargement de la page.
+- Le side de la game 2 pouvait se perdre avec plusieurs onglets.
+- Des notes pouvaient s'effacer.
+- Doublons : le score inversé au siège 2, une revanche prise pour le match d'avant.
+- Une sauvegarde retouchée ne bloque plus le tableau de bord.
+- Tris « Meilleurs » et « Pires » des matchups plus justes.
+- Le tableau de bord tient mieux sur tablette et sur téléphone.
 
 ## [1.8] (2026-11-16)
 
