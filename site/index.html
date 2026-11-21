@@ -14,8 +14,12 @@
 <meta name="theme-color" content="#14110d">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-128.png">
+<link rel="preload" href="fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
 <script defer src="https://umami.tolarianstudio.com/script.js" data-website-id="e444a99e-4bc6-4b22-979c-878f060c3f76" data-domains="endstep-tracker.tolarianstudio.com"></script>
 <style>
+/* Two voices from the game itself: a book serif, like the rules text on a card, and condensed figures, like a scoreboard. */
+@font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4.woff2) format("woff2"); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Big Shoulders"; src: url(fonts/big-shoulders.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
 :root {
   color-scheme: dark;
   /* Same tokens as the extension (theme.css). */
@@ -31,85 +35,124 @@
   --gold-hi: oklch(.85 .13 83);
   --on-fill: oklch(.2 .035 70);
   --win: #1a9f86;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --figures: "Big Shoulders", "Arial Narrow", sans-serif;
+  --ease: cubic-bezier(.16, 1, .3, 1);
 }
 * { box-sizing: border-box; }
 html { scrollbar-color: var(--line-strong) var(--bg); }
 body {
-  margin: 0; color: var(--ink);
-  background: radial-gradient(1100px 520px at 50% -120px, oklch(.8 .135 80 / .13), transparent 70%), var(--bg);
-  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 18px/1.6 var(--serif); font-optical-sizing: auto; font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3, p { margin: 0; }
+h1, h2, h3, p, ol { margin: 0; }
+h1, h2, h3 { font-weight: 600; text-wrap: balance; }
 a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
 a:hover { color: var(--gold-hi); text-decoration-color: currentColor; }
 :focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
-.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+::selection { background: oklch(.8 .135 80 / .32); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; padding-bottom: 20px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
-.brand img { width: 32px; height: 32px; }
-.top nav { display: flex; gap: 20px; font-size: 14px; color: var(--ink-2); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 22px; padding-bottom: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; text-decoration: none; }
+.brand img { width: 30px; height: 30px; }
+.top nav { display: flex; gap: 24px; font-size: 16px; color: var(--ink-2); }
 
-.hero { text-align: center; padding-top: 48px; padding-bottom: 40px; }
-.hero h1 { font-size: clamp(34px, 6.4vw, 60px); line-height: 1.06; letter-spacing: -.025em; font-weight: 800; text-wrap: balance; }
-.hero h1 em { font-style: normal; color: var(--gold); }
-.lede { max-width: 620px; margin: 20px auto 0; font-size: clamp(17px, 2.2vw, 19px); color: var(--ink-2); text-wrap: pretty; }
+/* The hero: what you say, and beside it what the tracker sees. */
+.hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 56px; align-items: center; padding-top: 56px; padding-bottom: 88px; }
+.hero h1 { font-size: clamp(40px, 5.4vw, 66px); line-height: 1.04; letter-spacing: -.02em; }
+.lede { max-width: 34em; margin-top: 24px; font-size: 20px; color: var(--ink-2); text-wrap: pretty; }
 
-.stores { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 32px; }
+.stores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 460px; margin-top: 34px; }
 .store {
-  display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px;
-  min-width: 172px; padding: 10px 18px; border-radius: 10px; text-decoration: none;
-  background: var(--surface-2); border: 1px solid var(--line); transition: border-color .15s, background-color .15s, transform .15s;
+  display: flex; flex-direction: column; gap: 1px; padding: 10px 16px;
+  border-radius: 8px; border: 1px solid var(--line-strong); text-decoration: none; line-height: 1.3;
+  transition: border-color .15s, background-color .15s;
 }
-.store:hover { color: var(--ink); border-color: var(--line-strong); background: oklch(.26 .01 75); }
+.store:hover { color: var(--ink); border-color: var(--ink-3); background: var(--surface-2); }
 .store:active { transform: translateY(1px); }
-.store small { font-size: 12px; color: var(--ink-3); }
-.store b { font-size: 16px; }
+.store small { font-size: 13px; color: var(--ink-3); }
+.store b { font-size: 17px; font-weight: 600; }
 .store.primary { background: var(--gold); border-color: var(--gold); color: var(--on-fill); }
 .store.primary small { color: oklch(.32 .05 70); }
 .store.primary:hover { background: var(--gold-hi); border-color: var(--gold-hi); color: var(--on-fill); }
-.note { margin-top: 14px; font-size: 14px; color: var(--ink-3); }
+.note { max-width: 36em; margin-top: 16px; font-size: 15px; color: var(--ink-3); }
 
-.video { padding-bottom: 72px; }
+/* A game as endstep logs it, then the record the tracker keeps of it. */
+.log { margin: 0; padding: 22px 24px 24px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); font-size: 16px; line-height: 1.4; }
+.log-head { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 12px; font-size: 14px; color: var(--ink-3); }
+.log ol { list-style: none; padding: 0; }
+.log li { display: grid; grid-template-columns: 30px 46px minmax(0, 1fr) 34px; gap: 8px; align-items: baseline; padding: 5px 0; }
+.log li.them { color: var(--ink-3); padding-bottom: 9px; }
+.turn { font: 700 19px/1 var(--figures); color: var(--gold); }
+.who { font-size: 14px; color: var(--ink-3); }
+.life { font: 600 22px/1 var(--figures); text-align: right; }
+.end { display: flex; align-items: center; gap: 12px; margin: 14px 0 16px; font: 700 18px/1 var(--figures); letter-spacing: .02em; color: var(--gold); }
+.end::before, .end::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
+.won { font-size: 20px; font-weight: 600; }
+.won b { font-weight: 600; color: var(--win); }
+.facts { margin-top: 2px; font-size: 15px; color: var(--ink-2); }
+.tally { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 15px; color: var(--ink-2); }
+.flip { display: inline-grid; justify-items: end; font: 700 30px/1 var(--figures); color: var(--gold); }
+.flip > * { grid-area: 1 / 1; }
+.flip s { text-decoration: none; visibility: hidden; }
+/* Played once when the log comes into view (script below); without motion, the final state as it is. */
+.log.armed .step { opacity: 0; }
+.log.armed .flip s { visibility: visible; }
+.log.armed .flip b { opacity: 0; }
+.log.play .step { animation: show .4s var(--ease) calc(200ms + var(--i) * 320ms) both; }
+.log.play .flip s { animation: hide .25s ease 3900ms both; }
+.log.play .flip b { animation: show .4s var(--ease) 4000ms both; }
+@keyframes show { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@keyframes hide { to { opacity: 0; } }
+
+.video { padding-bottom: 112px; }
 .video video {
   display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px;
-  border: 1px solid var(--line); background: #0c0a08;
-  box-shadow: 0 30px 80px -30px rgb(0 0 0 / .8), 0 0 0 1px oklch(.8 .135 80 / .06);
+  border: 1px solid var(--line); background: #0c0a08; box-shadow: 0 30px 80px -30px rgb(0 0 0 / .8);
 }
 
-section h2 { font-size: clamp(24px, 3.4vw, 32px); letter-spacing: -.015em; line-height: 1.15; text-align: center; text-wrap: balance; }
-.kicker { display: block; margin-bottom: 10px; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+section h2 { max-width: 20em; font-size: clamp(30px, 4vw, 44px); line-height: 1.1; letter-spacing: -.015em; }
 
-.features { padding-bottom: 72px; }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; }
-.card { padding: 20px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
-.card h3 { font-size: 16px; margin-bottom: 6px; }
-.card p { font-size: 15px; color: var(--ink-2); }
-.extra { margin-top: 18px; text-align: center; font-size: 15px; color: var(--ink-3); }
+.features { padding-bottom: 112px; }
+.basics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 44px; }
+.basics h3, .spread h3 { font-size: 21px; line-height: 1.25; margin-bottom: 8px; }
+.basics p, .spread p { font-size: 17px; color: var(--ink-2); }
+.spread { margin-top: 88px; }
+.spread header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 40px; align-items: baseline; margin-bottom: 24px; }
+.spread h3 { font-size: 28px; letter-spacing: -.01em; margin: 0; }
+.spread p { max-width: 36em; font-size: 18px; }
+.spread img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
+.extra { margin-top: 48px; font-size: 17px; color: var(--ink-3); }
 
-.shots { padding-bottom: 72px; }
-.shot-list { display: grid; gap: 40px; margin-top: 32px; }
-figure { margin: 0; }
-figure img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
-figcaption { margin-top: 10px; font-size: 15px; color: var(--ink-3); text-align: center; }
+.privacy { padding-bottom: 112px; }
+.privacy .wrap > * { max-width: 760px; }
+.privacy p { margin-top: 18px; font-size: 19px; color: var(--ink-2); text-wrap: pretty; }
 
-.privacy { padding-bottom: 72px; }
-.privacy .box { max-width: 720px; margin: 0 auto; padding: 28px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); text-align: center; }
-.privacy p { margin-top: 12px; color: var(--ink-2); }
-.privacy .stores { margin-top: 24px; }
-
-footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 14px; color: var(--ink-3); }
+footer { border-top: 1px solid var(--line); padding: 28px 0 44px; font-size: 15px; color: var(--ink-3); }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
 footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 
-@media (max-width: 820px) { .grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 48px; padding-top: 32px; }
+  .log { max-width: 560px; }
+  .basics { grid-template-columns: 1fr 1fr; }
+  .spread header { grid-template-columns: 1fr; gap: 8px; }
+}
 @media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr; }
+  .wrap { padding: 0 16px; }
+  body { font-size: 17px; }
   .top nav a:not(:last-child) { display: none; }
-  .hero { padding-top: 24px; }
-  .store { flex: 1 1 100%; align-items: center; }
-  .privacy .box { padding: 22px 18px; }
+  .hero { padding-top: 16px; padding-bottom: 64px; }
+  .lede { font-size: 18px; }
+  .stores { grid-template-columns: 1fr; }
+  .log { padding: 18px 16px 20px; font-size: 15px; }
+  .log li { grid-template-columns: 26px 40px minmax(0, 1fr) 28px; gap: 6px; }
+  .basics { grid-template-columns: 1fr; gap: 28px; }
+  .spread { margin-top: 64px; }
+  .spread h3 { font-size: 24px; }
+  .video, .features, .privacy { padding-bottom: 80px; }
 }
 @media (prefers-reduced-motion: reduce) { .store { transition: none; } }
 </style>
@@ -117,7 +160,7 @@ footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 <body>
 
 <header class="wrap top">
-  <a class="brand" href="#"><img src="icon.svg" alt="" width="32" height="32">Endstep Tracker</a>
+  <a class="brand" href="#"><img src="icon.svg" alt="" width="30" height="30">Endstep Tracker</a>
   <nav>
     <a href="#features">Features</a>
     <a href="#privacy">Privacy</a>
@@ -127,15 +170,36 @@ footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 
 <main>
   <section class="wrap hero">
-    <h1>Every match you play on endstep.cc, <em>recorded automatically.</em></h1>
-    <p class="lede">Win rates by deck and by matchup, your sideboarding, the cards that win you games. Nothing to type, no account, everything stays in your browser.</p>
-    <div class="stores" data-stores>
-      <a class="store" data-store="chrome" data-umami-event="installer" data-umami-event-store="chrome" data-umami-event-emplacement="haut" href="https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho"><small>Chrome, Brave, Opera</small><b>Add to Chrome</b></a>
-      <a class="store" data-store="firefox" data-umami-event="installer" data-umami-event-store="firefox" data-umami-event-emplacement="haut" href="https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/"><small>Firefox, desktop and Android</small><b>Add to Firefox</b></a>
-      <a class="store" data-store="edge" data-umami-event="installer" data-umami-event-store="edge" data-umami-event-emplacement="haut" href="https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp"><small>Edge Add-ons</small><b>Add to Edge</b></a>
-      <a class="store" data-store="safari" data-umami-event="installer" data-umami-event-store="safari" data-umami-event-emplacement="haut" href="https://apps.apple.com/us/app/endstep-tracker/id6816954721"><small>App Store: Mac, iPhone, iPad</small><b>Get it for Safari</b></a>
+    <div>
+      <h1>Every match you play on endstep.cc, recorded automatically.</h1>
+      <p class="lede">Win rates by deck and by matchup, your sideboarding, the cards that win you games. Nothing to type, no account, everything stays in your browser.</p>
+      <div class="stores" data-stores>
+        <a class="store" data-store="chrome" data-umami-event="installer" data-umami-event-store="chrome" data-umami-event-emplacement="haut" href="https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho"><small>Chrome, Brave, Opera</small><b>Add to Chrome</b></a>
+        <a class="store" data-store="firefox" data-umami-event="installer" data-umami-event-store="firefox" data-umami-event-emplacement="haut" href="https://addons.mozilla.org/en-US/firefox/addon/endstep-tracker/"><small>Firefox, desktop and Android</small><b>Add to Firefox</b></a>
+        <a class="store" data-store="edge" data-umami-event="installer" data-umami-event-store="edge" data-umami-event-emplacement="haut" href="https://microsoftedge.microsoft.com/addons/detail/endstep-tracker/oloikebkijkmhlodohfbjbekkmghblbp"><small>Edge Add-ons</small><b>Add to Edge</b></a>
+        <a class="store" data-store="safari" data-umami-event="installer" data-umami-event-store="safari" data-umami-event-emplacement="haut" href="https://apps.apple.com/us/app/endstep-tracker/id6816954721"><small>App Store: Mac, iPhone, iPad</small><b>Get it for Safari</b></a>
+      </div>
+      <p class="note">Free and open source. On your computer, iPhone, iPad, or Android with Firefox. In English, French, Spanish, German, Italian and Brazilian Portuguese.</p>
     </div>
-    <p class="note">Free and open source. On your computer, iPhone, iPad, or Android with Firefox. In English, French, Spanish, German, Italian and Brazilian Portuguese.</p>
+
+    <figure class="log" aria-label="Example: the last game of a match, then what the tracker keeps of it">
+      <div class="log-head"><span>Modern, game 3</span><span>Their life</span></div>
+      <ol>
+        <li class="step" style="--i:0"><span class="turn">T1</span><span class="who">You</span><span>Mountain, Monastery Swiftspear, attack</span><span class="life">19</span></li>
+        <li class="step them" style="--i:1"><span></span><span class="who">Them</span><span>Island, Consider</span></li>
+        <li class="step" style="--i:2"><span class="turn">T2</span><span class="who">You</span><span>Sacred Foundry, Goblin Guide, Lava Spike, attack</span><span class="life">12</span></li>
+        <li class="step them" style="--i:3"><span></span><span class="who">Them</span><span>Watery Grave, Fatal Push on Goblin Guide</span></li>
+        <li class="step" style="--i:4"><span class="turn">T3</span><span class="who">You</span><span>Mountain, Lightning Bolt, Rift Bolt suspended, attack</span><span class="life">7</span></li>
+        <li class="step them" style="--i:5"><span></span><span class="who">Them</span><span>Island, Murktide Regent</span></li>
+        <li class="step" style="--i:6"><span class="turn">T4</span><span class="who">You</span><span>Rift Bolt, Boros Charm</span><span class="life">0</span></li>
+      </ol>
+      <div class="end step" style="--i:7">End step</div>
+      <div class="step" style="--i:8">
+        <p class="won"><b>Won 2-1</b> against Dimir Murktide</p>
+        <p class="facts">Best of three. On the play, kept seven, four turns.</p>
+        <p class="tally">Burn against Dimir Murktide <span class="flip"><s aria-hidden="true">6-4</s><b>7-4</b></span></p>
+      </div>
+    </figure>
   </section>
 
   <section class="wrap video" aria-label="Video">
@@ -143,29 +207,31 @@ footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
   </section>
 
   <section class="wrap features" id="features">
-    <h2><span class="kicker">Features</span>Play your games. The tracker does the rest.</h2>
-    <div class="grid">
-      <div class="card"><h3>Every match recorded</h3><p>Format, Bo1 or Bo3, score, play or draw, mulligans, opening hand, turns, life totals, length, the full game log, and your opponent's rating in ranked matches.</p></div>
-      <div class="card"><h3>The opponent's archetype</h3><p>Recognized from the cards you saw, against endstep's own metagame. Named after the commander in Duel Commander. Correctable by hand.</p></div>
-      <div class="card"><h3>Win rates that mean something</h3><p>By deck and by matchup, on the play and on the draw, for each version of your list.</p></div>
-      <div class="card"><h3>My cards</h3><p>For each card of your current list: your win rate in the games where you drew it, where you didn't, in your opening hand, and the cards you draw but rarely play.</p></div>
-      <div class="card"><h3>Your sideboarding</h3><p>Recorded between games, so you see your usual plan against each archetype.</p></div>
-      <div class="card"><h3>A panel on endstep.cc</h3><p>Your record in the matchup, your usual side between games, and the opponents you met before.</p></div>
+    <h2>Play your games. The tracker does the rest.</h2>
+    <div class="basics">
+      <div><h3>Every match recorded</h3><p>Format, Bo1 or Bo3, score, play or draw, mulligans, opening hand, turns, life totals, length, the full game log, and your opponent's rating in ranked matches.</p></div>
+      <div><h3>The opponent's archetype</h3><p>Recognized from the cards you saw, against endstep's own metagame. Named after the commander in Duel Commander. Correctable by hand.</p></div>
+      <div><h3>A panel on endstep.cc</h3><p>Your record in the matchup, your usual side between games, and the opponents you met before.</p></div>
     </div>
+
+    <article class="spread">
+      <header><h3>Win rates that mean something</h3><p>By deck and by matchup, on the play and on the draw, for each version of your list.</p></header>
+      <img src="dashboard.png" width="1280" height="800" loading="lazy" alt="The dashboard: overall win rate, last matches and matchups by archetype.">
+    </article>
+    <article class="spread">
+      <header><h3>My cards</h3><p>For each card of your current list: your win rate in the games where you drew it, where you didn't, in your opening hand, and the cards you draw but rarely play.</p></header>
+      <img src="my-cards.png" width="1280" height="800" loading="lazy" alt="My cards: the win rate of each card when drawn, not drawn, and in the opening hand.">
+    </article>
+    <article class="spread">
+      <header><h3>Your sideboarding</h3><p>Recorded between games, so you see your usual plan against each archetype, beside your record on the play and on the draw and the cards they play.</p></header>
+      <img src="matchup.png" width="1280" height="800" loading="lazy" alt="A matchup panel: record on the play and on the draw, sideboarding after game 1, the opponent's cards seen and past matches.">
+    </article>
     <p class="extra">Also: import your past matches from your endstep history, CSV and JSON export, backups.</p>
   </section>
 
-  <section class="wrap shots" aria-label="Screenshots">
-    <div class="shot-list">
-      <figure><img src="dashboard.png" width="1280" height="800" loading="lazy" alt="The dashboard: overall win rate, last matches and matchups by archetype."><figcaption>The dashboard: your win rate, your last matches, your matchups.</figcaption></figure>
-      <figure><img src="my-cards.png" width="1280" height="800" loading="lazy" alt="My cards: the win rate of each card when drawn, not drawn, and in the opening hand."><figcaption>My cards: which cards actually win you games.</figcaption></figure>
-      <figure><img src="matchup.png" width="1280" height="800" loading="lazy" alt="A matchup panel: record on the play and on the draw, sideboarding after game 1, the opponent's cards seen and past matches."><figcaption>A matchup: play and draw, your sideboarding, the cards they play.</figcaption></figure>
-    </div>
-  </section>
-
-  <section class="wrap privacy" id="privacy">
-    <div class="box">
-      <h2><span class="kicker">Privacy</span>Your matches stay on your device.</h2>
+  <section class="privacy" id="privacy">
+    <div class="wrap">
+      <h2>Your matches stay on your device.</h2>
       <p>No account, and your matches never leave your browser: only anonymous usage statistics are sent, and you can switch them off. The extension reads the game messages endstep already sends to your browser, and asks the site only what its own pages ask (a player's rating, your history). It never plays or clicks for you.</p>
       <div class="stores" data-stores>
         <a class="store" data-store="chrome" data-umami-event="installer" data-umami-event-store="chrome" data-umami-event-emplacement="confidentialite" href="https://chromewebstore.google.com/detail/endstep-tracker/ioeffckengdfapnapdbphkbnnnnaajho"><small>Chrome, Brave, Opera</small><b>Add to Chrome</b></a>
@@ -198,6 +264,15 @@ for (const row of document.querySelectorAll('[data-stores]')) {
   const btn = row.querySelector(`[data-store="${mine}"]`);
   btn.classList.add('primary');
   row.prepend(btn);
+}
+
+// The hero's game log plays once, when it comes into view (below the buttons on a phone).
+const log = document.querySelector('.log');
+if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  log.classList.add('armed');
+  new IntersectionObserver((seen, io) => {
+    if (seen.some((e) => e.isIntersecting)) { log.classList.add('play'); io.disconnect(); }
+  }, { threshold: 0.35 }).observe(log);
 }
 </script>
 </body>
